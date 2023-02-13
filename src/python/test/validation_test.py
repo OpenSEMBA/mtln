@@ -25,22 +25,29 @@ def test_coaxial_dc():
     
     py_voltage, py_current = TL_2conductors(zSteps, tSteps, l, c)
 
+    filename = "2conductors_coaxial_output.txt"
+    outfile = open(getcwd()+"\\python\\logs\\"+filename, 'w')
+    
+    for k in range(zSteps):
+        outfile.write(str(py_voltage[k])+" "+str(py_current[k])+"\n")
+    outfile.close()
+
     subprocess.run(getcwd()+"\\fortran\\out\\build\\x64-Debug\\coaxial.exe "+str(zSteps)+" "+str(tSteps), cwd=getcwd()+"\\fortran\\out\\build\\x64-Debug\\")
-    for_voltage, for_current = readVI(getcwd()+"\\fortran\\logs\\f_output.txt")
+    for_voltage, for_current = readVI(getcwd()+"\\fortran\\logs\\f_output.txt", 1, zSteps)
 
     #plot before asserting
     plt.figure(figsize=(8, 3.5))
 
     plt.subplot(211)
     plt.plot(py_voltage, 'k', linewidth=1, label = 'python')
-    plt.plot(for_voltage, 'r--', linewidth=1, label = 'fortran')
+    plt.plot(for_voltage[0], 'r--', linewidth=1, label = 'fortran')
     plt.ylabel('$V$', fontsize='14')
     plt.ylim(0, 35)
     plt.legend()
 
     plt.subplot(212)
     plt.plot(py_current, 'k', linewidth=1, label = 'python')
-    plt.plot(for_current, 'r--', linewidth=1, label = 'fortran')
+    plt.plot(for_current[0], 'r--', linewidth=1, label = 'fortran')
     plt.ylabel('$I$', fontsize='14')
     plt.xlabel('FDTD cells')
     plt.ylim(0, 0.2)
@@ -93,5 +100,54 @@ def test_coaxial_DC_2conductors():
     
     py_voltage, py_current = TL_Nconductors(zSteps, tSteps, l, c)
     
+    filename = "3Conductors_output.txt"
+    outfile = open(getcwd()+"\\python\\logs\\"+filename, 'w')
+
+    for k in range(zSteps):
+        for n in range(np.shape(l)[0]):
+            outfile.write(str(py_voltage[n][k])+" "+str(py_current[n][k])+" ")
+        outfile.write("\n")
+    outfile.close()
+
+    subprocess.run(getcwd()+"\\fortran\\out\\build\\x64-Debug\\Nconductors_3.exe "+str(zSteps)+" "+str(tSteps), cwd=getcwd()+"\\fortran\\out\\build\\x64-Debug\\")
+    for_voltage, for_current = readVI(getcwd()+"\\fortran\\logs\\3conductors_output.txt", 2, zSteps)
+
     assert np.isnan(py_voltage).any() == False
     assert np.isnan(py_current).any() == False
+    
+    #plot before asserting
+    plt.figure(figsize=(8, 3.5))
+
+    plt.subplot(211)
+    plt.plot(py_voltage[0], 'k', linewidth=1, label = 'python #1')
+    plt.plot(py_voltage[1], 'k--', linewidth=1, label = 'python #2')
+    plt.plot(for_voltage[0], 'r--', linewidth=1, label = 'fortran #1')
+    plt.plot(for_voltage[1], 'r-.', linewidth=1, label = 'fortran #2')
+    plt.ylabel('$V$', fontsize='14')
+    plt.ylim(0, 35)
+    plt.legend()
+
+    plt.subplot(212)
+    plt.plot(py_current[0], 'k', linewidth=1, label = 'python #1')
+    plt.plot(py_current[1], 'k--', linewidth=1, label = 'python #2')
+    plt.plot(for_current[0], 'r', linewidth=1, label = 'fortran #1')
+    plt.plot(for_current[1], 'r--', linewidth=1, label = 'fortran #2')
+    plt.ylabel('$I$', fontsize='14')
+    plt.xlabel('FDTD cells')
+    plt.ylim(0, 0.2)
+
+    plt.subplots_adjust(bottom=0.2, hspace=0.45)
+    plt.show()
+        
+    for i in range(2):
+        assert np.allclose(
+            py_voltage[i],
+            for_voltage[i],
+            rtol=0.1
+        )    
+        
+        assert np.allclose(
+            py_current[i],
+            for_current[i],
+            rtol=0.1
+        )    

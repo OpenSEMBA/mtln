@@ -26,13 +26,6 @@ def TL_2conductors(zSteps: int, tSteps: int, l: float, c: float):
         for k in range(zSteps):
             i[k] = i[k] - dT/(dZ*l) * (v[k+1]-v[k])
 
-    filename = "output.txt"
-    outfile = open(getcwd()+"\\python\\logs\\"+filename, 'w')
-
-    for k in range(zSteps):
-        outfile.write(str(v[k])+" "+str(i[k])+"\n")
-    outfile.close()
-    
     return v[:-1], i
 
 
@@ -46,17 +39,17 @@ def TL_Nconductors(zSteps: int, tSteps: int, l: np.ndarray, c: np.ndarray):
     maxV = 0
 
     vs = 25*np.ones(dim)
-    rs = np.ones(dim)
+    rs = np.identity(dim)
     vl = np.zeros(dim)
-    rl = np.ones(dim)
+    rl = np.identity(dim)
 
     for idx in range(dim):
         lineVel = 1/np.sqrt(l[idx][idx]*c[idx][idx])
         if (lineVel > maxV):
             maxV = lineVel
             
-        rs[idx] = np.sqrt(l[idx][idx]/c[idx][idx])
-        rl[idx] = np.sqrt(l[idx][idx]/c[idx][idx])
+        rs[idx][idx] = np.sqrt(l[idx][idx]/c[idx][idx])
+        rl[idx][idx] = np.sqrt(l[idx][idx]/c[idx][idx])
     
     dZ = 1e-3
     dT = 0.95*dZ/maxV
@@ -86,15 +79,6 @@ def TL_Nconductors(zSteps: int, tSteps: int, l: np.ndarray, c: np.ndarray):
         for k in range(zSteps):
             i[:,k] = i[:,k] - (dT/dZ)*np.matmul(lInv,v[:,k+1]-v[:,k])
 
-    filename = "3Conductors_output.txt"
-    outfile = open(getcwd()+"\\python\\logs\\"+filename, 'w')
-
-    for k in range(zSteps):
-        for n in range(dim):
-            outfile.write(str(v[n][k])+" "+str(i[n][k])+" ")
-        outfile.write("\n")
-    outfile.close()
-    
     return v[:,:-1], i
     
 
