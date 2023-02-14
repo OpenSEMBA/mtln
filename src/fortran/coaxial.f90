@@ -8,7 +8,7 @@ program coaxial
     integer :: zSteps , tSteps
     real :: shieldR, wireR
     real :: eps, mu
-    real :: l,c
+    real, dimension :: l,c
     
     numArgs = command_argument_count()
     call get_command_argument(1,arg1) 

@@ -10,7 +10,7 @@ from .utils import readVI
 
 from scipy.constants import epsilon_0, mu_0
 
-def test_coaxial_dc():
+def test_coaxial_dc(log = False):
     
     eps = epsilon_0
     mu = mu_0
@@ -25,12 +25,12 @@ def test_coaxial_dc():
     
     py_voltage, py_current = TL_2conductors(zSteps, tSteps, l, c)
 
-    filename = "2conductors_coaxial_output.txt"
-    outfile = open(getcwd()+"\\python\\logs\\"+filename, 'w')
-    
-    for k in range(zSteps):
-        outfile.write(str(py_voltage[k])+" "+str(py_current[k])+"\n")
-    outfile.close()
+    if (log):
+        filename = "2conductors_coaxial_output.txt"
+        outfile = open(getcwd()+"\\python\\logs\\"+filename, 'w')
+        for k in range(zSteps):
+            outfile.write(str(py_voltage[k])+" "+str(py_current[k])+"\n")
+        outfile.close()
 
     subprocess.run(getcwd()+"\\fortran\\out\\build\\x64-Debug\\coaxial.exe "+str(zSteps)+" "+str(tSteps), cwd=getcwd()+"\\fortran\\out\\build\\x64-Debug\\")
     for_voltage, for_current = readVI(getcwd()+"\\fortran\\logs\\f_output.txt", 1, zSteps)
@@ -57,20 +57,78 @@ def test_coaxial_dc():
         
     assert np.allclose(
         py_voltage,
-        for_voltage,
+        for_voltage[0],
         rtol=0.1
     )    
     
     assert np.allclose(
         py_current,
-        for_current,
+        for_current[0],
         rtol=0.1
+    )    
+
+def test_coaxial_DC_1conductor(log = False):
+    
+    eps = epsilon_0
+    mu = mu_0
+    #pul L and C for a coaxial given shield and wire radius
+    shieldR = 5e-3
+    wireR = 1e-3
+    
+    l = np.identity(1)*(mu/(2*np.pi))*np.log(shieldR/wireR)
+    c = np.identity(1)*2*np.pi*eps/np.log(shieldR/wireR)
+    
+    zSteps = 200
+    tSteps = 1000
+    
+    py_voltage, py_current = TL_Nconductors(zSteps, tSteps, l, c)
+    if (log):
+        filename = "2conductors_coaxial_output.txt"
+        outfile = open(getcwd()+"\\python\\logs\\"+filename, 'w')
+        
+        for k in range(zSteps):
+            outfile.write(str(py_voltage[0][k])+" "+str(py_current[0][k])+"\n")
+        outfile.close()
+
+    subprocess.run(getcwd()+"\\fortran\\out\\build\\x64-Debug\\Nconductors_2.exe "+str(zSteps)+" "+str(tSteps), cwd=getcwd()+"\\fortran\\out\\build\\x64-Debug\\")
+    for_voltage, for_current = readVI(getcwd()+"\\fortran\\logs\\2conductors_output.txt", 1, zSteps)
+
+    #plot before asserting
+    plt.figure(figsize=(8, 3.5))
+
+    plt.subplot(211)
+    plt.plot(py_voltage[0], 'k', linewidth=1, label = 'python')
+    plt.plot(for_voltage[0], 'r--', linewidth=1, label = 'fortran')
+    plt.ylabel('$V$', fontsize='14')
+    plt.ylim(0, 35)
+    plt.legend()
+
+    plt.subplot(212)
+    plt.plot(py_current[0], 'k', linewidth=1, label = 'python')
+    plt.plot(for_current[0], 'r--', linewidth=1, label = 'fortran')
+    plt.ylabel('$I$', fontsize='14')
+    plt.xlabel('FDTD cells')
+    plt.ylim(0, 0.2)
+
+    plt.subplots_adjust(bottom=0.2, hspace=0.45)
+    plt.show()
+        
+    assert np.allclose(
+        py_voltage[0],
+        for_voltage[0],
+        rtol=0.01
+    )    
+    
+    assert np.allclose(
+        py_current[0],
+        for_current[0],
+        rtol=0.01
     )    
 
 
     
 
-def test_coaxial_DC_2conductors():
+def test_coaxial_DC_2conductors(log = False):
     #     ________ 
     #    /        \
     #   /          \
@@ -99,15 +157,15 @@ def test_coaxial_DC_2conductors():
     tSteps = 1000
     
     py_voltage, py_current = TL_Nconductors(zSteps, tSteps, l, c)
-    
-    filename = "3Conductors_output.txt"
-    outfile = open(getcwd()+"\\python\\logs\\"+filename, 'w')
+    if (log):
+        filename = "3Conductors_output.txt"
+        outfile = open(getcwd()+"\\python\\logs\\"+filename, 'w')
 
-    for k in range(zSteps):
-        for n in range(np.shape(l)[0]):
-            outfile.write(str(py_voltage[n][k])+" "+str(py_current[n][k])+" ")
-        outfile.write("\n")
-    outfile.close()
+        for k in range(zSteps):
+            for n in range(np.shape(l)[0]):
+                outfile.write(str(py_voltage[n][k])+" "+str(py_current[n][k])+" ")
+            outfile.write("\n")
+        outfile.close()
 
     subprocess.run(getcwd()+"\\fortran\\out\\build\\x64-Debug\\Nconductors_3.exe "+str(zSteps)+" "+str(tSteps), cwd=getcwd()+"\\fortran\\out\\build\\x64-Debug\\")
     for_voltage, for_current = readVI(getcwd()+"\\fortran\\logs\\3conductors_output.txt", 2, zSteps)
@@ -143,11 +201,11 @@ def test_coaxial_DC_2conductors():
         assert np.allclose(
             py_voltage[i],
             for_voltage[i],
-            rtol=0.1
+            rtol=0.01
         )    
         
         assert np.allclose(
             py_current[i],
             for_current[i],
-            rtol=0.1
+            rtol=0.01
         )    

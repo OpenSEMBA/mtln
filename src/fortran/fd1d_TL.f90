@@ -56,12 +56,12 @@ contains
     end subroutine TL_2conductors
     
 !   Time-domain TL solver for N conductors 
-    subroutine TL_Nconductors(zSteps, tSteps, l, c)    
+    subroutine TL_Nconductors(zSteps, tSteps, l, c, voltage, current)    
     use matrixUtils
     
     real, intent(in), dimension(:,:)  :: l, c
-    integer :: zSteps, tSteps, n, k, dim, i
     real, dimension(:,:), allocatable :: voltage, current
+    integer :: zSteps, tSteps, n, k, dim, i
     real, dimension(:,:), allocatable :: lInv, cInv, Id
     real, dimension(:,:), allocatable :: A1, A2, B1, B2
     
@@ -70,12 +70,11 @@ contains
     
     real :: maxV = 0.0, lineVel = 0.0
     
-    integer :: io
-    
     dim = size(l,1)
-    
+
     allocate(voltage(dim,0:zSteps))
     allocate(current(dim,0:zSteps-1))
+
     allocate(lInv(dim,dim))
     allocate(cInv(dim,dim))
 
@@ -139,16 +138,7 @@ contains
         enddo
 
     enddo
-    
-    open(newunit=io, file="../../../logs/3conductors_output.txt", action="write")
-    do k = 0, zSteps-1
-        do i = 1,2
-            write (io, "(4f20.10)", advance="no") voltage(i, k), current(i, k)
-        enddo
-        write(io, *)
-    enddo
-    close(io)
-    
+  
     end subroutine TL_Nconductors
     
 end module fd1d_tl

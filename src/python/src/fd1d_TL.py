@@ -50,7 +50,7 @@ def TL_Nconductors(zSteps: int, tSteps: int, l: np.ndarray, c: np.ndarray):
             
         rs[idx][idx] = np.sqrt(l[idx][idx]/c[idx][idx])
         rl[idx][idx] = np.sqrt(l[idx][idx]/c[idx][idx])
-    
+
     dZ = 1e-3
     dT = 0.95*dZ/maxV
 
