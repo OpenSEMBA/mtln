@@ -2,6 +2,33 @@ import json
 import numpy as np
 from numpy.random import default_rng
 
+
+
+def Zw(f, f0, R, sigma):
+    return (R*(1+2.5j)*np.exp(-((f-f0*np.ones(len(f)))**2)/(2*sigma**2)))
+
+def Y_Zw(f, f0, R, sigma):
+    return 1/(R*(1+2.5j)*np.exp(-((f-f0*np.ones(len(f)))**2)/(2*sigma**2)))
+    # return 1/Zw(f, f0, R, sigma)
+
+def RLseriesDisp(f, R, L, n):
+    w = 2*np.pi*f
+    return R + 1j*w**(n)*L
+
+def Y_RLseriesDisp(f, R, L, n):
+    w = 2*np.pi*f
+    return 1/(R + 1j*w**(n)*L)
+   
+
+def RLpar(f, R, L):
+    w = 2*np.pi*f
+    return 1j*w*R/(1j*w+R/L)
+
+def RCpar(f, R, C):
+    w = 2*np.pi*f
+    # return R/(1j*w*C*R+1)
+    return (1/C)/(1j*w+1/(C*R))
+
 def epsDebye(f,k,tau):
     out = 1
     for i in range(np.size(k)):
