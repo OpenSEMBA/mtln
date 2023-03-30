@@ -1,7 +1,8 @@
 import numpy as np
 from os import getcwd
-import .constantLosses as cl
-import .frequencyLosses as fl
+
+from . import constantLosses as cl
+from . import frequencyLosses as fl
 
 def TL_2conductors(zSteps: int, tSteps: int, l: float, c: float):
 
