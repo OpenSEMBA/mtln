@@ -22,6 +22,15 @@ def test_get_phase_velocities():
 def test_coaxial_line_initial_voltage():
     line = mtln.MTL(l=0.25e-6, c= 100e-12, length=400)
     line.set_voltage(lambda x: gaussian(x, 200, 50))
+    voltage_probe = line.add_voltage_probe(200)
+
+    finalTime = 5e-6
+    for t in np.arange(0, np.floor(finalTime / line.get_timestep())):
+        line.step()
+
+    plt.plot(voltage_probe.t, voltage_probe.v)    
+    plt.show()
+    # assert
 
 def test_coaxial_line_paul_8_6():
     """ 
