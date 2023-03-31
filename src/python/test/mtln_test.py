@@ -17,7 +17,7 @@ def square_pulse(x, A, x0):
 def test_get_phase_velocities():
     v = mtln.MTL(l=0.25e-6, c=100e-12).get_phase_velocities()
     assert v.shape == (1,)
-    assert np.isclose((2/3)*speed_of_light, v[0])
+    assert np.isclose(2e8, v[0])
 
 def test_coaxial_line_initial_voltage():
     line = mtln.MTL(l=0.25e-6, c= 100e-12, length=400)
