@@ -25,7 +25,7 @@ def test_coaxial_line_initial_voltage():
     voltage_probe = line.add_voltage_probe(200)
 
     finalTime = 5e-6
-    for t in np.arange(0, np.floor(finalTime / line.get_timestep())):
+    for t in np.arange(0, np.floor(finalTime / line.get_max_timestep())):
         line.step()
 
     plt.plot(voltage_probe.t, voltage_probe.v)    
@@ -40,17 +40,17 @@ def test_coaxial_line_paul_8_6():
     
     line = mtln.MTL(l=0.25e-6, c= 100e-12, length=400.0, Zs = 150)
     finalTime = 18e-6
-    tRange = np.arange(0, np.floor(finalTime / line.get_timestep()))
+    tRange = np.arange(0, np.floor(finalTime / line.get_max_timestep()))
 
     magnitude = lambda t: square_pulse(t, 100, 6e-6)
-    line.add_voltage_source(magnitude, position=0.0)
+    line.add_voltage_source(position=0.0, conductor=0, magnitude=magnitude)
     voltage_probe = line.add_voltage_probe(position=0.0)
     
     for t in tRange:
         line.step()
 
     plt.plot(voltage_probe.t, voltage_probe.v)
-    plt.sho()
+    plt.show()
 
 
 

@@ -17,6 +17,7 @@ class MTL:
     def __init__(self, l, c, length=1.0, nx=100, Zs=0.0, Zl=0.0):
         self.x = np.linspace(0, length, nx+1)
 
+        self.probes = []
 
         if type(l) == float and type(c) == float:
             self.l = np.array([[l]])
@@ -55,6 +56,7 @@ class MTL:
                 np.linalg.inv(dx*right_port_c/self.timestep+np.eye(self.number_of_conductors)), \
                 dx*right_port_c/self.timestep-np.eye(self.number_of_conductors))
 
+
     def get_phase_velocities(self):
         return 1/np.sqrt(np.diag(self.l)*np.diag(self.c))
 
@@ -68,9 +70,9 @@ class MTL:
     def update_probes(self):
         for probe in self.probes:
             if probe.type == "voltage":
-                probe.t = np.vstack(probe.t, self.time)
-                index = self.x[self.x >= probe.position and self.x < probe.position]
-                probe.v = np.vstack(probe.v, self.v[probe.conductor,index])
+                probe.t = np.append(probe.t, self.time)
+                index = np.argmin(np.abs(self.x - probe.position))
+                probe.v = np.append(probe.v, self.v[probe.conductor,index])
             else:
                 raise ValueError("undefined probe")
 
@@ -83,7 +85,7 @@ class MTL:
 
         self.i[:,:] -= self.v_diff.dot(self.v[:,1:]-self.v[:,:-1])
 
-        self.time += self.dt
+        self.time += self.timestep
         self.update_probes()
 
 
@@ -91,5 +93,8 @@ class MTL:
         return
 
     def add_voltage_probe(self, position: float):
-        return
+        
+        voltage_probe = Probe(position)
+        self.probes.append(voltage_probe)        
+        return voltage_probe
 
