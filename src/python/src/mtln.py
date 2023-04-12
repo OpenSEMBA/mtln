@@ -10,11 +10,11 @@ class Probe:
         self.i = np.array([])
         return
 
+
 class MTL:
     """
     Lossless Multiconductor Transmission Line
     """
-
     def __init__(self, l, c, length=1.0, nx=100, Zs=0.0, Zl=0.0):
         self.x = np.linspace(0, length, nx+1)
 
@@ -148,4 +148,37 @@ class MTL:
         probe = Probe(position, conductor, type)
         self.probes.append(probe)        
         return probe
+
+
+class MTL_losses(MTL):
+    def __init__(self, l, c, g, r, length=1.0, nx=100, Zs=0.0, Zl=0.0):
+        super().__init__(l, c, length=length, nx=nx, Zs=Zs, Zl=Zl)
+        
+        if type(g) == float and type(r) == float:
+            self.g = np.array([[g]])
+            self.r = np.array([[r]])
+        elif type(g) == np.ndarray and type(r) == np.ndarray:
+            assert(g.shape == r.shape)
+            assert(g.shape[0] == r.shape[1])
+            self.g = g
+            self.r = r
+        else:
+            raise ValueError("Invalid input G and/or R")
+
+        dx = self.x[1] - self.x[0]
+        self.i_diff = np.linalg.inv((dx/self.timestep)*self.c + (dx/2)*self.g)
+        self.v_diff = np.linalg.inv((dx/self.timestep)*self.l + (dx/2)*self.r)
+
+        self.left_port_term_1 = np.matmul( \
+                np.linalg.inv(dx*(np.matmul(self.zs,self.c))/self.timestep + dx*(np.matmul(self.zs,self.g))/2 + np.eye(self.number_of_conductors)), \
+                dx*(np.matmul(self.zs,self.c))/self.timestep - dx*(np.matmul(self.zs,self.g))/2 - np.eye(self.number_of_conductors))
+
+        self.left_port_term_2 = np.linalg.inv(dx*(np.matmul(self.zs,self.c))/self.timestep + dx*(np.matmul(self.zs,self.g))/2 + np.eye(self.number_of_conductors))
+
+        self.right_port_term_1 = np.matmul( \
+                np.linalg.inv(dx*(np.matmul(self.zl,self.c))/self.timestep + dx*(np.matmul(self.zl,self.g))/2 + np.eye(self.number_of_conductors)), \
+                dx*(np.matmul(self.zl,self.c))/self.timestep - dx*(np.matmul(self.zl,self.g))/2 - np.eye(self.number_of_conductors))
+
+        self.right_port_term_2 = np.linalg.inv(dx*(np.matmul(self.zl,self.c))/self.timestep + dx*(np.matmul(self.zl,self.g))/2 + np.eye(self.number_of_conductors))
+        
 
