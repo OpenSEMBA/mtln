@@ -1,12 +1,13 @@
 import numpy as np
 
 class Probe:
-    def __init__(self, position, conductor = 0):
-        self.type = "voltage"
+    def __init__(self, position, conductor = 0, type = 'voltage'):
+        self.type = type
         self.position = position
         self.conductor = conductor
         self.t = np.array([])
         self.v = np.array([])
+        self.i = np.array([])
         return
 
 class MTL:
@@ -80,6 +81,10 @@ class MTL:
                 probe.t = np.append(probe.t, self.time)
                 index = np.argmin(np.abs(self.x - probe.position))
                 probe.v = np.append(probe.v, self.v[probe.conductor,index])
+            elif probe.type == "current":
+                probe.t = np.append(probe.t, self.time)
+                index = np.argmin(np.abs(self.x - probe.position))
+                probe.i = np.append(probe.i, self.i[probe.conductor,index-1])
             else:
                 raise ValueError("undefined probe")
 
@@ -121,4 +126,10 @@ class MTL:
         voltage_probe = Probe(position)
         self.probes.append(voltage_probe)        
         return voltage_probe
+
+    def add_current_probe(self, position: float):
+        
+        current_probe = Probe(position, type = 'current')
+        self.probes.append(current_probe)        
+        return current_probe
 
