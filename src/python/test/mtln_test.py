@@ -111,3 +111,25 @@ def test_coaxial_line_paul_8_6_triangle():
 
 
 
+def test_ribbon_cable_paul_9_3():
+    """
+    Described in Ch. 9 of Paul Clayton
+    Analysis of Multiconductor Transmission Lines. 2007. 
+    """
+    l = np.array(shape=(2,2))
+    l[0] = [0.7485*1e-6 ,0.5077*1e-6]
+    l[1] = [0.5077*1e-6, 1.0154*1e-6]
+    c = np.array(shape=(2,2))
+    c[0] = [37.432*1e-12, -18.716*1e-12]
+    c[1] = [-18.716*1e-12, 24.982*1e-12]
+
+    line = mtln.MTL(l=l, c= c, length=2.0, Zs = 150)
+    finalTime = 18e-6
+    tRange = np.arange(0, np.floor(finalTime / line.get_max_timestep()))
+
+    magnitude = lambda t: triangle_pulse(t, 100, 6e-6)
+    line.add_voltage_source(position=0.0, conductor=0, magnitude=magnitude)
+    voltage_probe = line.add_voltage_probe(position=0.0)
+    
+    for t in tRange:
+        line.step()

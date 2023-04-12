@@ -31,6 +31,26 @@ class MTL:
             raise ValueError("Invalid input L and/or C")
         
         self.number_of_conductors = np.shape(self.l)[0]
+        
+        if (type(Zs) == float and type(Zs) == float):
+            self.zs = Zs * np.eye(self.number_of_conductors)
+            self.zl = Zl * np.eye(self.number_of_conductors)
+        elif (type(Zs) == np.array and type(Zs) == np.array):
+            assert(Zs.shape == Zl.shape)
+            if (len(Zs.shape) == 1):
+                assert(Zs.shape[0] == self.number_of_conductors)
+                self.zs = Zs.reshape(self.number_of_conductors,1) * np.eye(self.number_of_conductors)
+                self.zl = Zl.reshape(self.number_of_conductors,1) * np.eye(self.number_of_conductors)
+                
+            elif (len(Zs.shape) == 2):
+                assert(Zs.shape[0] == 1 or Zs.shape[1] == 1)
+                assert(Zs.shape[0] == self.number_of_conductors or Zs.shape[1] == self.number_of_conductors)
+                self.zs = Zs * np.eye(self.number_of_conductors)
+                self.zl = Zl * np.eye(self.number_of_conductors)
+        else:
+            raise ValueError("Invalid input Zs and/or Zc. Use two floats or two arrays")
+               
+        
         self.v = np.zeros([self.number_of_conductors, self.x.shape[0]  ])
         self.i = np.zeros([self.number_of_conductors, self.x.shape[0]-1])
 
@@ -38,9 +58,6 @@ class MTL:
         self.v_sources = np.empty(shape=(self.number_of_conductors, self.x.shape[0]), dtype=object)
         self.v_sources.fill(lambda n : 0)
         
-        self.zs = Zs * np.eye(self.number_of_conductors)
-        self.zl = Zl * np.eye(self.number_of_conductors)
-
         self.timestep = self.get_max_timestep()
         self.time = 0.0
         
