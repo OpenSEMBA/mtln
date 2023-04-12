@@ -53,11 +53,11 @@ def test_get_phase_velocities():
 
 def test_coaxial_line_initial_voltage():
     line = mtln.MTL(l=0.25e-6, c= 100e-12, length=400)
-    line.set_voltage(lambda x: gaussian(x, 200, 50))
-    voltage_probe = line.add_voltage_probe(200)
+    line.set_voltage(0, lambda x: gaussian(x, 200, 50))
+    voltage_probe = line.add_probe(position=200, conductor=0, type= 'voltage')
 
-    finalTime = 5e-6
-    for t in np.arange(0, np.floor(finalTime / line.get_max_timestep())):
+    finalTime = 10e-6
+    for t in line.get_time_range(finalTime):
         line.step()
 
     plt.plot(voltage_probe.t, voltage_probe.v)    
@@ -72,14 +72,13 @@ def test_coaxial_line_paul_8_6_square():
     
     line = mtln.MTL(l=0.25e-6, c= 100e-12, length=400.0, Zs = 150)
     finalTime = 18e-6
-    tRange = np.arange(0, np.floor(finalTime / line.get_max_timestep()))
 
     magnitude = lambda t: square_pulse(t, 100, 6e-6)
     line.add_voltage_source(position=0.0, conductor=0, magnitude=magnitude)
     voltage_probe = line.add_probe(position=0.0, conductor=0, type='voltage')
     current_probe = line.add_probe(position=400.0,conductor=0, type='current')
     
-    for t in tRange:
+    for t in line.get_time_range(finalTime):
         line.step()
 
     # xticks = range(int(np.floor(min(1e6*current_probe.t))), int(np.ceil(max(1e6*current_probe.t))+1))
@@ -113,13 +112,12 @@ def test_coaxial_line_paul_8_6_triangle():
     
     line = mtln.MTL(l=0.25e-6, c= 100e-12, length=400.0, Zs = 150.0)
     finalTime = 18e-6
-    tRange = np.arange(0, np.floor(finalTime / line.get_max_timestep()))
 
     magnitude = lambda t: triangle_pulse(t, 100, 6e-6)
     line.add_voltage_source(position=0.0, conductor=0, magnitude=magnitude)
     voltage_probe = line.add_probe(position=0.0, conductor=0, type='voltage')
     
-    for t in tRange:
+    for t in line.get_time_range(finalTime):
         line.step()
 
     # xticks = range(int(np.floor(min(1e6*voltage_probe.t))), int(np.ceil(max(1e6*voltage_probe.t))+1))
@@ -156,13 +154,12 @@ def test_ribbon_cable_paul_9_3():
 
     line = mtln.MTL(l=l, c= c, length=2.0, nx = 2, Zs = Zs, Zl = Zl)
     finalTime = 200e-9
-    tRange = np.arange(0, np.floor(finalTime / line.get_max_timestep()))
 
     magnitude = lambda t: trapezoidal_pulse(t, A = 1, rise_time=20e-9, fall_time=20e-9, f0=1e6, D=0.5)
     line.add_voltage_source(position=0.0, conductor=1, magnitude=magnitude)
     voltage_probe = line.add_probe(position=0.0, conductor= 0, type='voltage')
     
-    for t in tRange:
+    for t in line.get_time_range(finalTime):
         line.step()
 
     plt.plot(1e9*voltage_probe.t, 1e3*voltage_probe.v)

@@ -85,14 +85,17 @@ class MTL:
 
 
     def get_phase_velocities(self):
-        # return 1/np.sqrt(np.diag(self.l)*np.diag(self.c))
         return 1/np.sqrt(np.diag(self.l.dot(self.c)))
+
     def get_max_timestep(self):
         dx = self.x[1] - self.x[0]
         return dx / np.max(self.get_phase_velocities())
 
-    def set_voltage(self, voltage):
-        self.v = voltage(self.x)
+    def get_time_range(self, final_time):
+        return np.arange(0, np.floor(final_time / self.get_max_timestep()))
+
+    def set_voltage(self, conductor, voltage):
+        self.v[conductor] = voltage(self.x)
 
     def update_probes(self):
         for probe in self.probes:
