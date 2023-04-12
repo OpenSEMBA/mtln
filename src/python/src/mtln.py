@@ -1,7 +1,7 @@
 import numpy as np
 
 class Probe:
-    def __init__(self, position, conductor = 0, type = 'voltage'):
+    def __init__(self, position, conductor, type):
         self.type = type
         self.position = position
         self.conductor = conductor
@@ -22,7 +22,7 @@ class MTL:
         if type(l) == float and type(c) == float:
             self.l = np.array([[l]])
             self.c = np.array([[c]])
-        elif type(l) == np.array and type(c) == np.array:
+        elif type(l) == np.ndarray and type(c) == np.ndarray:
             assert(l.shape == c.shape)
             assert(l.shape[0] == l.shape[1])
             self.l = l
@@ -32,10 +32,10 @@ class MTL:
         
         self.number_of_conductors = np.shape(self.l)[0]
         
-        if (type(Zs) == float and type(Zs) == float):
+        if (type(Zs) != np.ndarray and type(Zl) != np.ndarray):
             self.zs = Zs * np.eye(self.number_of_conductors)
             self.zl = Zl * np.eye(self.number_of_conductors)
-        elif (type(Zs) == np.array and type(Zs) == np.array):
+        elif (type(Zs) == np.ndarray and type(Zl) == np.ndarray):
             assert(Zs.shape == Zl.shape)
             if (len(Zs.shape) == 1):
                 assert(Zs.shape[0] == self.number_of_conductors)
@@ -50,6 +50,8 @@ class MTL:
         else:
             raise ValueError("Invalid input Zs and/or Zc. Use two floats or two arrays")
                
+              
+            
         
         self.v = np.zeros([self.number_of_conductors, self.x.shape[0]  ])
         self.i = np.zeros([self.number_of_conductors, self.x.shape[0]-1])
@@ -83,8 +85,8 @@ class MTL:
 
 
     def get_phase_velocities(self):
-        return 1/np.sqrt(np.diag(self.l)*np.diag(self.c))
-
+        # return 1/np.sqrt(np.diag(self.l)*np.diag(self.c))
+        return 1/np.sqrt(np.diag(self.l.dot(self.c)))
     def get_max_timestep(self):
         dx = self.x[1] - self.x[0]
         return dx / np.max(self.get_phase_velocities())
@@ -138,15 +140,9 @@ class MTL:
         self.v_sources[conductor, index] = magnitude
         return
 
-    def add_voltage_probe(self, position: float):
+    def add_probe(self, position: float, conductor: int, type: str):
         
-        voltage_probe = Probe(position)
-        self.probes.append(voltage_probe)        
-        return voltage_probe
-
-    def add_current_probe(self, position: float):
-        
-        current_probe = Probe(position, type = 'current')
-        self.probes.append(current_probe)        
-        return current_probe
+        probe = Probe(position, conductor, type)
+        self.probes.append(probe)        
+        return probe
 
