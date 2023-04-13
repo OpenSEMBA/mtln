@@ -144,12 +144,16 @@ def test_ribbon_cable_paul_9_3():
     for t in line.get_time_range(finalTime):
         line.step()
 
-    plt.plot(1e9*voltage_probe.t, 1e3*voltage_probe.v)
-    plt.ylabel(r'$V_1 (0, t)\,[mV]$')
-    plt.xlabel(r'$t\,[\mu s]$')
-    plt.xticks(range(0, 200 ,50))
-    plt.grid('both')
-    plt.show()
+    # plt.plot(1e9*voltage_probe.t, 1e3*voltage_probe.v)
+    # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+    # plt.xlabel(r'$t\,[\mu s]$')
+    # plt.xticks(range(0, 200 ,50))
+    # plt.grid('both')
+    # plt.show()
+    
+    # From Paul's book: 
+    # "The crosstalk waveform rises to a peak of around 110 mV [...]"
+    assert(np.isclose(np.max(voltage_probe.v), 113e-3, atol=1e-3))
 
 def test_high_loss_line_paul_8_2_3_5():
     """
