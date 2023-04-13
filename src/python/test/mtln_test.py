@@ -8,25 +8,7 @@ from scipy.constants import epsilon_0, mu_0, speed_of_light
 
 import src.mtln as mtln
 
-def gaussian(x, x0, s0):
-    return np.exp( - (x-x0)**2 / (2*s0**2) )
-
-def square_pulse(x, A, x0):
-    return A*(x <= x0)*(x >= 0)
-
-def triangle_pulse(x, A, x0):
-    return A*(x/x0)*(x <= x0)*(x >= 0)
-
-def trapezoidal_pulse(x, A, rise_time, fall_time, f0, D):
-    mod_time = x % (1/f0)
-    cte_time = D/f0 - 0.5 * (rise_time + fall_time)
-    
-    t1, t2, t3 = rise_time, rise_time + cte_time, rise_time + cte_time + fall_time
-    
-    return A*(mod_time/rise_time)*(mod_time <= t1) + \
-           A*(mod_time >= t1 )*(mod_time <= t2) + \
-           (-A*mod_time/fall_time + A*(rise_time + cte_time + fall_time)/fall_time)*(mod_time >= t2)*((mod_time <= t3))
-    
+import src.waveforms as wf
 
 def test_trapezoidal_pulse():
     A = 1
@@ -38,7 +20,7 @@ def test_trapezoidal_pulse():
     plateu_duration = D/f0 - 0.5 * (rise_time + fall_time)
 
     time = np.linspace(0,200e-9,1000)
-    magnitude = lambda t: trapezoidal_pulse(t, A = 1, rise_time=20e-9, fall_time=20e-9, f0=1e6, D=0.5)
+    magnitude = lambda t: wf.trapezoidal_pulse(t, A = 1, rise_time=20e-9, fall_time=20e-9, f0=1e6, D=0.5)
     plt.plot(time, magnitude(time))
     plt.show()
     # assert (magnitude(0.5*rise_time) == 0.5*A)
@@ -53,7 +35,7 @@ def test_get_phase_velocities():
 
 def test_coaxial_line_initial_voltage():
     line = mtln.MTL(l=0.25e-6, c= 100e-12, length=400)
-    line.set_voltage(0, lambda x: gaussian(x, 200, 50))
+    line.set_voltage(0, lambda x: wf.gaussian(x, 200, 50))
     voltage_probe = line.add_probe(position=200, conductor=0, type= 'voltage')
 
     finalTime = 10e-6
@@ -73,7 +55,7 @@ def test_coaxial_line_paul_8_6_square():
     line = mtln.MTL(l=0.25e-6, c= 100e-12, length=400.0, Zs = 150)
     finalTime = 18e-6
 
-    magnitude = lambda t: square_pulse(t, 100, 6e-6)
+    magnitude = lambda t: wf.square_pulse(t, 100, 6e-6)
     line.add_voltage_source(position=0.0, conductor=0, magnitude=magnitude)
     voltage_probe = line.add_probe(position=0.0, conductor=0, type='voltage')
     current_probe = line.add_probe(position=400.0,conductor=0, type='current')
@@ -113,7 +95,7 @@ def test_coaxial_line_paul_8_6_triangle():
     line = mtln.MTL(l=0.25e-6, c= 100e-12, length=400.0, Zs = 150.0)
     finalTime = 18e-6
 
-    magnitude = lambda t: triangle_pulse(t, 100, 6e-6)
+    magnitude = lambda t: wf.triangle_pulse(t, 100, 6e-6)
     line.add_voltage_source(position=0.0, conductor=0, magnitude=magnitude)
     voltage_probe = line.add_probe(position=0.0, conductor=0, type='voltage')
     
@@ -155,7 +137,7 @@ def test_ribbon_cable_paul_9_3():
     line = mtln.MTL(l=l, c= c, length=2.0, nx = 2, Zs = Zs, Zl = Zl)
     finalTime = 200e-9
 
-    magnitude = lambda t: trapezoidal_pulse(t, A = 1, rise_time=20e-9, fall_time=20e-9, f0=1e6, D=0.5)
+    magnitude = lambda t: wf.trapezoidal_pulse(t, A = 1, rise_time=20e-9, fall_time=20e-9, f0=1e6, D=0.5)
     line.add_voltage_source(position=0.0, conductor=1, magnitude=magnitude)
     voltage_probe = line.add_probe(position=0.0, conductor= 0, type='voltage')
     
@@ -168,3 +150,10 @@ def test_ribbon_cable_paul_9_3():
     plt.xticks(range(0, 200 ,50))
     plt.grid('both')
     plt.show()
+
+def test_high_loss_line_paul_8_2_3_5():
+    """
+    Described in Ch. 8.2.3.5 "High loss line" of Paul Clayton
+    Analysis of Multiconductor Transmission Lines. 2007. 
+    """
+    pass
