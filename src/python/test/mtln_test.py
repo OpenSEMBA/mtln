@@ -1,8 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-
-
 import scipy as sci
 from scipy.constants import epsilon_0, mu_0, speed_of_light
 
@@ -27,7 +25,6 @@ def test_trapezoidal_pulse():
     # assert (magnitude(1.1*rise_time) == A)
     # assert (magnitude(rise_time + plateu_duration + 0.5*fall_time) == 0.5*A)
     
-
 def test_get_phase_velocities():
     v = mtln.MTL(l=0.25e-6, c=100e-12).get_phase_velocities()
     assert v.shape == (1,)
@@ -116,8 +113,6 @@ def test_coaxial_line_paul_8_6_triangle():
         index = np.argmin(np.abs(voltage_probe.t - t*1e-6))
         assert np.all(np.isclose(voltage_probe.v[index], v, atol=0.5))
 
-
-
 def test_ribbon_cable_paul_9_3():
     """
     Described in Ch. 9.3.1 "Ribbon Cables" of Paul Clayton
@@ -150,7 +145,7 @@ def test_ribbon_cable_paul_9_3():
     # plt.xticks(range(0, 200 ,50))
     # plt.grid('both')
     # plt.show()
-    
+
     # From Paul's book: 
     # "The crosstalk waveform rises to a peak of around 110 mV [...]"
     assert(np.isclose(np.max(voltage_probe.v), 113e-3, atol=1e-3))
@@ -161,3 +156,15 @@ def test_high_loss_line_paul_8_2_3_5():
     Analysis of Multiconductor Transmission Lines. 2007. 
     """
     pass
+
+def test_extract_skrf_network():
+    import skrf as rf
+    from skrf.media import DistributedCircuit
+    media = DistributedCircuit(C=100e-12, L=0.25e-6)
+    skrf_tl = media.line(400.0, 'm') ** media.short()
+    g = np.sqrt()
+    # line = mtln.MTL(l=0.25e-6, c= 100e-12, length=400.0, Zs = 150)
+    assert False
+
+def test_cables_panel_experimental_comparison():
+    assert False
