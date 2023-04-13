@@ -14,16 +14,15 @@ def test_trapezoidal_pulse():
     fall_time = 10e-9
     f0 = 20e6
     D = 0.5
-    # magnitude = lambda t: trapezoidal_pulse(t, A, rise_time, fall_time, f0, D)
+    magnitude = lambda t: wf.trapezoidal_wave(t, A, rise_time, fall_time, f0, D)
     plateu_duration = D/f0 - 0.5 * (rise_time + fall_time)
 
-    time = np.linspace(0,200e-9,1000)
-    magnitude = lambda t: wf.trapezoidal_pulse(t, A = 1, rise_time=20e-9, fall_time=20e-9, f0=1e6, D=0.5)
-    plt.plot(time, magnitude(time))
-    plt.show()
-    # assert (magnitude(0.5*rise_time) == 0.5*A)
-    # assert (magnitude(1.1*rise_time) == A)
-    # assert (magnitude(rise_time + plateu_duration + 0.5*fall_time) == 0.5*A)
+    # time = np.linspace(0,200e-9,1000)
+    # plt.plot(time, magnitude(time))
+    # plt.show()
+    assert (magnitude(0.5*rise_time) == 0.5*A)
+    assert (magnitude(1.1*rise_time) == A)
+    assert (magnitude(rise_time + plateu_duration + 0.5*fall_time) == 0.5*A)
     
 def test_get_phase_velocities():
     v = mtln.MTL(l=0.25e-6, c=100e-12).get_phase_velocities()
@@ -204,7 +203,7 @@ def test_pcb_paul_9_3_2():
     line = mtln.MTL(l=l, c= c, length=0.254, nx = 2, Zs = Zs, Zl = Zl)
     finalTime = 40e-9
 
-    magnitude = lambda t: wf.trapezoidal_pulse(t, A = 1, rise_time=6.25e-9, fall_time=6.25e-9, f0=1e6, D=0.5)
+    magnitude = lambda t: wf.trapezoidal_wave(t, A = 1, rise_time=6.25e-9, fall_time=6.25e-9, f0=1e6, D=0.5)
     line.add_voltage_source(position=0.0, conductor=1, magnitude=magnitude)
     voltage_probe = line.add_probe(position=0.0, conductor= 0, type='voltage')
     
