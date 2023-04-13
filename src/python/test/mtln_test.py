@@ -118,7 +118,7 @@ def test_coaxial_line_paul_8_6_triangle():
 
 
 
-def test_ribbon_cable_paul_9_3():
+def test_ribbon_cable_20ns_paul_9_3():
     """
     Described in Ch. 9.3.1 "Ribbon Cables" of Paul Clayton
     Analysis of Multiconductor Transmission Lines. 2007. 
@@ -151,9 +151,68 @@ def test_ribbon_cable_paul_9_3():
     plt.grid('both')
     plt.show()
 
-def test_high_loss_line_paul_8_2_3_5():
+def test_ribbon_cable_1ns_paul_9_3():
     """
-    Described in Ch. 8.2.3.5 "High loss line" of Paul Clayton
+    Described in Ch. 9.3.1 "Ribbon Cables" of Paul Clayton
     Analysis of Multiconductor Transmission Lines. 2007. 
     """
-    pass
+    l = np.zeros([2,2])
+    l[0] = [0.7485*1e-6 ,0.5077*1e-6]
+    l[1] = [0.5077*1e-6, 1.0154*1e-6]
+    c = np.zeros([2,2])
+    c[0] = [37.432*1e-12, -18.716*1e-12]
+    c[1] = [-18.716*1e-12, 24.982*1e-12]
+
+    Zs, Zl = np.zeros([1,2]), np.zeros([1,2])
+    Zs[:] = [50,50]
+    Zl[:] = [50,50]
+
+    line = mtln.MTL(l=l, c= c, length=2.0, nx = 100, Zs = Zs, Zl = Zl)
+    finalTime = 200e-9
+
+    magnitude = lambda t: wf.trapezoidal_pulse(t, A = 1, rise_time=1e-9, fall_time=1e-9, f0=1e6, D=0.5)
+    line.add_voltage_source(position=0.0, conductor=1, magnitude=magnitude)
+    voltage_probe = line.add_probe(position=0.0, conductor= 0, type='voltage')
+    
+    for t in line.get_time_range(finalTime):
+        line.step()
+
+    plt.plot(1e9*voltage_probe.t, 1e3*voltage_probe.v)
+    plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+    plt.xlabel(r'$t\,[\mu s]$')
+    plt.xticks(range(0, 200 ,50))
+    plt.grid('both')
+    plt.show()
+
+def test_pcb_paul_9_3_2():
+    """
+    Described in Ch. 9.3.2 "Printed Circuit Boards" of Paul Clayton
+    Analysis of Multiconductor Transmission Lines. 2007. 
+    """
+    l = np.zeros([2,2])
+    l[0] = [1.10515*1e-6, 0.690613*1e-6]
+    l[1] = [0.690613*1e-6, 1.38123*1e-6]
+    c = np.zeros([2,2])
+    c[0] = [40.5985*1e-12, -20.2992*1e-12]
+    c[1] = [-20.2992*1e-12, 29.7378*1e-12]
+
+    Zs, Zl = np.zeros([1,2]), np.zeros([1,2])
+    Zs[:] = [50,50]
+    Zl[:] = [50,50]
+
+    line = mtln.MTL(l=l, c= c, length=0.254, nx = 100, Zs = Zs, Zl = Zl)
+    finalTime = 200e-9
+
+    magnitude = lambda t: wf.trapezoidal_pulse(t, A = 1, rise_time=1e-9, fall_time=1e-9, f0=1e6, D=0.5)
+    line.add_voltage_source(position=0.0, conductor=1, magnitude=magnitude)
+    voltage_probe = line.add_probe(position=0.0, conductor= 0, type='voltage')
+    
+    for t in line.get_time_range(finalTime):
+        line.step()
+
+    plt.plot(1e9*voltage_probe.t, 1e3*voltage_probe.v)
+    plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+    plt.xlabel(r'$t\,[\mu s]$')
+    plt.xticks(range(0, 200 ,50))
+    plt.grid('both')
+    plt.show()
