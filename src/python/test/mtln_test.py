@@ -133,7 +133,7 @@ def test_ribbon_cable_20ns_paul_9_3():
     line = mtln.MTL(l=l, c= c, length=2.0, nx = 2, Zs = Zs, Zl = Zl)
     finalTime = 200e-9
 
-    magnitude = lambda t: wf.trapezoidal_pulse(t, A = 1, rise_time=20e-9, fall_time=20e-9, f0=1e6, D=0.5)
+    magnitude = lambda t: wf.trapezoidal_wave(t, A = 1, rise_time=20e-9, fall_time=20e-9, f0=1e6, D=0.5)
     line.add_voltage_source(position=0.0, conductor=1, magnitude=magnitude)
     voltage_probe = line.add_probe(position=0.0, conductor= 0, type='voltage')
     
@@ -170,7 +170,7 @@ def test_ribbon_cable_1ns_paul_9_3():
     line = mtln.MTL(l=l, c= c, length=2.0, nx = 100, Zs = Zs, Zl = Zl)
     finalTime = 200e-9
 
-    magnitude = lambda t: wf.trapezoidal_pulse(t, A = 1, rise_time=1e-9, fall_time=1e-9, f0=1e6, D=0.5)
+    magnitude = lambda t: wf.trapezoidal_wave(t, A = 1, rise_time=1e-9, fall_time=1e-9, f0=1e6, D=0.5)
     line.add_voltage_source(position=0.0, conductor=1, magnitude=magnitude)
     voltage_probe = line.add_probe(position=0.0, conductor= 0, type='voltage')
     
