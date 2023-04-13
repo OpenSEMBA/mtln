@@ -200,19 +200,25 @@ def test_pcb_paul_9_3_2():
     Zs[:] = [50,50]
     Zl[:] = [50,50]
 
-    line = mtln.MTL(l=l, c= c, length=0.254, nx = 100, Zs = Zs, Zl = Zl)
-    finalTime = 200e-9
+    line = mtln.MTL(l=l, c= c, length=0.254, nx = 2, Zs = Zs, Zl = Zl)
+    finalTime = 40e-9
 
-    magnitude = lambda t: wf.trapezoidal_pulse(t, A = 1, rise_time=1e-9, fall_time=1e-9, f0=1e6, D=0.5)
+    magnitude = lambda t: wf.trapezoidal_pulse(t, A = 1, rise_time=6.25e-9, fall_time=6.25e-9, f0=1e6, D=0.5)
     line.add_voltage_source(position=0.0, conductor=1, magnitude=magnitude)
     voltage_probe = line.add_probe(position=0.0, conductor= 0, type='voltage')
     
     for t in line.get_time_range(finalTime):
         line.step()
 
-    plt.plot(1e9*voltage_probe.t, 1e3*voltage_probe.v)
-    plt.ylabel(r'$V_1 (0, t)\,[mV]$')
-    plt.xlabel(r'$t\,[\mu s]$')
-    plt.xticks(range(0, 200 ,50))
-    plt.grid('both')
-    plt.show()
+    # plt.plot(1e9*voltage_probe.t, 1e3*voltage_probe.v)
+    # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+    # plt.xlabel(r'$t\,[\mu s]$')
+    # plt.xticks(range(0, 40 ,10))
+    # plt.grid('both')
+    # plt.show()
+
+    times = [2.5, 11, 15, 25]
+    voltages =   [50, 50, 24, 5]
+    for (t, v) in zip(times,voltages):
+        index = np.argmin(np.abs(voltage_probe.t - t*1e-9))
+        assert np.all(np.isclose(voltage_probe.v[index], v*1e-3, atol=1.0))
