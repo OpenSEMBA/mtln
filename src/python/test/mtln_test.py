@@ -1,8 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-
-
 import scipy as sci
 from scipy.constants import epsilon_0, mu_0, speed_of_light
 
@@ -27,7 +25,6 @@ def test_trapezoidal_pulse():
     # assert (magnitude(1.1*rise_time) == A)
     # assert (magnitude(rise_time + plateu_duration + 0.5*fall_time) == 0.5*A)
     
-
 def test_get_phase_velocities():
     v = mtln.MTL(l=0.25e-6, c=100e-12).get_phase_velocities()
     assert v.shape == (1,)
@@ -144,12 +141,16 @@ def test_ribbon_cable_20ns_paul_9_3():
     for t in line.get_time_range(finalTime):
         line.step()
 
-    plt.plot(1e9*voltage_probe.t, 1e3*voltage_probe.v)
-    plt.ylabel(r'$V_1 (0, t)\,[mV]$')
-    plt.xlabel(r'$t\,[\mu s]$')
-    plt.xticks(range(0, 200 ,50))
-    plt.grid('both')
-    plt.show()
+    # plt.plot(1e9*voltage_probe.t, 1e3*voltage_probe.v)
+    # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+    # plt.xlabel(r'$t\,[\mu s]$')
+    # plt.xticks(range(0, 200 ,50))
+    # plt.grid('both')
+    # plt.show()
+
+    # From Paul's book: 
+    # "The crosstalk waveform rises to a peak of around 110 mV [...]"
+    assert(np.isclose(np.max(voltage_probe.v), 113e-3, atol=1e-3))
 
 def test_ribbon_cable_1ns_paul_9_3():
     """
