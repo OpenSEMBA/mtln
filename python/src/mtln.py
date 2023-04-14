@@ -65,6 +65,9 @@ class MTL:
         
         dx = self.x[1] - self.x[0]
 
+        self.v_term = np.eye(self.number_of_conductors)
+        self.i_term = np.eye(self.number_of_conductors)
+
         self.i_diff = self.timestep / dx * np.linalg.inv(self.c)
         self.v_diff = self.timestep / dx * np.linalg.inv(self.l)
 
@@ -127,12 +130,12 @@ class MTL:
         self.v[:,0] = self.left_port_term_1.dot(self.v[:,0]) + \
                         self.left_port_term_2.dot(-2*np.matmul(self.zs,self.i[:,0])+(v_sources_curr[:,0] + v_sources_prev[:,0]))
         
-        self.v[:,1:-1] -= self.i_diff.dot(self.i[:,1:]-self.i[:,:-1])
+        self.v[:,1:-1] = self.v_term.dot(self.v[:,1:-1])- self.i_diff.dot(self.i[:,1:]-self.i[:,:-1])
         
         self.v[:,-1] = self.right_port_term_1.dot(self.v[:,-1]) + \
                         self.right_port_term_2.dot(+2*np.matmul(self.zl,self.i[:,-1])+(v_sources_curr[:,-1] + v_sources_prev[:,-1]))
 
-        self.i[:,:] -= self.v_diff.dot(self.v[:,1:]-self.v[:,:-1])
+        self.i[:,:] = self.i_term.dot(self.i[:,:]) - self.v_diff.dot(self.v[:,1:]-self.v[:,:-1])
 
         self.time += self.timestep
         self.update_probes()
@@ -166,6 +169,10 @@ class MTL_losses(MTL):
             raise ValueError("Invalid input G and/or R")
 
         dx = self.x[1] - self.x[0]
+        
+        self.v_term = np.linalg.inv((dx/self.timestep)*self.c + (dx/2)*self.g).dot((dx/self.timestep)*self.c - (dx/2)*self.g)
+        self.i_term = np.linalg.inv((dx/self.timestep)*self.l + (dx/2)*self.r).dot((dx/self.timestep)*self.l - (dx/2)*self.r)
+        
         self.i_diff = np.linalg.inv((dx/self.timestep)*self.c + (dx/2)*self.g)
         self.v_diff = np.linalg.inv((dx/self.timestep)*self.l + (dx/2)*self.r)
 
