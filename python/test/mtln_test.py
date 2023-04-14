@@ -32,13 +32,13 @@ def test_get_phase_velocities():
 def test_coaxial_line_initial_voltage():
     line = mtln.MTL(l=0.25e-6, c= 100e-12, length=400)
     line.set_voltage(0, lambda x: wf.gaussian(x, 200, 50))
-    voltage_probe = line.add_probe(position=200, conductor=0, type= 'voltage')
+    v_probe = line.add_probe(position=200, conductor=0, type= 'voltage')
 
     finalTime = 10e-6
     for t in line.get_time_range(finalTime):
         line.step()
 
-    plt.plot(voltage_probe.t, voltage_probe.v)    
+    plt.plot(v_probe.t, v_probe.val)    
     plt.show()
     # assert
 
@@ -53,34 +53,34 @@ def test_coaxial_line_paul_8_6_square():
 
     magnitude = lambda t: wf.square_pulse(t, 100, 6e-6)
     line.add_voltage_source(position=0.0, conductor=0, magnitude=magnitude)
-    voltage_probe = line.add_probe(position=0.0, conductor=0, type='voltage')
-    current_probe = line.add_probe(position=400.0,conductor=0, type='current')
+    v_probe = line.add_probe(position=0.0, conductor=0, type='voltage')
+    i_probe = line.add_probe(position=400.0,conductor=0, type='current')
     
     for t in line.get_time_range(finalTime):
         line.step()
 
-    # xticks = range(int(np.floor(min(1e6*current_probe.t))), int(np.ceil(max(1e6*current_probe.t))+1))
+    xticks = range(int(np.floor(min(1e6*i_probe.t))), int(np.ceil(max(1e6*i_probe.t))+1))
 
-    # plt.plot(1e6*voltage_probe.t, voltage_probe.v)
-    # plt.ylabel(r'$V (0, t)\,[V]$')
-    # plt.xlabel(r'$t\,[\mu s]$')
-    # plt.grid('both')
-    # plt.show()
+    plt.plot(1e6*v_probe.t, v_probe.val)
+    plt.ylabel(r'$V (0, t)\,[V]$')
+    plt.xlabel(r'$t\,[\mu s]$')
+    plt.grid('both')
+    plt.show()
     
-    # plt.plot(1e6*current_probe.t, current_probe.i)
-    # plt.ylabel(r'$I (L, t)\,[A]$')
-    # plt.xlabel(r'$t\,[\mu s]$')
-    # plt.xticks(xticks)
-    # plt.grid('both')
-    # plt.show()
+    plt.plot(1e6*i_probe.t, i_probe.val)
+    plt.ylabel(r'$I (L, t)\,[A]$')
+    plt.xlabel(r'$t\,[\mu s]$')
+    plt.xticks(xticks)
+    plt.grid('both')
+    plt.show()
     
     start_times = [0.1, 4.1, 6.1, 8.1, 10.1, 12.1, 14.1, 16.1]
     end_times =   [3.9, 5.9, 7.9, 9.9, 11.9, 13.9, 15.9, 18.9]
     check_voltages = [25, -12.5, -37.5, -18.75, 18.75, 9.375, -9.375, -4.6875]
     for (t_start, t_end, v) in zip(start_times, end_times, check_voltages):
-        start = np.argmin(np.abs(voltage_probe.t - t_start*1e-6))
-        end   = np.argmin(np.abs(voltage_probe.t - t_end*1e-6))
-        assert np.all(np.isclose(voltage_probe.v[start:end], v))
+        start = np.argmin(np.abs(v_probe.t - t_start*1e-6))
+        end   = np.argmin(np.abs(v_probe.t - t_end*1e-6))
+        assert np.all(np.isclose(v_probe.val[start:end], v))
 
 def test_coaxial_line_paul_8_6_triangle():
     """ 
@@ -93,14 +93,14 @@ def test_coaxial_line_paul_8_6_triangle():
 
     magnitude = lambda t: wf.triangle_pulse(t, 100, 6e-6)
     line.add_voltage_source(position=0.0, conductor=0, magnitude=magnitude)
-    voltage_probe = line.add_probe(position=0.0, conductor=0, type='voltage')
+    v_probe = line.add_probe(position=0.0, conductor=0, type='voltage')
     
     for t in line.get_time_range(finalTime):
         line.step()
 
-    # xticks = range(int(np.floor(min(1e6*voltage_probe.t))), int(np.ceil(max(1e6*voltage_probe.t))+1))
+    # xticks = range(int(np.floor(min(1e6*v_probe.t))), int(np.ceil(max(1e6*v_probe.t))+1))
 
-    # plt.plot(1e6*voltage_probe.t, voltage_probe.v)
+    # plt.plot(1e6*v_probe.t, v_probe.val)
     # plt.ylabel(r'$V (0, t)\,[V]$')
     # plt.xlabel(r'$t\,[\mu s]$')
     # plt.grid('both')
@@ -109,8 +109,8 @@ def test_coaxial_line_paul_8_6_triangle():
     times = [4.0, 5.9, 6.1, 8.0, 10.1, 12]
     voltages =   [16.67, 12.5, -12.5, -25, 6.25, 12.5]
     for (t, v) in zip(times,voltages):
-        index = np.argmin(np.abs(voltage_probe.t - t*1e-6))
-        assert np.all(np.isclose(voltage_probe.v[index], v, atol=0.5))
+        index = np.argmin(np.abs(v_probe.t - t*1e-6))
+        assert np.all(np.isclose(v_probe.val[index], v, atol=0.5))
 
 
 
@@ -135,12 +135,12 @@ def test_ribbon_cable_20ns_paul_9_3():
 
     magnitude = lambda t: wf.trapezoidal_wave(t, A = 1, rise_time=20e-9, fall_time=20e-9, f0=1e6, D=0.5)
     line.add_voltage_source(position=0.0, conductor=1, magnitude=magnitude)
-    voltage_probe = line.add_probe(position=0.0, conductor= 0, type='voltage')
+    v_probe = line.add_probe(position=0.0, conductor= 0, type='voltage')
     
     for t in line.get_time_range(finalTime):
         line.step()
 
-    # plt.plot(1e9*voltage_probe.t, 1e3*voltage_probe.v)
+    # plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
     # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
     # plt.xlabel(r'$t\,[\mu s]$')
     # plt.xticks(range(0, 200 ,50))
@@ -149,7 +149,7 @@ def test_ribbon_cable_20ns_paul_9_3():
 
     # From Paul's book: 
     # "The crosstalk waveform rises to a peak of around 110 mV [...]"
-    assert(np.isclose(np.max(voltage_probe.v), 113e-3, atol=1e-3))
+    assert(np.isclose(np.max(v_probe.val), 113e-3, atol=1e-3))
 
 def test_ribbon_cable_1ns_paul_9_3():
     """
@@ -172,12 +172,12 @@ def test_ribbon_cable_1ns_paul_9_3():
 
     magnitude = lambda t: wf.trapezoidal_wave(t, A = 1, rise_time=1e-9, fall_time=1e-9, f0=1e6, D=0.5)
     line.add_voltage_source(position=0.0, conductor=1, magnitude=magnitude)
-    voltage_probe = line.add_probe(position=0.0, conductor= 0, type='voltage')
+    v_probe = line.add_probe(position=0.0, conductor= 0, type='voltage')
     
     for t in line.get_time_range(finalTime):
         line.step()
 
-    plt.plot(1e9*voltage_probe.t, 1e3*voltage_probe.v)
+    plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
     plt.ylabel(r'$V_1 (0, t)\,[mV]$')
     plt.xlabel(r'$t\,[\mu s]$')
     plt.xticks(range(0, 200 ,50))
@@ -205,12 +205,12 @@ def test_pcb_paul_9_3_2():
 
     magnitude = lambda t: wf.trapezoidal_wave(t, A = 1, rise_time=6.25e-9, fall_time=6.25e-9, f0=1e6, D=0.5)
     line.add_voltage_source(position=0.0, conductor=1, magnitude=magnitude)
-    voltage_probe = line.add_probe(position=0.0, conductor= 0, type='voltage')
+    v_probe = line.add_probe(position=0.0, conductor= 0, type='voltage')
     
     for t in line.get_time_range(finalTime):
         line.step()
 
-    plt.plot(1e9*voltage_probe.t, 1e3*voltage_probe.v)
+    plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
     plt.ylabel(r'$V_1 (0, t)\,[mV]$')
     plt.xlabel(r'$t\,[\mu s]$')
     plt.xticks(range(0, 200 ,50))
@@ -221,18 +221,51 @@ def test_extract_skrf_network():
     import skrf as rf
     from skrf.media import DistributedCircuit
     
+    fMin = 0.01e6
+    fMax = 1e6
+    
     L0 = 0.25e-6
     C0 = 100e-12
     length = 400.0
     Zs = 150
 
-    fq = rf.Frequency(0.01, 1, 101, 'MHz')
     
+    finalTime = 50e-6
+    line = mtln.MTL(l=L0, c=C0, length=length, Zs=Zs, nx=100)
+    magnitude = lambda t: wf.gaussian(t, 3e-6, 0.5e-6)
+    vs_probe = line.add_voltage_source(position=0.0, conductor=0, magnitude=magnitude)
+    v1_probe = line.add_probe(position=0.0, conductor=0, type='voltage')
+    v2_probe = line.add_probe(position=4.0, conductor=0, type='voltage')
+    i_probe = line.add_probe(position=0.0, conductor=0, type='current at terminal')
+    for t in line.get_time_range(finalTime):
+        line.step()
+
+    from numpy.fft import fft, fftfreq, fftshift
+    dt = v1_probe.t[1] - v1_probe.t[0]
+    f = fftshift(fftfreq(len(v1_probe.t), dt))
+    v1_fft =   fftshift(fft(v1_probe.val))
+    v2_fft =   fftshift(fft(v2_probe.val))
+    vs_fft =   fftshift(fft(vs_probe.val))
+    i_fft =   fftshift(fft(i_probe.val))
+    z11 = vs_fft / i_fft
+    z0 = 50.0
+    s11 = (z11-z0)/(z11+z0)
+
+    plt.figure()
+    fq = rf.Frequency.from_f(f[f>0], unit='Hz')
     media = DistributedCircuit(fq, C=C0, L=L0)
-    skrf_tl = media.resistor(Zs) ** media.line(length, 'm') ** media.short()
+    skrf_tl = media.line(length, 'm', name='line') ** media.short()
+    skrf_tl.plot_s_mag(label='skrf')
     
-    line = mtln.MTL(l=L0, c=C0, length=length, Zs=Zs)
-    
+    plt.plot(f, np.abs(s11), label='mtln')
+    plt.xlim(fMin, fMax)
+    plt.ylim(0, 1.5)
+    plt.grid()
+    plt.legend()
+
+    plt.show()
+
+
     # assert False
 
 def test_cables_panel_experimental_comparison():
