@@ -217,56 +217,52 @@ def test_pcb_paul_9_3_2():
     plt.grid('both')
     plt.show()
 
-def test_extract_skrf_network():
-    import skrf as rf
-    from skrf.media import DistributedCircuit
-    
-    fMin = 0.01e6
-    fMax = 1e6
-    
+def test_extract_skrf_network_no_load():
+   
     L0 = 0.25e-6
     C0 = 100e-12
     length = 400.0
-    Zs = 150
+    Zs = 150.0
+    Zl = 0.0
 
-    
-    finalTime = 50e-6
-    line = mtln.MTL(l=L0, c=C0, length=length, Zs=Zs, nx=100)
-    magnitude = lambda t: wf.gaussian(t, 3e-6, 0.5e-6)
-    vs_probe = line.add_voltage_source(position=0.0, conductor=0, magnitude=magnitude)
-    v1_probe = line.add_probe(position=0.0, conductor=0, type='voltage')
-    v2_probe = line.add_probe(position=4.0, conductor=0, type='voltage')
-    i_probe = line.add_probe(position=0.0, conductor=0, type='current at terminal')
-    for t in line.get_time_range(finalTime):
-        line.step()
+    line = mtln.MTL(l=L0, c=C0, length=length, Zs=Zs, Zl=Zl)
+    line_ntw = line.extract_network()
 
-    from numpy.fft import fft, fftfreq, fftshift
-    dt = v1_probe.t[1] - v1_probe.t[0]
-    f = fftshift(fftfreq(len(v1_probe.t), dt))
-    v1_fft =   fftshift(fft(v1_probe.val))
-    v2_fft =   fftshift(fft(v2_probe.val))
-    vs_fft =   fftshift(fft(vs_probe.val))
-    i_fft =   fftshift(fft(i_probe.val))
-    z11 = vs_fft / i_fft
-    z0 = 50.0
-    s11 = (z11-z0)/(z11+z0)
-
-    plt.figure()
-    fq = rf.Frequency.from_f(f[f>0], unit='Hz')
-    media = DistributedCircuit(fq, C=C0, L=L0)
+    from skrf.media import DistributedCircuit    
+    media = DistributedCircuit(line_ntw.frequency, C=C0, L=L0)
     skrf_tl = media.line(length, 'm', name='line') ** media.short()
-    skrf_tl.plot_s_mag(label='skrf')
     
-    plt.plot(f, np.abs(s11), label='mtln')
-    plt.xlim(fMin, fMax)
-    plt.ylim(0, 1.5)
+    # skrf_tl.plot_s_mag(label='skrf')
+    # line_ntw.plot_s_mag(label='mtl')    
+    # plt.grid()
+    # plt.legend()
+    # plt.show()
+    
+    assert np.allclose(np.abs(skrf_tl.s), np.abs(line_ntw.s))
+
+def test_extract_skrf_network_150ohm_load():
+   
+    L0 = 0.25e-6
+    C0 = 100e-12
+    length = 400.0
+    Zs = 150.0
+    Zl = 150.0
+
+    line = mtln.MTL(l=L0, c=C0, length=length, Zs=Zs, Zl=Zl)
+    line_ntw = line.extract_network()
+
+    from skrf.media import DistributedCircuit    
+    media = DistributedCircuit(line_ntw.frequency, C=C0, L=L0)
+    skrf_tl = media.line(length, 'm', name='line') ** media.resistor(Zl) ** media.short()
+    
+    skrf_tl.plot_s_mag(label='skrf')
+    line_ntw.plot_s_mag(label='mtl')    
     plt.grid()
     plt.legend()
-
     plt.show()
+    
+    assert np.allclose(np.abs(skrf_tl.s), np.abs(line_ntw.s))
 
-
-    # assert False
 
 def test_cables_panel_experimental_comparison():
     assert False

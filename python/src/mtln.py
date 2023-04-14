@@ -1,5 +1,8 @@
 import numpy as np
 
+import skrf as rf
+
+from numpy.fft import fft, fftfreq, fftshift
 
 class Probe:
     def __init__(self, position, conductor, type):
@@ -63,42 +66,40 @@ class MTL:
             shape=(self.number_of_conductors, self.x.shape[0]), dtype=object)
         self.v_sources.fill(lambda n: 0)
 
-        self.timestep = self.get_max_timestep()
         self.time = 0.0
 
-        dx = self.x[1] - self.x[0]
+        self.dx = self.x[1] - self.x[0]
+        self.dt = self.get_max_timestep()
 
         self.v_term = np.eye(self.number_of_conductors)
         self.i_term = np.eye(self.number_of_conductors)
 
-        self.i_diff = self.timestep / dx * np.linalg.inv(self.c)
-        self.v_diff = self.timestep / dx * np.linalg.inv(self.l)
+        self.i_diff = self.dt / self.dx * np.linalg.inv(self.c)
+        self.v_diff = self.dt / self.dx * np.linalg.inv(self.l)
 
         left_port_c = np.matmul(self.zs, self.c)
         right_port_c = np.matmul(self.zl, self.c)
 
         self.left_port_term_1 = np.matmul(
-            np.linalg.inv(dx*left_port_c/self.timestep +
-                          np.eye(self.number_of_conductors)),
-            dx*left_port_c/self.timestep-np.eye(self.number_of_conductors))
+            np.linalg.inv(self.dx*left_port_c/self.dt + np.eye(self.number_of_conductors)),
+            self.dx*left_port_c/self.dt-np.eye(self.number_of_conductors))
 
         self.left_port_term_2 = np.linalg.inv(
-            dx*left_port_c/self.timestep+np.eye(self.number_of_conductors))
+            self.dx*left_port_c/self.dt+np.eye(self.number_of_conductors))
 
         self.right_port_term_1 = np.matmul(
-            np.linalg.inv(dx*right_port_c/self.timestep +
+            np.linalg.inv(self.dx*right_port_c/self.dt +
                           np.eye(self.number_of_conductors)),
-            dx*right_port_c/self.timestep-np.eye(self.number_of_conductors))
+            self.dx*right_port_c/self.dt-np.eye(self.number_of_conductors))
 
         self.right_port_term_2 = np.linalg.inv(
-            dx*right_port_c/self.timestep+np.eye(self.number_of_conductors))
+            self.dx*right_port_c/self.dt+np.eye(self.number_of_conductors))
 
     def get_phase_velocities(self):
         return 1/np.sqrt(np.diag(self.l.dot(self.c)))
 
     def get_max_timestep(self):
-        dx = self.x[1] - self.x[0]
-        return dx / np.max(self.get_phase_velocities())
+        return self.dx / np.max(self.get_phase_velocities())
 
     def get_time_range(self, final_time):
         return np.arange(0, np.floor(final_time / self.get_max_timestep()))
@@ -108,16 +109,18 @@ class MTL:
 
     def update_probes(self):
         for probe in self.probes:
-            probe.t = np.append(probe.t, self.time)
             index = np.argmin(np.abs(self.x - probe.position))
             if probe.type == "voltage":
+                probe.t = np.append(probe.t, self.time)
                 probe.val = np.append(probe.val, self.v[probe.conductor, index])
             elif probe.type == "current":
+                probe.t = np.append(probe.t, self.time + self.dt/2.0)
                 if index == self.i.shape[1]:
                     probe.val = np.append(probe.val, self.i[probe.conductor, index-1])
                 else:
                     probe.val = np.append(probe.val, self.i[probe.conductor, index])
             elif probe.type == "current at terminal":
+                probe.t = np.append(probe.t, self.time)
                 vs = self.v_sources[probe.conductor,index](self.time)
                 v1 = self.v[probe.conductor, index]
                 if index == 0:
@@ -126,8 +129,6 @@ class MTL:
                     Gs = 1/self.zl[probe.conductor]
                     
                 Is = -Gs*v1 + Gs*vs
-                # I1 = self.i[probe.conductor,0]
-                # I_terminal = (Is + I1)/2
                 probe.val = np.append(probe.val, Is)
             else:
                 raise ValueError("undefined probe")
@@ -143,7 +144,7 @@ class MTL:
     def step(self):
 
         v_sources_curr = self.eval_v_sources(self.time)
-        v_sources_prev = self.eval_v_sources(self.time - self.timestep)
+        v_sources_prev = self.eval_v_sources(self.time - self.dt)
 
         self.v[:, 0] = self.left_port_term_1.dot(self.v[:, 0]) + \
             self.left_port_term_2.dot(-2*np.matmul(self.zs, self.i[:, 0])+(
@@ -159,7 +160,7 @@ class MTL:
         self.i[:, :] = self.i_term.dot(
             self.i[:, :]) - self.v_diff.dot(self.v[:, 1:]-self.v[:, :-1])
 
-        self.time += self.timestep
+        self.time += self.dt
         self.update_probes()
 
     def add_voltage_source(self, position: float, conductor: int, magnitude):
@@ -178,6 +179,48 @@ class MTL:
         probe = Probe(position, conductor, type)
         self.probes.append(probe)
         return probe
+    
+    def extract_network(self):
+
+        finalTime = 250e-6
+        fMin = 0.01e6
+        fMax = 1e6
+
+        import copy
+        line = copy.deepcopy(self)
+
+        def gaussian(x, x0, s0):
+            return np.exp( - (x-x0)**2 / (2*s0**2) )
+        
+        magnitude = lambda t: gaussian(t, 3e-6, 0.5e-6)
+        v1_probe = line.add_probe(position=0.0, conductor=0, type='voltage')
+        v2_probe = line.add_probe(position=4.0, conductor=0, type='voltage')
+        i1_probe = line.add_probe(position=2.0, conductor=0, type='current')
+        line.add_voltage_source(position=0.0, conductor=0, magnitude=magnitude)
+        
+        for _ in line.get_time_range(finalTime):
+            line.step()
+
+        dt = v1_probe.t[1] - v1_probe.t[0]
+        f = fftshift(fftfreq(len(v1_probe.t), dt))
+        v1_fft =   fftshift(fft(v1_probe.val))
+        v2_fft =   fftshift(fft(v2_probe.val))
+
+        tAux = np.append(- line.dt/2.0, i1_probe.t)
+        i1_probe.t = (tAux[:-1] + tAux[1:]) / 2.0
+        valAux = np.append(i1_probe.val[0], i1_probe.val)
+        i1_probe.val = (valAux[:-1] + valAux[1:]) / 2.0
+        i1_fft = fftshift(fft(i1_probe.val))
+        z11_fft = (v1_fft + v2_fft) / 2.0 / i1_fft
+
+        fq = rf.Frequency.from_f(f[(f>=fMin) & (f<fMax)], unit='Hz')
+        
+        z11 = np.zeros((len(fq.f), 1, 1), dtype="complex64")
+        z11[:,0,0] = z11_fft[(f>=fMin) & (f<fMax)]
+        mtl_rf = rf.Network.from_z(z11)
+        mtl_rf.frequency = fq
+
+        return mtl_rf
 
 
 class MTL_losses(MTL):
@@ -195,28 +238,31 @@ class MTL_losses(MTL):
         else:
             raise ValueError("Invalid input G and/or R")
 
-        dx = self.x[1] - self.x[0]
+        dx = self.dx
 
         self.v_term = np.linalg.inv(
-            (dx/self.timestep)*self.c + (dx/2)*self.g).dot((dx/self.timestep)*self.c - (dx/2)*self.g)
+            (dx/self.dt)*self.c + (dx/2)*self.g).dot((dx/self.dt)*self.c - (dx/2)*self.g)
         self.i_term = np.linalg.inv(
-            (dx/self.timestep)*self.l + (dx/2)*self.r).dot((dx/self.timestep)*self.l - (dx/2)*self.r)
+            (dx/self.dt)*self.l + (dx/2)*self.r).dot((dx/self.dt)*self.l - (dx/2)*self.r)
 
-        self.i_diff = np.linalg.inv((dx/self.timestep)*self.c + (dx/2)*self.g)
-        self.v_diff = np.linalg.inv((dx/self.timestep)*self.l + (dx/2)*self.r)
+        self.i_diff = np.linalg.inv((dx/self.dt)*self.c + (dx/2)*self.g)
+        self.v_diff = np.linalg.inv((dx/self.dt)*self.l + (dx/2)*self.r)
 
         self.left_port_term_1 = np.matmul(
-            np.linalg.inv(dx*(np.matmul(self.zs, self.c))/self.timestep + dx *
+            np.linalg.inv(dx*(np.matmul(self.zs, self.c))/self.dt + dx *
                           (np.matmul(self.zs, self.g))/2 + np.eye(self.number_of_conductors)),
-            dx*(np.matmul(self.zs, self.c))/self.timestep - dx*(np.matmul(self.zs, self.g))/2 - np.eye(self.number_of_conductors))
+            dx*(np.matmul(self.zs, self.c))/self.dt - dx*(np.matmul(self.zs, self.g))/2 - np.eye(self.number_of_conductors))
 
-        self.left_port_term_2 = np.linalg.inv(dx*(np.matmul(self.zs, self.c))/self.timestep + dx*(
+        self.left_port_term_2 = np.linalg.inv(dx*(np.matmul(self.zs, self.c))/self.dt + dx*(
             np.matmul(self.zs, self.g))/2 + np.eye(self.number_of_conductors))
 
         self.right_port_term_1 = np.matmul(
-            np.linalg.inv(dx*(np.matmul(self.zl, self.c))/self.timestep + dx *
+            np.linalg.inv(dx*(np.matmul(self.zl, self.c))/self.dt + dx *
                           (np.matmul(self.zl, self.g))/2 + np.eye(self.number_of_conductors)),
-            dx*(np.matmul(self.zl, self.c))/self.timestep - dx*(np.matmul(self.zl, self.g))/2 - np.eye(self.number_of_conductors))
+            dx*(np.matmul(self.zl, self.c))/self.dt - dx*(np.matmul(self.zl, self.g))/2 - np.eye(self.number_of_conductors))
 
-        self.right_port_term_2 = np.linalg.inv(dx*(np.matmul(self.zl, self.c))/self.timestep + dx*(
+        self.right_port_term_2 = np.linalg.inv(dx*(np.matmul(self.zl, self.c))/self.dt + dx*(
             np.matmul(self.zl, self.g))/2 + np.eye(self.number_of_conductors))
+
+
+
