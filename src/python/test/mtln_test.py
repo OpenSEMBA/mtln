@@ -217,3 +217,24 @@ def test_pcb_paul_9_3_2():
     plt.xticks(range(0, 200 ,50))
     plt.grid('both')
     plt.show()
+
+def test_extract_skrf_network():
+    import skrf as rf
+    from skrf.media import DistributedCircuit
+    
+    L0 = 0.25e-6
+    C0 = 100e-12
+    length = 400.0
+    Zs = 150
+
+    fq = rf.Frequency(0.01, 1, 101, 'MHz')
+    
+    media = DistributedCircuit(fq, C=C0, L=L0)
+    skrf_tl = media.resistor(Zs) ** media.line(length, 'm') ** media.short()
+    
+    line = mtln.MTL(l=L0, c=C0, length=length, Zs=Zs)
+    
+    # assert False
+
+def test_cables_panel_experimental_comparison():
+    assert False
