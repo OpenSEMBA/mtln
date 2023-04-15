@@ -8,6 +8,9 @@ import src.mtln as mtln
 
 import src.waveforms as wf
 
+from skrf.media import DistributedCircuit    
+    
+
 def test_trapezoidal_pulse():
     A = 1
     rise_time = 10e-9
@@ -217,7 +220,7 @@ def test_pcb_paul_9_3_2():
     plt.grid('both')
     plt.show()
 
-def test_extract_skrf_network_no_load():
+def test_extract_network_paul_8_6_no_load():
    
     L0 = 0.25e-6
     C0 = 100e-12
@@ -226,21 +229,28 @@ def test_extract_skrf_network_no_load():
     Zl = 0.0
 
     line = mtln.MTL(l=L0, c=C0, length=length, Zs=Zs, Zl=Zl)
-    line_ntw = line.extract_network()
+    line_ntw = line.extract_network(fMin = 0.01e6, fMax = 1e6, finalTime = 250e-6)
 
-    from skrf.media import DistributedCircuit    
     media = DistributedCircuit(line_ntw.frequency, C=C0, L=L0)
-    skrf_tl = media.line(length, 'm', name='line') ** media.short()
+    skrf_tl = media.line(length-line.dx/2, 'm', name='line') ** media.short()
     
+    assert np.allclose(np.abs(skrf_tl.s), np.abs(line_ntw.s))
+    assert np.allclose(np.angle(skrf_tl.s), np.angle(line_ntw.s))
+
     # skrf_tl.plot_s_mag(label='skrf')
     # line_ntw.plot_s_mag(label='mtl')    
     # plt.grid()
     # plt.legend()
+    
+    # plt.figure()
+    # skrf_tl.plot_s_deg(label='skrf')
+    # line_ntw.plot_s_deg(label='mtl')    
+    # plt.grid()
+    # plt.legend()
+    
     # plt.show()
     
-    assert np.allclose(np.abs(skrf_tl.s), np.abs(line_ntw.s))
-
-def test_extract_skrf_network_150ohm_load():
+def test_extract_network_paul_8_6_150ohm_load():
    
     L0 = 0.25e-6
     C0 = 100e-12
@@ -249,20 +259,29 @@ def test_extract_skrf_network_150ohm_load():
     Zl = 150.0
 
     line = mtln.MTL(l=L0, c=C0, length=length, Zs=Zs, Zl=Zl)
-    line_ntw = line.extract_network()
+    line_ntw = line.extract_network(fMin = 0.01e6, fMax = 1e6, finalTime = 250e-6)
 
-    from skrf.media import DistributedCircuit    
     media = DistributedCircuit(line_ntw.frequency, C=C0, L=L0)
-    skrf_tl = media.line(length, 'm', name='line') ** media.resistor(Zl) ** media.short()
-    
-    skrf_tl.plot_s_mag(label='skrf')
-    line_ntw.plot_s_mag(label='mtl')    
-    plt.grid()
-    plt.legend()
-    plt.show()
+    skrf_tl = \
+        media.line(length - line.dx/2.0, 'm', name='line') \
+        ** media.resistor(Zl) ** media.short()
     
     assert np.allclose(np.abs(skrf_tl.s), np.abs(line_ntw.s))
+    assert np.allclose(np.angle(skrf_tl.s), np.angle(line_ntw.s))
 
+    # skrf_tl.plot_s_mag(label='skrf')
+    # line_ntw.plot_s_mag(label='mtl')    
+    # plt.grid()
+    # plt.legend()
+    
+    # plt.figure()
+    # skrf_tl.plot_s_deg(label='skrf')
+    # line_ntw.plot_s_deg(label='mtl')    
+    # plt.grid()
+    # plt.legend()
+    
+    # plt.show()
+        
 
 def test_cables_panel_experimental_comparison():
     assert False

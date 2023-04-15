@@ -1,8 +1,9 @@
 import numpy as np
-
 import skrf as rf
 
+from copy import deepcopy
 from numpy.fft import fft, fftfreq, fftshift
+
 
 class Probe:
     def __init__(self, position, conductor, type):
@@ -12,7 +13,26 @@ class Probe:
         self.t = np.array([])
         self.val = np.array([])
 
-        return
+class PortProbe:
+    def __init__(self, v0: Probe, v1: Probe, i0: Probe):
+        self.v0 = v0
+        self.v1 = v1
+        self.i0 = i0
+
+    def extract_z(self):
+        dt = self.v1.t[1] - self.v0.t[0]
+        f = fftshift(fftfreq(len(self.v0.t), dt))
+        v0_fft = fftshift(fft(self.v0.val))
+        v1_fft = fftshift(fft(self.v1.val))
+
+        tAux = np.append(- dt/2.0, self.i0.t)
+        self.i0.t = (tAux[:-1] + tAux[1:]) / 2.0
+        valAux = np.append(self.i0.val[0], self.i0.val)
+        self.i0.val = (valAux[:-1] + valAux[1:]) / 2.0
+        i0_fft = fftshift(fft(self.i0.val))
+        z11_fft = (v0_fft + v1_fft) / 2.0 / i0_fft
+        
+        return f, z11_fft
 
 
 class MTL:
@@ -62,6 +82,7 @@ class MTL:
         self.i = np.zeros([self.number_of_conductors, self.x.shape[0]-1])
 
         self.probes = []
+        self.port_probes = []
         self.v_sources = np.empty(
             shape=(self.number_of_conductors, self.x.shape[0]), dtype=object)
         self.v_sources.fill(lambda n: 0)
@@ -81,7 +102,8 @@ class MTL:
         right_port_c = np.matmul(self.zl, self.c)
 
         self.left_port_term_1 = np.matmul(
-            np.linalg.inv(self.dx*left_port_c/self.dt + np.eye(self.number_of_conductors)),
+            np.linalg.inv(self.dx*left_port_c/self.dt +
+                          np.eye(self.number_of_conductors)),
             self.dx*left_port_c/self.dt-np.eye(self.number_of_conductors))
 
         self.left_port_term_2 = np.linalg.inv(
@@ -112,22 +134,25 @@ class MTL:
             index = np.argmin(np.abs(self.x - probe.position))
             if probe.type == "voltage":
                 probe.t = np.append(probe.t, self.time)
-                probe.val = np.append(probe.val, self.v[probe.conductor, index])
+                probe.val = np.append(
+                    probe.val, self.v[probe.conductor, index])
             elif probe.type == "current":
                 probe.t = np.append(probe.t, self.time + self.dt/2.0)
                 if index == self.i.shape[1]:
-                    probe.val = np.append(probe.val, self.i[probe.conductor, index-1])
+                    probe.val = np.append(
+                        probe.val, self.i[probe.conductor, index-1])
                 else:
-                    probe.val = np.append(probe.val, self.i[probe.conductor, index])
+                    probe.val = np.append(
+                        probe.val, self.i[probe.conductor, index])
             elif probe.type == "current at terminal":
                 probe.t = np.append(probe.t, self.time)
-                vs = self.v_sources[probe.conductor,index](self.time)
+                vs = self.v_sources[probe.conductor, index](self.time)
                 v1 = self.v[probe.conductor, index]
                 if index == 0:
                     Gs = 1/self.zs[probe.conductor]
                 else:
                     Gs = 1/self.zl[probe.conductor]
-                    
+
                 Is = -Gs*v1 + Gs*vs
                 probe.val = np.append(probe.val, Is)
             else:
@@ -174,53 +199,55 @@ class MTL:
             raise ValueError("Probe position is out of MTL length.")
         if (type == "current at terminal"):
             if (position != 0.0) and (position != self.x[-1]):
-                raise ValueError("Current at terminal probe must be on and end of the MTL.")
+                raise ValueError(
+                    "Current at terminal probe must be on and end of the MTL.")
 
         probe = Probe(position, conductor, type)
         self.probes.append(probe)
         return probe
-    
-    def extract_network(self):
 
-        finalTime = 250e-6
-        fMin = 0.01e6
-        fMax = 1e6
-
-        import copy
-        line = copy.deepcopy(self)
-
-        def gaussian(x, x0, s0):
-            return np.exp( - (x-x0)**2 / (2*s0**2) )
+    def add_port_probe(self, terminal, conductor):
+        if terminal == 0:
+            x0 = self.x[0]
+            x1 = self.x[1]
         
-        magnitude = lambda t: gaussian(t, 3e-6, 0.5e-6)
-        v1_probe = line.add_probe(position=0.0, conductor=0, type='voltage')
-        v2_probe = line.add_probe(position=4.0, conductor=0, type='voltage')
-        i1_probe = line.add_probe(position=2.0, conductor=0, type='current')
-        line.add_voltage_source(position=0.0, conductor=0, magnitude=magnitude)
+        v0 = self.add_probe(position=x0, conductor=0, type='voltage')
+        v1 = self.add_probe(position=x1, conductor=0, type='voltage')
+        i0 = self.add_probe(position=(x0+x1)/2.0, conductor=0, type='current')
+       
+        port_probe = PortProbe(v0, v1, i0)
+        self.port_probes.append(port_probe)
+        
+        return port_probe
+
+    def extract_network(self, fMin, fMax, finalTime):
+
+        line = deepcopy(self)
+        line.v.fill(0.0)
+        line.i.fill(0.0)
+
+        # Adds excitation at terminal.
+        spread = 1/fMax/2.0
+        delay = 8*spread
+        def gauss(t):
+            return np.exp(- (t-delay)**2 / (2*spread**2))        
+        
+        line.add_voltage_source(position=self.x[0], conductor=0, magnitude=gauss)
+        p11 = line.add_port_probe(terminal=0, conductor=0)
         
         for _ in line.get_time_range(finalTime):
             line.step()
 
-        dt = v1_probe.t[1] - v1_probe.t[0]
-        f = fftshift(fftfreq(len(v1_probe.t), dt))
-        v1_fft =   fftshift(fft(v1_probe.val))
-        v2_fft =   fftshift(fft(v2_probe.val))
+        f, z11_fft = p11.extract_z() 
 
-        tAux = np.append(- line.dt/2.0, i1_probe.t)
-        i1_probe.t = (tAux[:-1] + tAux[1:]) / 2.0
-        valAux = np.append(i1_probe.val[0], i1_probe.val)
-        i1_probe.val = (valAux[:-1] + valAux[1:]) / 2.0
-        i1_fft = fftshift(fft(i1_probe.val))
-        z11_fft = (v1_fft + v2_fft) / 2.0 / i1_fft
-
-        fq = rf.Frequency.from_f(f[(f>=fMin) & (f<fMax)], unit='Hz')
-        
+        fq = rf.Frequency.from_f(f[(f >= fMin) & (f < fMax)], unit='Hz')
         z11 = np.zeros((len(fq.f), 1, 1), dtype="complex64")
-        z11[:,0,0] = z11_fft[(f>=fMin) & (f<fMax)]
-        mtl_rf = rf.Network.from_z(z11)
-        mtl_rf.frequency = fq
+        z11[:, 0, 0] = z11_fft[(f >= fMin) & (f < fMax)]
+        
+        ntw = rf.Network.from_z(z11)
+        ntw.frequency = fq
 
-        return mtl_rf
+        return ntw
 
 
 class MTL_losses(MTL):
@@ -263,6 +290,3 @@ class MTL_losses(MTL):
 
         self.right_port_term_2 = np.linalg.inv(dx*(np.matmul(self.zl, self.c))/self.dt + dx*(
             np.matmul(self.zl, self.g))/2 + np.eye(self.number_of_conductors))
-
-
-
