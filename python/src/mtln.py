@@ -226,12 +226,10 @@ class MTL:
         line.v.fill(0.0)
         line.i.fill(0.0)
 
-        # Adds excitation at terminal.
         spread = 1/fMax/2.0
         delay = 8*spread
         def gauss(t):
             return np.exp(- (t-delay)**2 / (2*spread**2))        
-        
         line.add_voltage_source(position=self.x[0], conductor=0, magnitude=gauss)
         p11 = line.add_port_probe(terminal=0, conductor=0)
         
@@ -239,7 +237,6 @@ class MTL:
             line.step()
 
         f, z11_fft = p11.extract_z() 
-
         fq = rf.Frequency.from_f(f[(f >= fMin) & (f < fMax)], unit='Hz')
         z11 = np.zeros((len(fq.f), 1, 1), dtype="complex64")
         z11[:, 0, 0] = z11_fft[(f >= fMin) & (f < fMax)]
