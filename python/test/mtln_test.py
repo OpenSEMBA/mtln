@@ -64,19 +64,6 @@ def test_coaxial_line_paul_8_6_square():
 
     xticks = range(int(np.floor(min(1e6*i_probe.t))), int(np.ceil(max(1e6*i_probe.t))+1))
 
-    plt.plot(1e6*v_probe.t, v_probe.val)
-    plt.ylabel(r'$V (0, t)\,[V]$')
-    plt.xlabel(r'$t\,[\mu s]$')
-    plt.grid('both')
-    plt.show()
-    
-    plt.plot(1e6*i_probe.t, i_probe.val)
-    plt.ylabel(r'$I (L, t)\,[A]$')
-    plt.xlabel(r'$t\,[\mu s]$')
-    plt.xticks(xticks)
-    plt.grid('both')
-    plt.show()
-    
     start_times = [0.1, 4.1, 6.1, 8.1, 10.1, 12.1, 14.1, 16.1]
     end_times =   [3.9, 5.9, 7.9, 9.9, 11.9, 13.9, 15.9, 18.9]
     check_voltages = [25, -12.5, -37.5, -18.75, 18.75, 9.375, -9.375, -4.6875]
@@ -85,6 +72,21 @@ def test_coaxial_line_paul_8_6_square():
         end   = np.argmin(np.abs(v_probe.t - t_end*1e-6))
         assert np.all(np.isclose(v_probe.val[start:end], v))
 
+    # plt.figure()
+    # plt.plot(1e6*v_probe.t, v_probe.val)
+    # plt.ylabel(r'$V (0, t)\,[V]$')
+    # plt.xlabel(r'$t\,[\mu s]$')
+    # plt.grid('both')
+    
+    # plt.figure()
+    # plt.plot(1e6*i_probe.t, i_probe.val )
+    # plt.ylabel(r'$I (L, t)\,[A]$')
+    # plt.xlabel(r'$t\,[\mu s]$')
+    # plt.xticks(xticks)
+    # plt.grid('both')
+    
+    # plt.show()
+    
 def test_coaxial_line_paul_8_6_triangle():
     """ 
     Described in Ch. 8 of Paul Clayton, 
@@ -100,6 +102,12 @@ def test_coaxial_line_paul_8_6_triangle():
     
     for t in line.get_time_range(finalTime):
         line.step()
+   
+    times = [4.0, 5.9, 6.1, 8.0, 10.1, 12]
+    voltages =   [16.67, 12.5, -12.5, -25, 6.25, 12.5]
+    for (t, v) in zip(times,voltages):
+        index = np.argmin(np.abs(v_probe.t - t*1e-6))
+        assert np.all(np.isclose(v_probe.val[index], v, atol=0.5))
 
     # xticks = range(int(np.floor(min(1e6*v_probe.t))), int(np.ceil(max(1e6*v_probe.t))+1))
 
@@ -108,14 +116,6 @@ def test_coaxial_line_paul_8_6_triangle():
     # plt.xlabel(r'$t\,[\mu s]$')
     # plt.grid('both')
     # plt.show()
-    
-    times = [4.0, 5.9, 6.1, 8.0, 10.1, 12]
-    voltages =   [16.67, 12.5, -12.5, -25, 6.25, 12.5]
-    for (t, v) in zip(times,voltages):
-        index = np.argmin(np.abs(v_probe.t - t*1e-6))
-        assert np.all(np.isclose(v_probe.val[index], v, atol=0.5))
-
-
 
 def test_ribbon_cable_20ns_paul_9_3():
     """
@@ -143,6 +143,10 @@ def test_ribbon_cable_20ns_paul_9_3():
     for t in line.get_time_range(finalTime):
         line.step()
 
+    # From Paul's book: 
+    # "The crosstalk waveform rises to a peak of around 110 mV [...]"
+    assert(np.isclose(np.max(v_probe.val), 113e-3, atol=1e-3))
+
     # plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
     # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
     # plt.xlabel(r'$t\,[\mu s]$')
@@ -150,9 +154,6 @@ def test_ribbon_cable_20ns_paul_9_3():
     # plt.grid('both')
     # plt.show()
 
-    # From Paul's book: 
-    # "The crosstalk waveform rises to a peak of around 110 mV [...]"
-    assert(np.isclose(np.max(v_probe.val), 113e-3, atol=1e-3))
 
 def test_ribbon_cable_1ns_paul_9_3():
     """
