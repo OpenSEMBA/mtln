@@ -13,6 +13,7 @@ class Probe:
         self.t = np.array([])
         self.val = np.array([])
 
+
 class PortProbe:
     def __init__(self, v0: Probe, v1: Probe, i0: Probe):
         self.v0 = v0
@@ -31,7 +32,7 @@ class PortProbe:
         self.i0.val = (valAux[:-1] + valAux[1:]) / 2.0
         i0_fft = fftshift(fft(self.i0.val))
         z11_fft = (v0_fft + v1_fft) / 2.0 / i0_fft
-        
+
         return f, z11_fft
 
 
@@ -210,37 +211,44 @@ class MTL:
         if terminal == 0:
             x0 = self.x[0]
             x1 = self.x[1]
-        
+
         v0 = self.add_probe(position=x0, conductor=0, type='voltage')
         v1 = self.add_probe(position=x1, conductor=0, type='voltage')
         i0 = self.add_probe(position=(x0+x1)/2.0, conductor=0, type='current')
-       
+
         port_probe = PortProbe(v0, v1, i0)
         self.port_probes.append(port_probe)
-        
+
         return port_probe
+
+    def create_clean_copy(self):
+        r = deepcopy(self)
+        r.v.fill(0.0)
+        r.i.fill(0.0)
+        r.time = 0.0
+        return r
 
     def extract_network(self, fMin, fMax, finalTime):
 
-        line = deepcopy(self)
-        line.v.fill(0.0)
-        line.i.fill(0.0)
+        line = self.create_clean_copy()
 
         spread = 1/fMax/2.0
         delay = 8*spread
+
         def gauss(t):
-            return np.exp(- (t-delay)**2 / (2*spread**2))        
-        line.add_voltage_source(position=self.x[0], conductor=0, magnitude=gauss)
+            return np.exp(- (t-delay)**2 / (2*spread**2))
+        line.add_voltage_source(
+            position=self.x[0], conductor=0, magnitude=gauss)
         p11 = line.add_port_probe(terminal=0, conductor=0)
-        
+
         for _ in line.get_time_range(finalTime):
             line.step()
 
-        f, z11_fft = p11.extract_z() 
+        f, z11_fft = p11.extract_z()
         fq = rf.Frequency.from_f(f[(f >= fMin) & (f < fMax)], unit='Hz')
         z11 = np.zeros((len(fq.f), 1, 1), dtype="complex64")
         z11[:, 0, 0] = z11_fft[(f >= fMin) & (f < fMax)]
-        
+
         ntw = rf.Network.from_z(z11)
         ntw.frequency = fq
 

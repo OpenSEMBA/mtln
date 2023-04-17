@@ -8,6 +8,7 @@ import src.mtln as mtln
 
 import src.waveforms as wf
 
+import skrf as rf
 from skrf.media import DistributedCircuit
 
 
@@ -298,6 +299,7 @@ def test_extract_network_paul_8_6_150ohm_load():
 
 
 def test_cables_panel_experimental_comparison():
+    # Gets L and C matrices from SACAMOS cable_panel_4cm.bundle
     L = np.array( \
         [[  7.92796549E-07,  1.25173387E-07,  4.84953816E-08],
          [  1.25173387E-07,  1.01251901E-06,  1.25173387E-07],
@@ -306,17 +308,32 @@ def test_cables_panel_experimental_comparison():
         [[  1.43342565E-11, -1.71281372E-12, -4.79422869E-13],
          [ -1.71281372E-12,  1.13658354E-11, -1.33594804E-12],
          [ -4.79422869E-13, -1.33594804E-12,  1.12858157E-11]])
-    
+
+    # Models MTL amd extracts S11.
     length = 398e-3
-    Zs = 50.0
-    Zl = 50.0
+    Zs = np.ones([1, 3]) * 50.0
+    Zl = Zs
     line = mtln.MTL(l=L, c=C, length=length, Zs=Zs, Zl=Zl)
-    line_ntw = line.extract_network(fMin=1e6, fMax=1e9, finalTime=25e-6)
+    
+    finalTime = 300e-9
+    line_ntw = line.extract_network(fMin=1e7, fMax=1e9, finalTime=finalTime)
+    
+    p1p2 = rf.subnetwork(
+        rf.Network(
+        'python/testData/cable_panel/Ch1P1Ch2P2-SParameters-Segmented.s2p'), [0])
+    p1p2 = p1p2.interpolate(line_ntw.frequency)
 
-    line_ntw.plot_s_mag(label='mtl')
-    plt.grid()
-    plt.legend()
-    plt.show()
+    # Asserts correlation with [S11| measurements.
+    R = np.corrcoef(np.abs(p1p2.s[:,0,0]), np.abs(line_ntw.s[:,0,0]))
+    assert(R[0,1] >= 0.96)
+
+    # plt.figure()
+    # p1p2.plot_s_mag(label='measurements')
+    # line_ntw.plot_s_mag(label='mtl')
+    # plt.grid()
+    # plt.legend()
+    # plt.xlim(1e7, 1e9)
+    # plt.xscale('log')
+    # plt.show()
     
 
-    assert True
