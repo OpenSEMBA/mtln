@@ -337,3 +337,26 @@ def test_cables_panel_experimental_comparison():
     # plt.show()
     
 
+def test_wire_over_ground_incident_E_paul_11_3_6():
+    """
+    Described in Ch. 11.3.2 "Computed results" of Paul Clayton
+    Analysis of Multiconductor Transmission Lines. 2007. 
+    Computes the induced voltage at the left end of the line
+    when excited by an incident external field
+    """
+    
+    wire_radius = 2.54e-3
+    wire_height = 2e-2
+    l = (mu_0/(2*np.pi))*np.arccosh(wire_height/wire_radius)
+    c = 2*np.pi*epsilon_0/np.arccosh(wire_height/wire_radius)
+    line = mtln.MTL(l=l, c=c, length=2.0, nx=100, Zs=500, Zl=1000)
+    finalTime = 100e-9
+
+    # def magnitude(t): return wf.trapezoidal_wave(
+    #     t, A=1, rise_time=50e-9, fall_time=50e-9, f0=1e6, D=0.5)
+    
+    # line.add_voltage_source(position=0.0, conductor=1, magnitude=magnitude)
+    # v_probe = line.add_probe(position=0.0, conductor=0, type='voltage')
+
+    # for t in line.get_time_range(finalTime):
+    #     line.step()

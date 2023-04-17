@@ -5,6 +5,11 @@ from copy import deepcopy
 from numpy.fft import fft, fftfreq, fftshift
 
 
+class Field:
+    def __init__(self, incident_x, incident_z):
+        self.e_x = incident_x
+        self.e_z = incident_z
+
 class Probe:
     def __init__(self, position, conductor, type):
         self.type = type
