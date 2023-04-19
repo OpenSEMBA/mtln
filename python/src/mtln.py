@@ -3,12 +3,14 @@ import skrf as rf
 
 from copy import deepcopy
 from numpy.fft import fft, fftfreq, fftshift
-
+from sympy import integrate
 
 class Field:
     def __init__(self, incident_x, incident_z):
         self.e_x = incident_x
         self.e_z = incident_z
+
+
 
 class Probe:
     def __init__(self, position, conductor, type):
@@ -167,10 +169,14 @@ class MTL:
     def eval_v_sources(self, time):
         v_sources_time = np.empty(
             shape=(self.number_of_conductors, self.x.shape[0]))
+        
+        
         for n in range(self.number_of_conductors):
             for pos in range(self.x.shape[0]):
                 v_sources_time[n, pos] = self.v_sources[n, pos](time)
         return v_sources_time
+
+        
 
     def step(self):
 

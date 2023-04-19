@@ -191,12 +191,18 @@ def test_ribbon_cable_1ns_paul_9_3():
     for t in line.get_time_range(finalTime):
         line.step()
 
-    plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
-    plt.ylabel(r'$V_1 (0, t)\,[mV]$')
-    plt.xlabel(r'$t\,[\mu s]$')
-    plt.xticks(range(0, 200, 50))
-    plt.grid('both')
-    plt.show()
+    times = [12.5, 25, 40, 55]
+    voltages = [120, 95, 55, 32]
+    for (t, v) in zip(times, voltages):
+        index = np.argmin(np.abs(v_probe.t - t*1e-6))
+        assert np.all(np.isclose(v_probe.val[index], v*1e-3, atol=5))
+
+    # plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
+    # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+    # plt.xlabel(r'$t\,[\mu s]$')
+    # plt.xticks(range(0, 200, 50))
+    # plt.grid('both')
+    # plt.show()
 
 
 def test_pcb_paul_9_3_2():
@@ -226,12 +232,18 @@ def test_pcb_paul_9_3_2():
     for t in line.get_time_range(finalTime):
         line.step()
 
-    plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
-    plt.ylabel(r'$V_1 (0, t)\,[mV]$')
-    plt.xlabel(r'$t\,[\mu s]$')
-    plt.xticks(range(0, 200, 50))
-    plt.grid('both')
-    plt.show()
+    times = [5, 10, 15, 20]
+    voltages = [81, 62.5, 23, 8]
+    for (t, v) in zip(times, voltages):
+        index = np.argmin(np.abs(v_probe.t - t*1e-9))
+        assert np.all(np.isclose(v_probe.val[index], v*1e-3, atol=2.5))
+
+    # plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
+    # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+    # plt.xlabel(r'$t\,[\mu s]$')
+    # plt.xticks(range(0, 40, 5))
+    # plt.grid('both')
+    # plt.show()
 
 
 def test_extract_network_paul_8_6_no_load():
@@ -360,3 +372,11 @@ def test_wire_over_ground_incident_E_paul_11_3_6():
 
     # for t in line.get_time_range(finalTime):
     #     line.step()
+
+
+def test_field_integral():
+    
+    def magnitude_x(x, z, t): return x + z + t
+    def magnitude_z(x, z, t): return x + z + t
+
+    incident_field = mtln.Field(magnitude_x, magnitude_z)
