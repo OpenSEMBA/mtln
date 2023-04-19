@@ -45,8 +45,8 @@ def test_coaxial_line_initial_voltage():
     for t in line.get_time_range(finalTime):
         line.step()
 
-    plt.plot(v_probe.t, v_probe.val)
-    plt.show()
+    # plt.plot(v_probe.t, v_probe.val)
+    # plt.show()
     # assert
 
 
@@ -357,12 +357,12 @@ def test_wire_over_ground_incident_E_paul_11_3_6():
     when excited by an incident external field
     """
     
-    wire_radius = 2.54e-3
-    wire_height = 2e-2
-    l = (mu_0/(2*np.pi))*np.arccosh(wire_height/wire_radius)
-    c = 2*np.pi*epsilon_0/np.arccosh(wire_height/wire_radius)
-    line = mtln.MTL(l=l, c=c, length=2.0, nx=100, Zs=500, Zl=1000)
-    finalTime = 100e-9
+    # wire_radius = 2.54e-3
+    # wire_height = 2e-2
+    # l = (mu_0/(2*np.pi))*np.arccosh(wire_height/wire_radius)
+    # c = 2*np.pi*epsilon_0/np.arccosh(wire_height/wire_radius)
+    # line = mtln.MTL(l=l, c=c, length=2.0, nx=100, Zs=500, Zl=1000)
+    # finalTime = 100e-9
 
     # def magnitude(t): return wf.trapezoidal_wave(
     #     t, A=1, rise_time=50e-9, fall_time=50e-9, f0=1e6, D=0.5)

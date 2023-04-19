@@ -5,6 +5,8 @@ from copy import deepcopy
 from numpy.fft import fft, fftfreq, fftshift
 from sympy import integrate
 
+from types import FunctionType
+
 class Field:
     def __init__(self, incident_x, incident_z):
         self.e_x = incident_x
@@ -166,33 +168,25 @@ class MTL:
             else:
                 raise ValueError("undefined probe")
 
-    def eval_v_sources(self, time):
-        v_sources_time = np.empty(
-            shape=(self.number_of_conductors, self.x.shape[0]))
-        
-        
-        for n in range(self.number_of_conductors):
-            for pos in range(self.x.shape[0]):
-                v_sources_time[n, pos] = self.v_sources[n, pos](time)
-        return v_sources_time
 
-        
+    def update_sources(self):
+        self.sources_curr = np.vectorize(FunctionType.__call__, otypes=["float64"])(self.v_sources, self.time)
+        self.sources_prev = np.vectorize(FunctionType.__call__, otypes=["float64"])(self.v_sources, self.time-self.dt)
 
     def step(self):
 
-        v_sources_curr = self.eval_v_sources(self.time)
-        v_sources_prev = self.eval_v_sources(self.time - self.dt)
+        self.update_sources()
 
         self.v[:, 0] = self.left_port_term_1.dot(self.v[:, 0]) + \
             self.left_port_term_2.dot(-2*np.matmul(self.zs, self.i[:, 0])+(
-                v_sources_curr[:, 0] + v_sources_prev[:, 0]))
+                self.sources_curr[:, 0] + self.sources_prev[:, 0]))
 
         self.v[:, 1:-1] = self.v_term.dot(self.v[:, 1:-1]) - \
             self.i_diff.dot(self.i[:, 1:]-self.i[:, :-1])
 
         self.v[:, -1] = self.right_port_term_1.dot(self.v[:, -1]) + \
             self.right_port_term_2.dot(+2*np.matmul(self.zl, self.i[:, -1])+(
-                v_sources_curr[:, -1] + v_sources_prev[:, -1]))
+                self.sources_curr[:, -1] + self.sources_prev[:, -1]))
 
         self.i[:, :] = self.i_term.dot(
             self.i[:, :]) - self.v_diff.dot(self.v[:, 1:]-self.v[:, :-1])
