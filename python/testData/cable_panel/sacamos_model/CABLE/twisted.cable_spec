@@ -1,0 +1,20 @@
+# MOD_cable_lib_dir 
+..\MOD_CABLE_PANEL\CABLE\
+Twisted_pair
+2 	#number of conductors 
+4 	#number of parameters 
+0.35e-3 	# parameter 1: conductor radius  (m)
+1e-3    	# parameter 2: conductor separation  (m)
+0.49e-3 	# parameter 3: dielectric radius (m)
+58e6 	# parameter 4: inner conductor electric conductivity (m)
+1 	# number of frequency dependent parameters
+	# Dielectric relative permittivity model follows
+1.0 	# w normalisation constant
+0 	# a order, a coefficients follow below
+1
+0 	# b order, b coefficients follow below
+1.0
+	 # order for filter fitting
+log   # frequency range type for filter fitting type (lin or dB)
+  	 # fmin fmax number_of_frequencies for filter fitting
+no_laplace

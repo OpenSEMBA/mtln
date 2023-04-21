@@ -1,0 +1,13 @@
+#MOD_cable_lib_dir
+..\MOD_CABLE_PANEL\CABLE\
+#MOD_cable_lib_dir
+..\MOD_CABLE_PANEL\BUNDLE\
+3 #Number of cables in bundle, cable list follows
+wire_3mm
+0	0.0395	0
+wire_1mm
+50e-3	0.0395	0
+twisted
+100e-3	0.0395	0
+ground_plane
+no_laplace
