@@ -19,16 +19,25 @@ def test_trapezoidal_pulse_sp():
     l = (mu_0/(2*np.pi))*np.arccosh(wire_height/wire_radius)
     c = 2*np.pi*epsilon_0/np.arccosh(wire_height/wire_radius)
     x, z, t = sp.symbols('x z t')
-    magnitude = wf.trapezoidal_wave_sp(A=1, rise_time=50e-9, fall_time=50e-9, f0 = 1e6, D = 0.5, vel = 1/np.sqrt(l*c))
+    A, rise_time, fall_time= 1, 10e-9, 10e-9
+    D, f0 = 0.5, 20e6
+    
+    magnitude = wf.trapezoidal_wave_sp(A, rise_time, fall_time, f0, D, vel = 1/np.sqrt(l*c))
     def p(x,z,t): return magnitude
 
     m = sp.Function('m')
     m = p
     pulse = sp.lambdify(t, m(x,z,t).subs(x,0.00).subs(z, 0))
+
+    plateu_duration = D/f0 - 0.5 * (rise_time + fall_time)
     
     time = np.linspace(0,200e-9,1000)
     plt.plot(time, pulse(time))
     plt.show()
+    
+    # assert (float(pulse(0.5*rise_time)) == 0.5*A)
+    # assert (float(pulse(1.1*rise_time)) == A)
+    # assert (float(pulse(rise_time + plateu_duration + 0.5*fall_time)) == 0.5*A)
 
 
 def test_trapezoidal_pulse():
@@ -177,7 +186,7 @@ def test_ribbon_cable_20ns_paul_9_3():
 
     plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
     plt.ylabel(r'$V_1 (0, t)\,[mV]$')
-    plt.xlabel(r'$t\,[\mu s]$')
+    plt.xlabel(r'$t\,[ns]$')
     plt.xticks(range(0, 200 ,50))
     plt.grid('both')
     plt.show()
@@ -213,15 +222,15 @@ def test_ribbon_cable_1ns_paul_9_3():
     times = [12.5, 25, 40, 55]
     voltages = [120, 95, 55, 32]
     for (t, v) in zip(times, voltages):
-        index = np.argmin(np.abs(v_probe.t - t*1e-6))
-        assert np.all(np.isclose(v_probe.val[index], v*1e-3, atol=5))
+        index = np.argmin(np.abs(v_probe.t - t*1e-9))
+        assert np.all(np.isclose(v_probe.val[index], v*1e-3, atol=10e-3))
 
-    plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
-    plt.ylabel(r'$V_1 (0, t)\,[mV]$')
-    plt.xlabel(r'$t\,[\mu s]$')
-    plt.xticks(range(0, 200, 50))
-    plt.grid('both')
-    plt.show()
+    # plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
+    # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+    # plt.xlabel(r'$t\,[ns]$')
+    # plt.xticks(range(0, 200, 50))
+    # plt.grid('both')
+    # plt.show()
 
 
 def test_pcb_paul_9_3_2():
@@ -251,18 +260,19 @@ def test_pcb_paul_9_3_2():
     for t in line.get_time_range(finalTime):
         line.step()
 
+
     times = [5, 10, 15, 20]
-    voltages = [81, 62.5, 23, 8]
+    voltages = [80, 62.5, 23, 8]
     for (t, v) in zip(times, voltages):
         index = np.argmin(np.abs(v_probe.t - t*1e-9))
-        assert np.all(np.isclose(v_probe.val[index], v*1e-3, atol=2.5))
+        assert np.all(np.isclose(v_probe.val[index], v*1e-3, atol=10e-3))
 
-    # plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
-    # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
-    # plt.xlabel(r'$t\,[\mu s]$')
-    # plt.xticks(range(0, 40, 5))
-    # plt.grid('both')
-    # plt.show()
+    plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
+    plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+    plt.xlabel(r'$t\,[\mu s]$')
+    plt.xticks(range(0, 40, 5))
+    plt.grid('both')
+    plt.show()
 
 
 def test_extract_network_paul_8_6_no_load():
@@ -368,55 +378,146 @@ def test_cables_panel_experimental_comparison():
     # plt.show()
     
 
-def test_wire_over_ground_incident_E_paul_11_3_6():
+def test_wire_over_ground_incident_E_paul_11_3_6_50ns():
     """
     Described in Ch. 11.3.2 "Computed results" of Paul Clayton
     Analysis of Multiconductor Transmission Lines. 2007. 
     Computes the induced voltage at the left end of the line
-    when excited by an incident external field
+    when excited by an incident external field with rise time 50 ns
     """
     
-    wire_radius = 2.54e-3
-    wire_height = 2e-2
-    l = (mu_0/(2*np.pi))*np.arccosh(wire_height/wire_radius)
-    c = 2*np.pi*epsilon_0/np.arccosh(wire_height/wire_radius)
+    wire_radius = 0.254e-3
+    wire_h = 0.02
+    wire_separation = 2.*wire_h
+    l = (mu_0/(2*np.pi))*np.arccosh(wire_separation/wire_radius)
+    c = 2*np.pi*epsilon_0/np.arccosh(wire_separation/wire_radius)
 
-    line = mtln.MTL(l=l, c=c, length=1.0, nx=10, Zs=500, Zl=1000)
-    finalTime = 100e-9
-
-    # t = sp.Symbol('t')
-    # piecewise = wf.trapezoidal_wave_piecewise()
-    # magnitude = lambda t : wf.trapezoidal_wave_piecewise(t, A=1, rise_time=50e-9, fall_time=50e-9, f0=1e6, D=0.5)
+    nx, finalTime, rise_time, fall_time = 10, 100e-9, 50e-9, 50e-9
+    
+    line = mtln.MTL(l=l, c=c, length=1.0, nx=nx, Zs=500, Zl=1000)
+    
     x, z, t = sp.symbols('x z t')
-    magnitude = wf.trapezoidal_wave_sp(A=1, rise_time=50e-9, fall_time=50e-9, f0 = 1e6, D = 0.5, vel = 1/np.sqrt(l*c))
-    
-    # def magnitude(t): return wf.trapezoidal_wave(
-    #     t, A=1, rise_time=50e-9, fall_time=50e-9, f0=1e6, D=0.5)
-    
+    magnitude = wf.trapezoidal_wave_sp(A=1, rise_time=rise_time, fall_time=fall_time, f0 = 1e6, D = 0.5)
     
     def e_x(x,z,t): return (x+z+t)*0
     def e_z(x,z,t): return magnitude
-    # def e_z(x,z,t): return (x+z+t)*0
-    # def e_x(x,z,t): return magnitude
-    line.add_external_field(e_x, e_z, ref_distance=0.0, distances=np.array([wire_height]))
+    line.add_external_field(e_x, e_z, ref_distance=0.0, distances=np.array([wire_separation]))
     
     probe = line.add_port_probe(0,0)
-    # v_probe = line.add_probe(position=0.0, conductor=0, type='voltage')
+    v_probe = line.add_probe(position=0.0, conductor=0, type='voltage')
 
-    # line.set_time_step(NDT = 1000, final_time=finalTime)
 
     for t in line.get_time_range(finalTime):
         line.step()
 
 
-    # plt.plot(1e9*probe.v0.t, 1e3*probe.v0.val, label = '0')
-    # plt.plot(1e9*probe.v1.t, 1e3*probe.v1.val, label = '1')
-    plt.plot(1e9*probe.v1.t, 1e3*(probe.v1.val-probe.v0.val), label = '1-0')
+    plt.plot(1e9*probe.v0.t, 1e3*probe.v0.val, label = 'port')
+    plt.plot(1e9*v_probe.t, 1e3*v_probe.val, label = 'v probe')
     plt.ylabel(r'$V_1 (0, t)\,[mV]$')
     plt.xlabel(r'$t\,[ns]$')
-    plt.xticks(range(0, 100 ,10))
+    plt.xticks(range(0, int(finalTime*1e9) ,5))
     plt.grid('both')
     plt.legend()
     plt.show()
 
+    times = [3.5, 7, 1.0, 25, 53, 56.6, 59.8, 80]
+    voltages = [-1.61, -0.78, -0.99, -0.87, 0.75, -0.1315, 0.1, -0.015]
+    for (t, v) in zip(times, voltages):
+        index = np.argmin(np.abs(v_probe.t - t*1e-9))
+        assert np.all(np.isclose(v_probe.val[index], v*1e-3, atol=2.5e-3))
+        
+def test_wire_over_ground_incident_E_paul_11_3_6_10ns():
+    """
+    Described in Ch. 11.3.2 "Computed results" of Paul Clayton
+    Analysis of Multiconductor Transmission Lines. 2007. 
+    Computes the induced voltage at the left end of the line
+    when excited by an incident external field with rise time 10 ns
+    """
+    
+    wire_radius = 0.254e-3
+    wire_h = 0.02
+    wire_separation = 2.*wire_h
+    l = (mu_0/(2*np.pi))*np.arccosh(wire_separation/wire_radius)
+    c = 2*np.pi*epsilon_0/np.arccosh(wire_separation/wire_radius)
 
+    nx, finalTime, rise_time, fall_time = 10, 40e-9, 10e-9, 10e-9
+    
+    line = mtln.MTL(l=l, c=c, length=1.0, nx=nx, Zs=500, Zl=1000)
+    
+    x, z, t = sp.symbols('x z t')
+    magnitude = wf.trapezoidal_wave_sp(A=1, rise_time=rise_time, fall_time=fall_time, f0 = 1e6, D = 0.5)
+    
+    def e_x(x,z,t): return (x+z+t)*0
+    def e_z(x,z,t): return magnitude
+    line.add_external_field(e_x, e_z, ref_distance=0.0, distances=np.array([wire_separation]))
+    
+    probe = line.add_port_probe(0,0)
+    v_probe = line.add_probe(position=0.0, conductor=0, type='voltage')
+
+
+    for t in line.get_time_range(finalTime):
+        line.step()
+
+
+    plt.plot(1e9*probe.v0.t, 1e3*probe.v0.val, label = 'port')
+    plt.plot(1e9*v_probe.t, 1e3*v_probe.val, label = 'v probe')
+    plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+    plt.xlabel(r'$t\,[ns]$')
+    plt.xticks(range(0, int(finalTime*1e9) ,5))
+    plt.grid('both')
+    plt.legend()
+    plt.show()
+
+    times = [3.4, 6.8, 9.9, 16.7, 20, 23.3, 35]
+    voltages = [-8.2,-3.8,-4.8, -0.55, 0.52,-0.019, 6e-3]
+    for (t, v) in zip(times, voltages):
+        index = np.argmin(np.abs(v_probe.t - t*1e-9))
+        assert np.all(np.isclose(v_probe.val[index], v*1e-3, atol=1.5e-3))
+        
+def test_wire_over_ground_incident_E_paul_11_3_6_1ns():
+    """
+    Described in Ch. 11.3.2 "Computed results" of Paul Clayton
+    Analysis of Multiconductor Transmission Lines. 2007. 
+    Computes the induced voltage at the left end of the line
+    when excited by an incident external field with rise time 1 ns
+    """
+    
+    wire_radius = 0.254e-3
+    wire_h = 0.02
+    wire_separation = 2.*wire_h
+    l = (mu_0/(2*np.pi))*np.arccosh(wire_separation/wire_radius)
+    c = 2*np.pi*epsilon_0/np.arccosh(wire_separation/wire_radius)
+
+    nx, finalTime, rise_time, fall_time = 50, 30e-9, 1e-9, 1e-9
+    
+    line = mtln.MTL(l=l, c=c, length=1.0, nx=nx, Zs=500, Zl=1000)
+    
+    x, z, t = sp.symbols('x z t')
+    magnitude = wf.trapezoidal_wave_sp(A=1, rise_time=rise_time, fall_time=fall_time, f0 = 1e6, D = 0.5)
+    
+    def e_x(x,z,t): return (x+z+t)*0
+    def e_z(x,z,t): return magnitude
+    line.add_external_field(e_x, e_z, ref_distance=0.0, distances=np.array([wire_separation]))
+    
+    probe = line.add_port_probe(0,0)
+    v_probe = line.add_probe(position=0.0, conductor=0, type='voltage')
+
+
+    for t in line.get_time_range(finalTime):
+        line.step()
+
+
+    plt.plot(1e9*probe.v0.t, 1e3*probe.v0.val, label = 'port')
+    plt.plot(1e9*v_probe.t, 1e3*v_probe.val, label = 'v probe')
+    plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+    plt.xlabel(r'$t\,[ns]$')
+    plt.xticks(range(0, int(finalTime*1e9) ,5))
+    plt.grid('both')
+    plt.legend()
+    plt.show()
+
+    times = [3, 5, 8.5, 12, 15, 19, 25]
+    voltages = [-24, 12.9, -3.2, 1.5, -0.6, 0.08, -0.38]
+    for (t, v) in zip(times, voltages):
+        index = np.argmin(np.abs(v_probe.t - t*1e-9))
+        assert np.all(np.isclose(v_probe.val[index], v*1e-3, atol=2.5e-3))

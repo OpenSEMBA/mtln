@@ -99,8 +99,8 @@ class MTL:
         self.v_sources = np.empty(shape=(self.number_of_conductors, self.x.shape[0]), dtype=object)
         self.v_sources.fill(lambda n: 0)
 
-        self.e_L   = np.empty(shape=(self.number_of_conductors, self.x.shape[0]-1), dtype=object)
-        self.e_T  = np.empty(shape=(self.number_of_conductors, self.x.shape[0]), dtype=object)
+        self.e_L = np.empty(shape=(self.number_of_conductors, self.x.shape[0]-1), dtype=object)
+        self.e_T = np.empty(shape=(self.number_of_conductors, self.x.shape[0]), dtype=object)
         self.e_L.fill(lambda n: 0)
         self.e_T.fill(lambda n: 0)
 
@@ -181,14 +181,12 @@ class MTL:
 
 
     def update_sources(self):
-        self.v_sources_now = np.vectorize(FunctionType.__call__, otypes=["float64"])(self.v_sources, self.time)
+        self.v_sources_now  = np.vectorize(FunctionType.__call__, otypes=["float64"])(self.v_sources, self.time)
         self.v_sources_prev = np.vectorize(FunctionType.__call__, otypes=["float64"])(self.v_sources, self.time-self.dt)
 
-        # self.e_long_now = np.vectorize(FunctionType.__call__, otypes=["float64"])(self.e_long, self.time)
-        # self.e_long_prev = np.vectorize(FunctionType.__call__, otypes=["float64"])(self.e_long, self.time-self.dt)
-        self.e_L_now = np.vectorize(FunctionType.__call__, otypes=["float64"])(self.e_L, self.time+0.5*self.dt)
-        self.e_L_prev = np.vectorize(FunctionType.__call__, otypes=["float64"])(self.e_L, self.time-0.5*self.dt)
-        self.e_T_now = np.vectorize(FunctionType.__call__, otypes=["float64"])(self.e_T, self.time)
+        self.e_L_now  = np.vectorize(FunctionType.__call__, otypes=["float64"])(self.e_L, self.time+self.dt/2)
+        self.e_L_prev = np.vectorize(FunctionType.__call__, otypes=["float64"])(self.e_L, self.time-self.dt/2)
+        self.e_T_now  = np.vectorize(FunctionType.__call__, otypes=["float64"])(self.e_T, self.time)
         self.e_T_prev = np.vectorize(FunctionType.__call__, otypes=["float64"])(self.e_T, self.time-self.dt)
 
     def step(self):
@@ -230,28 +228,25 @@ class MTL:
         field = Field(e_x, e_z)
         ex = sp.Function('ex')
         ez = sp.Function('ez')
-        x, z, t = sp.symbols("x,z,t")
+        x, z, t, v = sp.symbols("x z t v")
         ex = field.e_x
         ez = field.e_z
         
-        v = np.max(self.get_phase_velocities())
+        vmax = np.max(self.get_phase_velocities())
         
         for n in range(self.number_of_conductors):
             et = ex(x, z, t).integrate(x, (x, ref_distance, distances[n]))
             for nz in range(self.x.size - 1):
                 pos = self.x[nz]
                 self.e_L[n,nz]  = sp.lambdify(t, 
-                                    ez(x, z, t).subs(x,distances[n]).subs(z,pos - 0.5*self.dx) - 
-                                    ez(x, z, t).subs(x,ref_distance).subs(z,pos - 0.5*self.dx)
+                                    ez(x, z, t).subs(x,distances[n]).subs(v, vmax).subs(z,pos - 0.5*self.dx) - 
+                                    ez(x, z, t).subs(x,ref_distance).subs(v, vmax).subs(z,pos - 0.5*self.dx)
                                     )
                 self.e_T[n,nz] = sp.lambdify(t, et.subs(z, pos))
-                # self.e_long[n,nz]  = sp.lambdify(t, et.subs(z, pos - 0.5*self.dx))
-                # self.e_trans[n,nz] = sp.lambdify(t, ez(x, z, t).subs(x,distances[n]).subs(z,pos)-ez(x, z, t).subs(x,ref_distance).subs(z,pos))
 
             nz = self.x.size - 1
             pos = self.x[nz]
             self.e_T[n,nz] = sp.lambdify(t, et.subs(z, pos))
-            # self.e_trans[n,nz] = sp.lambdify(t, ez(x, z, t).subs(x,distances[n]).subs(z,pos)-ez(x, z, t).subs(x,ref_distance).subs(z,pos))
 
 
     def add_probe(self, position: float, conductor: int, type: str):
