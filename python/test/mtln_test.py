@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-import scipy as sci
+import sympy as sp
 from scipy.constants import epsilon_0, mu_0, speed_of_light
 
 import src.mtln as mtln
@@ -10,6 +10,25 @@ import src.waveforms as wf
 
 import skrf as rf
 from skrf.media import DistributedCircuit
+
+
+def test_trapezoidal_pulse_sp():
+
+    wire_radius = 2.54e-3
+    wire_height = 2e-2
+    l = (mu_0/(2*np.pi))*np.arccosh(wire_height/wire_radius)
+    c = 2*np.pi*epsilon_0/np.arccosh(wire_height/wire_radius)
+    x, z, t = sp.symbols('x z t')
+    magnitude = wf.trapezoidal_wave_sp(A=1, rise_time=50e-9, fall_time=50e-9, f0 = 1e6, D = 0.5, vel = 1/np.sqrt(l*c))
+    def p(x,z,t): return magnitude
+
+    m = sp.Function('m')
+    m = p
+    pulse = sp.lambdify(t, m(x,z,t).subs(x,0.00).subs(z, 0))
+    
+    time = np.linspace(0,200e-9,1000)
+    plt.plot(time, pulse(time))
+    plt.show()
 
 
 def test_trapezoidal_pulse():
@@ -22,9 +41,9 @@ def test_trapezoidal_pulse():
         t, A, rise_time, fall_time, f0, D)
     plateu_duration = D/f0 - 0.5 * (rise_time + fall_time)
 
-    # time = np.linspace(0,200e-9,1000)
-    # plt.plot(time, magnitude(time))
-    # plt.show()
+    time = np.linspace(0,200e-9,1000)
+    plt.plot(time, magnitude(time))
+    plt.show()
     assert (magnitude(0.5*rise_time) == 0.5*A)
     assert (magnitude(1.1*rise_time) == A)
     assert (magnitude(rise_time + plateu_duration + 0.5*fall_time) == 0.5*A)
@@ -156,12 +175,12 @@ def test_ribbon_cable_20ns_paul_9_3():
     # "The crosstalk waveform rises to a peak of around 110 mV [...]"
     assert (np.isclose(np.max(v_probe.val), 113e-3, atol=1e-3))
 
-    # plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
-    # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
-    # plt.xlabel(r'$t\,[\mu s]$')
-    # plt.xticks(range(0, 200 ,50))
-    # plt.grid('both')
-    # plt.show()
+    plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
+    plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+    plt.xlabel(r'$t\,[\mu s]$')
+    plt.xticks(range(0, 200 ,50))
+    plt.grid('both')
+    plt.show()
 
 
 def test_ribbon_cable_1ns_paul_9_3():
@@ -197,12 +216,12 @@ def test_ribbon_cable_1ns_paul_9_3():
         index = np.argmin(np.abs(v_probe.t - t*1e-6))
         assert np.all(np.isclose(v_probe.val[index], v*1e-3, atol=5))
 
-    # plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
-    # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
-    # plt.xlabel(r'$t\,[\mu s]$')
-    # plt.xticks(range(0, 200, 50))
-    # plt.grid('both')
-    # plt.show()
+    plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
+    plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+    plt.xlabel(r'$t\,[\mu s]$')
+    plt.xticks(range(0, 200, 50))
+    plt.grid('both')
+    plt.show()
 
 
 def test_pcb_paul_9_3_2():
@@ -357,26 +376,47 @@ def test_wire_over_ground_incident_E_paul_11_3_6():
     when excited by an incident external field
     """
     
-    # wire_radius = 2.54e-3
-    # wire_height = 2e-2
-    # l = (mu_0/(2*np.pi))*np.arccosh(wire_height/wire_radius)
-    # c = 2*np.pi*epsilon_0/np.arccosh(wire_height/wire_radius)
-    # line = mtln.MTL(l=l, c=c, length=2.0, nx=100, Zs=500, Zl=1000)
-    # finalTime = 100e-9
+    wire_radius = 2.54e-3
+    wire_height = 2e-2
+    l = (mu_0/(2*np.pi))*np.arccosh(wire_height/wire_radius)
+    c = 2*np.pi*epsilon_0/np.arccosh(wire_height/wire_radius)
 
+    line = mtln.MTL(l=l, c=c, length=1.0, nx=10, Zs=500, Zl=1000)
+    finalTime = 100e-9
+
+    # t = sp.Symbol('t')
+    # piecewise = wf.trapezoidal_wave_piecewise()
+    # magnitude = lambda t : wf.trapezoidal_wave_piecewise(t, A=1, rise_time=50e-9, fall_time=50e-9, f0=1e6, D=0.5)
+    x, z, t = sp.symbols('x z t')
+    magnitude = wf.trapezoidal_wave_sp(A=1, rise_time=50e-9, fall_time=50e-9, f0 = 1e6, D = 0.5, vel = 1/np.sqrt(l*c))
+    
     # def magnitude(t): return wf.trapezoidal_wave(
     #     t, A=1, rise_time=50e-9, fall_time=50e-9, f0=1e6, D=0.5)
     
-    # line.add_voltage_source(position=0.0, conductor=1, magnitude=magnitude)
+    
+    def e_x(x,z,t): return (x+z+t)*0
+    def e_z(x,z,t): return magnitude
+    # def e_z(x,z,t): return (x+z+t)*0
+    # def e_x(x,z,t): return magnitude
+    line.add_external_field(e_x, e_z, ref_distance=0.0, distances=np.array([wire_height]))
+    
+    probe = line.add_port_probe(0,0)
     # v_probe = line.add_probe(position=0.0, conductor=0, type='voltage')
 
-    # for t in line.get_time_range(finalTime):
-    #     line.step()
+    # line.set_time_step(NDT = 1000, final_time=finalTime)
+
+    for t in line.get_time_range(finalTime):
+        line.step()
 
 
-def test_field_integral():
-    
-    def magnitude_x(x, z, t): return x + z + t
-    def magnitude_z(x, z, t): return x + z + t
+    # plt.plot(1e9*probe.v0.t, 1e3*probe.v0.val, label = '0')
+    # plt.plot(1e9*probe.v1.t, 1e3*probe.v1.val, label = '1')
+    plt.plot(1e9*probe.v1.t, 1e3*(probe.v1.val-probe.v0.val), label = '1-0')
+    plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+    plt.xlabel(r'$t\,[ns]$')
+    plt.xticks(range(0, 100 ,10))
+    plt.grid('both')
+    plt.legend()
+    plt.show()
 
-    incident_field = mtln.Field(magnitude_x, magnitude_z)
+
