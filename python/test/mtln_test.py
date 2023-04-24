@@ -361,7 +361,7 @@ def test_cables_panel_experimental_comparison():
     
     p1p2 = rf.subnetwork(
         rf.Network(
-        'python/testData/cable_panel/Ch1P1Ch2P2-SParameters-Segmented.s2p'), [0])
+        'python/testData/cable_panel/experimental_measurements/Ch1P1Ch2P2-SParameters-Segmented.s2p'), [0])
     p1p2 = p1p2.interpolate(line_ntw.frequency)
 
     # Asserts correlation with [S11| measurements.
