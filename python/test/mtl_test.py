@@ -219,11 +219,50 @@ def test_ribbon_cable_1ns_paul_9_3():
     for t in line.get_time_range(finalTime):
         line.step()
 
+    # plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
+    # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+    # plt.xlabel(r'$t\,[ns]$')
+    # plt.xticks(range(0, 200, 50))
+    # plt.grid('both')
+    # plt.show()
+
     times = [12.5, 25, 40, 55]
     voltages = [120, 95, 55, 32]
     for (t, v) in zip(times, voltages):
         index = np.argmin(np.abs(v_probe.t - t*1e-9))
         assert np.all(np.isclose(v_probe.val[index], v*1e-3, atol=10e-3))
+
+def test_ribbon_cable_1ns_paul_9_3_lossless_lossy():
+    """
+    Described in Ch. 9.3.1 "Ribbon Cables" of Paul Clayton
+    Analysis of Multiconductor Transmission Lines. 2007. 
+    """
+    """
+    Uses lossy mtl class with no losses
+    """
+    l = np.zeros([2, 2])
+    l[0] = [0.7485*1e-6, 0.5077*1e-6]
+    l[1] = [0.5077*1e-6, 1.0154*1e-6]
+    c = np.zeros([2, 2])
+    c[0] = [37.432*1e-12, -18.716*1e-12]
+    c[1] = [-18.716*1e-12, 24.982*1e-12]
+
+    Zs, Zl = np.zeros([1, 2]), np.zeros([1, 2])
+    Zs[:] = [50, 50]
+    Zl[:] = [50, 50]
+
+    g = np.zeros([2, 2])
+    r = np.zeros([2, 2])
+    line = mtl.MTL_losses(l=l, c=c, g=g, r=r, length=2.0, nx=100, Zs=Zs, Zl=Zl)
+    finalTime = 200e-9
+
+    def magnitude(t): return wf.trapezoidal_wave(
+        t, A=1, rise_time=1e-9, fall_time=1e-9, f0=1e6, D=0.5)
+    line.add_voltage_source(position=0.0, conductor=1, magnitude=magnitude)
+    v_probe = line.add_probe(position=0.0, conductor=0, type='voltage')
+
+    for t in line.get_time_range(finalTime):
+        line.step()
 
     # plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
     # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
@@ -231,6 +270,12 @@ def test_ribbon_cable_1ns_paul_9_3():
     # plt.xticks(range(0, 200, 50))
     # plt.grid('both')
     # plt.show()
+
+    times = [12.5, 25, 40, 55]
+    voltages = [120, 95, 55, 32]
+    for (t, v) in zip(times, voltages):
+        index = np.argmin(np.abs(v_probe.t - t*1e-9))
+        assert np.all(np.isclose(v_probe.val[index], v*1e-3, atol=10e-3))
 
 
 def test_pcb_paul_9_3_2():

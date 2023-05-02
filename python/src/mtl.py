@@ -57,17 +57,22 @@ class MTL:
         types = [float, np.float64]
 
         if type(l) in types and type(c) in types:
-            self.l = np.array([[l]])
-            self.c = np.array([[c]])
+            self.l = np.empty(shape=(self.x.shape[0]-1,1,1))
+            self.c = np.empty(shape=(self.x.shape[0],1,1))
+            self.l[:] = l
+            self.c[:] = c
         elif type(l) == np.ndarray and type(c) == np.ndarray:
             assert (l.shape == c.shape)
             assert (l.shape[0] == l.shape[1])
-            self.l = l
-            self.c = c
+            n = l.shape[0]
+            self.l = np.empty(shape=(self.x.shape[0]-1,n,n))
+            self.c = np.empty(shape=(self.x.shape[0],n,n))
+            self.l[:] = l
+            self.c[:] = c
         else:
             raise ValueError("Invalid input L and/or C")
 
-        self.number_of_conductors = np.shape(self.l)[0]
+        self.number_of_conductors = np.shape(self.l)[1]
 
         if (type(Zs) != np.ndarray and type(Zl) != np.ndarray):
             self.zs = Zs * np.eye(self.number_of_conductors)
@@ -110,14 +115,16 @@ class MTL:
         
         self.dt = self.get_max_timestep()
 
-        self.v_term = np.eye(self.number_of_conductors)
-        self.i_term = np.eye(self.number_of_conductors)
+        self.v_term = np.empty(shape=(self.x.shape[0], self.number_of_conductors, self.number_of_conductors))
+        self.i_term = np.empty(shape=(self.x.shape[0]-1, self.number_of_conductors, self.number_of_conductors))
+        self.v_term[:] = np.eye(self.number_of_conductors)
+        self.i_term[:] = np.eye(self.number_of_conductors)
 
         self.i_diff = self.dt / self.dx * np.linalg.inv(self.c)
         self.v_diff = self.dt / self.dx * np.linalg.inv(self.l)
 
-        left_port_c = np.matmul(self.zs, self.c)
-        right_port_c = np.matmul(self.zl, self.c)
+        left_port_c = np.matmul(self.zs, self.c[0])
+        right_port_c = np.matmul(self.zl, self.c[-1])
 
         self.left_port_term_1 = np.matmul(
             np.linalg.inv(self.dx*left_port_c/self.dt +
@@ -136,7 +143,7 @@ class MTL:
             self.dx*right_port_c/self.dt+np.eye(self.number_of_conductors))
 
     def get_phase_velocities(self):
-        return 1/np.sqrt(np.diag(self.l.dot(self.c)))
+        return [1/np.sqrt(np.diag(self.l[k].dot(self.c[1+k]))) for k in range(self.x.shape[0]-1)]
 
     def get_max_timestep(self):
         return self.dx / np.max(self.get_phase_velocities())
@@ -196,22 +203,23 @@ class MTL:
         self.v[:, 0] = self.left_port_term_1.dot(self.v[:, 0]) + \
                        self.left_port_term_2.dot(-2*np.matmul(self.zs, self.i[:, 0]) + \
                        (self.v_sources_now[:, 0] + self.v_sources_prev[:, 0]) -\
-                       (self.dx/self.dt)* (self.zs.dot(self.c)).dot(self.e_T_now[:,0] - self.e_T_prev[:,0]))
+                       (self.dx/self.dt)* (self.zs.dot(self.c[0])).dot(self.e_T_now[:,0] - self.e_T_prev[:,0]))
 
-        self.v[:, 1:-1] = self.v_term.dot(self.v[:, 1:-1]) - \
-                          self.i_diff.dot(self.i[:, 1:]-self.i[:, :-1]) - \
-                         (self.e_T_now[:,1:-1] - self.e_T_prev[:,1:-1])
+        for kz in range(1,self.v.shape[1]-1):
+            self.v[:, kz] = self.v_term[kz].dot(self.v[:, kz]) - \
+                            self.i_diff[kz].dot(self.i[:, kz]-self.i[:, kz-1]) - \
+                            (self.e_T_now[:,kz] - self.e_T_prev[:,kz])
 
         self.v[:, -1] = self.right_port_term_1.dot(self.v[:, -1]) + \
                         self.right_port_term_2.dot(+2*np.matmul(self.zl, self.i[:, -1]) + \
                         (self.v_sources_now[:, -1] + self.v_sources_prev[:, -1]) -\
-                        (self.dx/self.dt)*(self.zl.dot(self.c)).dot(self.e_T_now[:,-1] - self.e_T_prev[:,-1]))
+                        (self.dx/self.dt)*(self.zl.dot(self.c[-1])).dot(self.e_T_now[:,-1] - self.e_T_prev[:,-1]))
 
-        self.i[:, :] = self.i_term.dot(self.i[:, :]) -\
-                       self.v_diff.dot(self.v[:, 1:]-self.v[:, :-1] + \
-                       (self.e_T_now[:, 1:] - self.e_T_now[:, :-1]) -\
-                        (self.dx/2)*(self.e_L_now[:,:] + self.e_L_prev[:,:])) 
-                       
+        for kz in range(0,self.i.shape[1]):
+            self.i[:, kz] = self.i_term[kz].dot(self.i[:, kz]) -\
+                        self.v_diff[kz].dot(self.v[:, kz+1]-self.v[:, kz] + \
+                        (self.e_T_now[:, kz+1] - self.e_T_now[:, kz]) -\
+                            (self.dx/2)*(self.e_L_now[:,kz] + self.e_L_prev[:,kz])) 
 
         self.time += self.dt
         self.update_probes()
@@ -313,39 +321,50 @@ class MTL_losses(MTL):
     def __init__(self, l, c, g, r, length=1.0, nx=100, Zs=0.0, Zl=0.0):
         super().__init__(l, c, length=length, nx=nx, Zs=Zs, Zl=Zl)
 
-        if type(g) == float and type(r) == float:
-            self.g = np.array([[g]])
-            self.r = np.array([[r]])
+        types = [float, np.float64]
+
+        if type(g) in types and type(r) in types:
+            self.r = np.empty(shape=(self.x.shape[0]-1,1,1))
+            self.g = np.empty(shape=(self.x.shape[0],1,1))
+            self.g[:] = g
+            self.r[:] = r
         elif type(g) == np.ndarray and type(r) == np.ndarray:
             assert (g.shape == r.shape)
             assert (g.shape[0] == r.shape[1])
-            self.g = g
-            self.r = r
+            n = g.shape[0]
+            self.r = np.empty(shape=(self.x.shape[0]-1,n,n))
+            self.g = np.empty(shape=(self.x.shape[0],n,n))
+            self.r[:] = r
+            self.g[:] = g
         else:
             raise ValueError("Invalid input G and/or R")
 
         dx = self.dx
 
-        self.v_term = np.linalg.inv(
-            (dx/self.dt)*self.c + (dx/2)*self.g).dot((dx/self.dt)*self.c - (dx/2)*self.g)
-        self.i_term = np.linalg.inv(
-            (dx/self.dt)*self.l + (dx/2)*self.r).dot((dx/self.dt)*self.l - (dx/2)*self.r)
+        for kz in range(self.x.shape[0]-1):
+            self.v_term[kz] = np.linalg.inv(
+                (dx/self.dt)*self.c[kz] + (dx/2)*self.g[kz]).dot((dx/self.dt)*self.c[kz] - (dx/2)*self.g[kz])
+            self.i_term[kz] = np.linalg.inv(
+                (dx/self.dt)*self.l[kz] + (dx/2)*self.r[kz]).dot((dx/self.dt)*self.l[kz] - (dx/2)*self.r[kz])
+        kz = self.x.shape[0]-1
+        self.v_term[kz] = np.linalg.inv(
+            (dx/self.dt)*self.c[kz] + (dx/2)*self.g[kz]).dot((dx/self.dt)*self.c[kz] - (dx/2)*self.g[kz])
 
         self.i_diff = np.linalg.inv((dx/self.dt)*self.c + (dx/2)*self.g)
         self.v_diff = np.linalg.inv((dx/self.dt)*self.l + (dx/2)*self.r)
 
         self.left_port_term_1 = np.matmul(
-            np.linalg.inv(dx*(np.matmul(self.zs, self.c))/self.dt + dx *
-                          (np.matmul(self.zs, self.g))/2 + np.eye(self.number_of_conductors)),
-            dx*(np.matmul(self.zs, self.c))/self.dt - dx*(np.matmul(self.zs, self.g))/2 - np.eye(self.number_of_conductors))
+            np.linalg.inv(dx*(np.matmul(self.zs, self.c[0]))/self.dt + dx *
+                          (np.matmul(self.zs, self.g[0]))/2 + np.eye(self.number_of_conductors)),
+            dx*(np.matmul(self.zs, self.c[0]))/self.dt - dx*(np.matmul(self.zs, self.g[0]))/2 - np.eye(self.number_of_conductors))
 
-        self.left_port_term_2 = np.linalg.inv(dx*(np.matmul(self.zs, self.c))/self.dt + dx*(
-            np.matmul(self.zs, self.g))/2 + np.eye(self.number_of_conductors))
+        self.left_port_term_2 = np.linalg.inv(dx*(np.matmul(self.zs, self.c[0]))/self.dt + dx*(
+            np.matmul(self.zs, self.g[0]))/2 + np.eye(self.number_of_conductors))
 
         self.right_port_term_1 = np.matmul(
-            np.linalg.inv(dx*(np.matmul(self.zl, self.c))/self.dt + dx *
-                          (np.matmul(self.zl, self.g))/2 + np.eye(self.number_of_conductors)),
-            dx*(np.matmul(self.zl, self.c))/self.dt - dx*(np.matmul(self.zl, self.g))/2 - np.eye(self.number_of_conductors))
+            np.linalg.inv(dx*(np.matmul(self.zl, self.c[-1]))/self.dt + dx *
+                          (np.matmul(self.zl, self.g[-1]))/2 + np.eye(self.number_of_conductors)),
+            dx*(np.matmul(self.zl, self.c[-1]))/self.dt - dx*(np.matmul(self.zl, self.g[-1]))/2 - np.eye(self.number_of_conductors))
 
-        self.right_port_term_2 = np.linalg.inv(dx*(np.matmul(self.zl, self.c))/self.dt + dx*(
-            np.matmul(self.zl, self.g))/2 + np.eye(self.number_of_conductors))
+        self.right_port_term_2 = np.linalg.inv(dx*(np.matmul(self.zl, self.c[-1]))/self.dt + dx*(
+            np.matmul(self.zl, self.g[-1]))/2 + np.eye(self.number_of_conductors))
