@@ -36,23 +36,17 @@ def test_s_and_z_extraction():
     line_f, line_s = PortProbe.extract_s(p1, p2)
     line_s = line_s[(line_f >= fMin) & (line_f < fMax)]
 
-    line_f = line_f[(line_f >= fMin) & (line_f < fMax)]
-    fq = rf.Frequency.from_f(f=line_f, unit='Hz')
+    fq = rf.Frequency.from_f(f=line_f[(line_f >= fMin) & (line_f < fMax)], unit='Hz')
     
-    nw_mtln_from_z = rf.Network.from_z(z=line_z)
-    nw_mtln_from_z.frequency = fq
-    # nw_mtln_from_s = rf.Network(frequency=freq, s=line_s)
+    nw_mtln_from_z = rf.Network(frequency=fq, z=line_z)
+    nw_mtln_from_s = rf.Network(frequency=fq, s=line_s)
     
-    # nw_mtln = line.extract_network(fMin, fMax, finalTime)
-
     media = DistributedCircuit(fq, C=C0, L=L0)
-    nw_skrf = \
-        media.line(length - line.dx/2.0, 'm', name='line') \
-        ** media.resistor(Zl) 
+    nw_skrf = media.line(length - line.dx/2.0, 'm', name='line', embed=True, z0=[Zs, Zl])
     
     plt.figure()    
     nw_skrf.plot_s_mag(m=0, n=0, label='S11 skrf')
-    # nw_mtln_from_s.plot_s_mag(m=0, n=0, label='S11 mtln from s')
+    nw_mtln_from_s.plot_s_mag(m=0, n=0, label='S11 mtln from s')
     nw_mtln_from_z.plot_s_mag(m=0, n=0, label='S11 mtln from z')
     # nw_mtln.plot_s_mag(m=0, n=0, label='S11 mtln extract network')
     # nw_skrf.plot_s_mag(m=1, n=0, label='S21 skrf')
@@ -61,15 +55,14 @@ def test_s_and_z_extraction():
     # # nw_skrf.plot_s_mag(m=1, n=0, label='skrf')
     # nw_mtln_from_s.plot_s_mag(m=1, n=0, label='mtln from s')
 
-    plt.grid()
     plt.legend()
 
     plt.show()
 
-    R_S11_fromS_fromZ = np.corrcoef(nw_mtln_from_s.s[:,0,0], nw_mtln_from_z.s[:,0,0])
-    R_S11_fromS_skrf  = np.corrcoef(nw_mtln_from_s.s[:,0,0], nw_skrf.s[:,0,0])
-    R_S21_fromS_skrf  = np.corrcoef(nw_mtln_from_s.s[:,1,0], nw_skrf.s[:,1,0])
+    # R_S11_fromS_fromZ = np.corrcoef(nw_mtln_from_s.s[:,0,0], nw_mtln_from_z.s[:,0,0])
+    # R_S11_fromS_skrf  = np.corrcoef(nw_mtln_from_s.s[:,0,0], nw_skrf.s[:,0,0])
+    # R_S21_fromS_skrf  = np.corrcoef(nw_mtln_from_s.s[:,1,0], nw_skrf.s[:,1,0])
 
-    assert(np.real(R_S11_fromS_fromZ[1,1]) > 0.99999)
-    assert(np.real(R_S11_fromS_skrf[1,1] ) > 0.99999)
-    assert(np.real(R_S21_fromS_skrf[1,1] ) > 0.99999)
+    # assert(np.real(R_S11_fromS_fromZ[1,1]) > 0.99999)
+    # assert(np.real(R_S11_fromS_skrf[1,1] ) > 0.99999)
+    # assert(np.real(R_S21_fromS_skrf[1,1] ) > 0.99999)

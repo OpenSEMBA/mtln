@@ -233,15 +233,17 @@ class MTL:
         if terminal == 0:
             x0 = self.x[0]
             x1 = self.x[1]
+            z0 = self.zs
         if terminal == 1:
             x0 = self.x[-2]
             x1 = self.x[-1]
+            z0 = self.zl
 
         v0 = self.add_probe(position=x0, conductor=0, type='voltage')
         v1 = self.add_probe(position=x1, conductor=0, type='voltage')
         i0 = self.add_probe(position=(x0+x1)/2.0, conductor=0, type='current')
 
-        port_probe = PortProbe(v0, v1, i0)
+        port_probe = PortProbe(v0, v1, i0, z0)
         self.port_probes.append(port_probe)
 
         return port_probe
@@ -255,24 +257,6 @@ class MTL:
 
     def extract_network(self, fMin, fMax, finalTime):
 
-        # line = self.create_clean_copy()
-
-        # spread = 1/fMax/2.0
-        # delay = 8*spread
-
-        # def gauss(t):
-        #     return np.exp(- (t-delay)**2 / (2*spread**2))
-        # line.add_voltage_source(position=line.x[0], conductor=0, magnitude=gauss)
-        # port_1 = line.add_port_probe(terminal=0, conductor=0)
-        # port_2 = line.add_port_probe(terminal=1, conductor=0)
-
-        # line.run_until(finalTime)
-
-        # f, s = PortProbe.extract_s(port_1, port_2, [self.zs, self.zl])
-        # fq = rf.Frequency.from_f(f[(f >= fMin) & (f < fMax)], unit='Hz')
-        # s = s[(f >= fMin) & (f < fMax), :, :]
-        # ntw = rf.Network(frequency=fq, s=s)
-
         line = self.create_clean_copy()
 
         spread = 1/fMax/2.0
@@ -280,23 +264,15 @@ class MTL:
 
         def gauss(t):
             return np.exp(- (t-delay)**2 / (2*spread**2))
-        line.add_voltage_source(
-            position=self.x[0], conductor=0, magnitude=gauss)
-        p11 = line.add_port_probe(terminal=0, conductor=0)
+        line.add_voltage_source(position=line.x[0], conductor=0, magnitude=gauss)
+        port_1 = line.add_port_probe(terminal=0, conductor=0)
+        port_2 = line.add_port_probe(terminal=1, conductor=0)
 
-        for _ in line.get_time_range(finalTime):
-            line.step()
+        line.run_until(finalTime)
 
-        f, z11_fft = p11.extract_z()
+        f, s = PortProbe.extract_s(port_1, port_2)
         fq = rf.Frequency.from_f(f[(f >= fMin) & (f < fMax)], unit='Hz')
-        z11 = np.zeros((len(fq.f), 1, 1), dtype="complex64")
-        z11[:, 0, 0] = z11_fft[(f >= fMin) & (f < fMax)]
-
-        ntw = rf.Network.from_z(z11)
-        ntw.frequency = fq
-
-        return ntw
-
+        return rf.Network(frequency=fq, s=s[(f >= fMin) & (f < fMax), :, :])
 
 class MTL_losses(MTL):
     def __init__(self, l, c, g, r, length=1.0, nx=100, Zs=0.0, Zl=0.0):
