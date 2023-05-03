@@ -2,11 +2,14 @@ import numpy as np
 import skrf as rf
 
 from copy import deepcopy
-from numpy.fft import fft, fftfreq, fftshift
+
 import sympy as sp
 
 from types import FunctionType
 from types import LambdaType
+
+from .probes import *
+
 
 class Field:
     def __init__(self, incident_x, incident_z):
@@ -14,36 +17,6 @@ class Field:
 
         self.e_x = incident_x
         self.e_z = incident_z
-
-class Probe:
-    def __init__(self, position, conductor, type):
-        self.type = type
-        self.position = position
-        self.conductor = conductor
-        self.t = np.array([])
-        self.val = np.array([])
-
-
-class PortProbe:
-    def __init__(self, v0: Probe, v1: Probe, i0: Probe):
-        self.v0 = v0
-        self.v1 = v1
-        self.i0 = i0
-
-    def extract_z(self):
-        dt = self.v1.t[1] - self.v0.t[0]
-        f = fftshift(fftfreq(len(self.v0.t), dt))
-        v0_fft = fftshift(fft(self.v0.val))
-        v1_fft = fftshift(fft(self.v1.val))
-
-        tAux = np.append(- dt/2.0, self.i0.t)
-        self.i0.t = (tAux[:-1] + tAux[1:]) / 2.0
-        valAux = np.append(self.i0.val[0], self.i0.val)
-        self.i0.val = (valAux[:-1] + valAux[1:]) / 2.0
-        i0_fft = fftshift(fft(self.i0.val))
-        z11_fft = (v0_fft + v1_fft) / 2.0 / i0_fft
-
-        return f, z11_fft
 
 
 class MTL:
@@ -96,18 +69,21 @@ class MTL:
 
         self.probes = []
         self.port_probes = []
-        self.v_sources = np.empty(shape=(self.number_of_conductors, self.x.shape[0]), dtype=object)
+        self.v_sources = np.empty(
+            shape=(self.number_of_conductors, self.x.shape[0]), dtype=object)
         self.v_sources.fill(lambda n: 0)
 
-        self.e_L = np.empty(shape=(self.number_of_conductors, self.x.shape[0]-1), dtype=object)
-        self.e_T = np.empty(shape=(self.number_of_conductors, self.x.shape[0]), dtype=object)
+        self.e_L = np.empty(shape=(self.number_of_conductors,
+                            self.x.shape[0]-1), dtype=object)
+        self.e_T = np.empty(
+            shape=(self.number_of_conductors, self.x.shape[0]), dtype=object)
         self.e_L.fill(lambda n: 0)
         self.e_T.fill(lambda n: 0)
 
         self.time = 0.0
 
         self.dx = self.x[1] - self.x[0]
-        
+
         self.dt = self.get_max_timestep()
 
         self.v_term = np.eye(self.number_of_conductors)
@@ -165,56 +141,53 @@ class MTL:
                 else:
                     probe.val = np.append(
                         probe.val, self.i[probe.conductor, index])
-            elif probe.type == "current at terminal":
-                probe.t = np.append(probe.t, self.time)
-                vs = self.v_sources[probe.conductor, index](self.time)
-                v1 = self.v[probe.conductor, index]
-                if index == 0:
-                    Gs = 1/self.zs[probe.conductor]
-                else:
-                    Gs = 1/self.zl[probe.conductor]
-
-                Is = -Gs*v1 + Gs*vs
-                probe.val = np.append(probe.val, Is)
             else:
                 raise ValueError("undefined probe")
 
-
     def update_sources(self):
-        self.v_sources_now  = np.vectorize(FunctionType.__call__, otypes=["float64"])(self.v_sources, self.time)
-        self.v_sources_prev = np.vectorize(FunctionType.__call__, otypes=["float64"])(self.v_sources, self.time-self.dt)
+        self.v_sources_now = np.vectorize(FunctionType.__call__, otypes=[
+                                          "float64"])(self.v_sources, self.time)
+        self.v_sources_prev = np.vectorize(FunctionType.__call__, otypes=[
+                                           "float64"])(self.v_sources, self.time-self.dt)
 
-        self.e_L_now  = np.vectorize(FunctionType.__call__, otypes=["float64"])(self.e_L, self.time+self.dt/2)
-        self.e_L_prev = np.vectorize(FunctionType.__call__, otypes=["float64"])(self.e_L, self.time-self.dt/2)
-        self.e_T_now  = np.vectorize(FunctionType.__call__, otypes=["float64"])(self.e_T, self.time)
-        self.e_T_prev = np.vectorize(FunctionType.__call__, otypes=["float64"])(self.e_T, self.time-self.dt)
+        self.e_L_now = np.vectorize(FunctionType.__call__, otypes=[
+                                    "float64"])(self.e_L, self.time+self.dt/2)
+        self.e_L_prev = np.vectorize(FunctionType.__call__, otypes=[
+                                     "float64"])(self.e_L, self.time-self.dt/2)
+        self.e_T_now = np.vectorize(FunctionType.__call__, otypes=[
+                                    "float64"])(self.e_T, self.time)
+        self.e_T_prev = np.vectorize(FunctionType.__call__, otypes=[
+                                     "float64"])(self.e_T, self.time-self.dt)
 
     def step(self):
 
         self.update_sources()
 
         self.v[:, 0] = self.left_port_term_1.dot(self.v[:, 0]) + \
-                       self.left_port_term_2.dot(-2*np.matmul(self.zs, self.i[:, 0]) + \
-                       (self.v_sources_now[:, 0] + self.v_sources_prev[:, 0]) -\
-                       (self.dx/self.dt)* (self.zs.dot(self.c)).dot(self.e_T_now[:,0] - self.e_T_prev[:,0]))
+            self.left_port_term_2.dot(-2*np.matmul(self.zs, self.i[:, 0]) +
+                                      (self.v_sources_now[:, 0] + self.v_sources_prev[:, 0]) -
+                                      (self.dx/self.dt) * (self.zs.dot(self.c)).dot(self.e_T_now[:, 0] - self.e_T_prev[:, 0]))
 
         self.v[:, 1:-1] = self.v_term.dot(self.v[:, 1:-1]) - \
-                          self.i_diff.dot(self.i[:, 1:]-self.i[:, :-1]) - \
-                         (self.e_T_now[:,1:-1] - self.e_T_prev[:,1:-1])
+            self.i_diff.dot(self.i[:, 1:]-self.i[:, :-1]) - \
+            (self.e_T_now[:, 1:-1] - self.e_T_prev[:, 1:-1])
 
         self.v[:, -1] = self.right_port_term_1.dot(self.v[:, -1]) + \
-                        self.right_port_term_2.dot(+2*np.matmul(self.zl, self.i[:, -1]) + \
-                        (self.v_sources_now[:, -1] + self.v_sources_prev[:, -1]) -\
-                        (self.dx/self.dt)*(self.zl.dot(self.c)).dot(self.e_T_now[:,-1] - self.e_T_prev[:,-1]))
+            self.right_port_term_2.dot(+2*np.matmul(self.zl, self.i[:, -1]) +
+                                       (self.v_sources_now[:, -1] + self.v_sources_prev[:, -1]) -
+                                       (self.dx/self.dt)*(self.zl.dot(self.c)).dot(self.e_T_now[:, -1] - self.e_T_prev[:, -1]))
 
         self.i[:, :] = self.i_term.dot(self.i[:, :]) -\
-                       self.v_diff.dot(self.v[:, 1:]-self.v[:, :-1] + \
-                       (self.e_T_now[:, 1:] - self.e_T_now[:, :-1]) -\
-                        (self.dx/2)*(self.e_L_now[:,:] + self.e_L_prev[:,:])) 
-                       
+            self.v_diff.dot(self.v[:, 1:]-self.v[:, :-1] +
+                            (self.e_T_now[:, 1:] - self.e_T_now[:, :-1]) -
+                            (self.dx/2)*(self.e_L_now[:, :] + self.e_L_prev[:, :]))
 
         self.time += self.dt
         self.update_probes()
+
+    def run_until(self, finalTime):
+        for _ in self.get_time_range(finalTime):
+            self.step()
 
     def add_voltage_source(self, position: float, conductor: int, magnitude):
         index = np.argmin(np.abs(self.x - position))
@@ -222,40 +195,35 @@ class MTL:
         probe = self.add_probe(position, conductor, 'voltage')
         return probe
 
-
     def add_external_field(self, e_x, e_z, ref_distance, distances: np.ndarray):
-        
+
         field = Field(e_x, e_z)
         ex = sp.Function('ex')
         ez = sp.Function('ez')
         x, z, t, v = sp.symbols("x z t v")
         ex = field.e_x
         ez = field.e_z
-        
+
         vmax = np.max(self.get_phase_velocities())
-        
+
         for n in range(self.number_of_conductors):
             et = ex(x, z, t).integrate(x, (x, ref_distance, distances[n]))
             for nz in range(self.x.size - 1):
                 pos = self.x[nz]
-                self.e_L[n,nz]  = sp.lambdify(t, 
-                                    ez(x, z, t).subs(x,distances[n]).subs(v, vmax).subs(z,pos - 0.5*self.dx) - 
-                                    ez(x, z, t).subs(x,ref_distance).subs(v, vmax).subs(z,pos - 0.5*self.dx)
-                                    )
-                self.e_T[n,nz] = sp.lambdify(t, et.subs(z, pos))
+                self.e_L[n, nz] = sp.lambdify(t,
+                                              ez(x, z, t).subs(x, distances[n]).subs(v, vmax).subs(z, pos - 0.5*self.dx) -
+                                              ez(x, z, t).subs(x, ref_distance).subs(
+                                                  v, vmax).subs(z, pos - 0.5*self.dx)
+                                              )
+                self.e_T[n, nz] = sp.lambdify(t, et.subs(z, pos))
 
             nz = self.x.size - 1
             pos = self.x[nz]
-            self.e_T[n,nz] = sp.lambdify(t, et.subs(z, pos))
-
+            self.e_T[n, nz] = sp.lambdify(t, et.subs(z, pos))
 
     def add_probe(self, position: float, conductor: int, type: str):
         if (position > self.x[-1]) or (position < 0.0):
             raise ValueError("Probe position is out of MTL length.")
-        if (type == "current at terminal"):
-            if (position != 0.0) and (position != self.x[-1]):
-                raise ValueError(
-                    "Current at terminal probe must be on and end of the MTL.")
 
         probe = Probe(position, conductor, type)
         self.probes.append(probe)
@@ -265,6 +233,9 @@ class MTL:
         if terminal == 0:
             x0 = self.x[0]
             x1 = self.x[1]
+        if terminal == 1:
+            x0 = self.x[-2]
+            x1 = self.x[-1]
 
         v0 = self.add_probe(position=x0, conductor=0, type='voltage')
         v1 = self.add_probe(position=x1, conductor=0, type='voltage')
@@ -283,6 +254,24 @@ class MTL:
         return r
 
     def extract_network(self, fMin, fMax, finalTime):
+
+        # line = self.create_clean_copy()
+
+        # spread = 1/fMax/2.0
+        # delay = 8*spread
+
+        # def gauss(t):
+        #     return np.exp(- (t-delay)**2 / (2*spread**2))
+        # line.add_voltage_source(position=line.x[0], conductor=0, magnitude=gauss)
+        # port_1 = line.add_port_probe(terminal=0, conductor=0)
+        # port_2 = line.add_port_probe(terminal=1, conductor=0)
+
+        # line.run_until(finalTime)
+
+        # f, s = PortProbe.extract_s(port_1, port_2, [self.zs, self.zl])
+        # fq = rf.Frequency.from_f(f[(f >= fMin) & (f < fMax)], unit='Hz')
+        # s = s[(f >= fMin) & (f < fMax), :, :]
+        # ntw = rf.Network(frequency=fq, s=s)
 
         line = self.create_clean_copy()
 

@@ -70,8 +70,7 @@ def test_coaxial_line_initial_voltage():
     v_probe = line.add_probe(position=200, conductor=0, type='voltage')
 
     finalTime = 10e-6
-    for t in line.get_time_range(finalTime):
-        line.step()
+    line.run_until(finalTime)
 
     # plt.plot(v_probe.t, v_probe.val)
     # plt.show()
@@ -91,9 +90,8 @@ def test_coaxial_line_paul_8_6_square():
     line.add_voltage_source(position=0.0, conductor=0, magnitude=magnitude)
     v_probe = line.add_probe(position=0.0, conductor=0, type='voltage')
     i_probe = line.add_probe(position=400.0, conductor=0, type='current')
-
-    for t in line.get_time_range(finalTime):
-        line.step()
+    
+    line.run_until(finalTime)
 
     xticks = range(int(np.floor(min(1e6*i_probe.t))),
                    int(np.ceil(max(1e6*i_probe.t))+1))
@@ -257,10 +255,8 @@ def test_pcb_paul_9_3_2():
     line.add_voltage_source(position=0.0, conductor=1, magnitude=magnitude)
     v_probe = line.add_probe(position=0.0, conductor=0, type='voltage')
 
-    for t in line.get_time_range(finalTime):
-        line.step()
-
-
+    line.run_until(finalTime)
+    
     times = [5, 10, 15, 20]
     voltages = [80, 62.5, 23, 8]
     for (t, v) in zip(times, voltages):
@@ -316,28 +312,28 @@ def test_extract_network_paul_8_6_150ohm_load():
 
     line = mtln.MTL(l=L0, c=C0, length=length, Zs=Zs, Zl=Zl)
     line_ntw = line.extract_network(fMin=0.01e6, fMax=1e6, finalTime=250e-6)
-
+    
     media = DistributedCircuit(line_ntw.frequency, C=C0, L=L0)
     skrf_tl = \
         media.line(length - line.dx/2.0, 'm', name='line') \
-        ** media.resistor(Zl) ** media.short()
+        ** media.resistor(Zl) 
+
+    plt.figure()
+    skrf_tl.plot_s_mag( m=0, n=0, label='skrf')
+    line_ntw.plot_s_mag(m=0, n=0, label='mtl')
+    plt.grid()
+    plt.legend()
+
+    plt.figure()
+    skrf_tl.plot_s_deg(label='skrf')
+    line_ntw.plot_s_deg(label='mtl')
+    plt.grid()
+    plt.legend()
+
+    plt.show()
 
     assert np.allclose(np.abs(skrf_tl.s), np.abs(line_ntw.s))
     assert np.allclose(np.angle(skrf_tl.s), np.angle(line_ntw.s))
-
-    # skrf_tl.plot_s_mag(label='skrf')
-    # line_ntw.plot_s_mag(label='mtl')
-    # plt.grid()
-    # plt.legend()
-
-    # plt.figure()
-    # skrf_tl.plot_s_deg(label='skrf')
-    # line_ntw.plot_s_deg(label='mtl')
-    # plt.grid()
-    # plt.legend()
-
-    # plt.show()
-
 
 def test_cables_panel_experimental_comparison():
     # Gets L and C matrices from SACAMOS cable_panel_4cm.bundle
