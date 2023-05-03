@@ -47,14 +47,22 @@ class Port:
     @staticmethod
     def extract_s(port1, port2):
         ''' Using: https://en.wikipedia.org/wiki/Scattering_parameters '''
-        f, a1, b1 = port1.__get_incident_and_reflected_power_wave()
-        _, a2, b2 = port2.__get_incident_and_reflected_power_wave(
-            invertCurrent=True)
+        if (np.all(port1.z0 != 0) & np.all(port2.z0 != 0)):
+            f, a1, b1 = port1.__get_incident_and_reflected_power_wave()
+            _, a2, b2 = port2.__get_incident_and_reflected_power_wave(
+                invertCurrent=True)
 
-        s = np.zeros((len(f), 2, 2), dtype=complex)
-        s[:, 0, 0] = b1[:,0]/a1[:,0]
-        s[:, 1, 0] = b2[:,0]/a1[:,0]
-        s[:, 0, 1] = b1[:,0]/a2[:,0]
-        s[:, 1, 1] = b2[:,0]/a2[:,0]
+            s = np.zeros((len(f), 2, 2), dtype=complex)
+            s[:, 0, 0] = b1[:,0]/a1[:,0]
+            s[:, 1, 0] = b2[:,0]/a1[:,0]
+            s[:, 0, 1] = b1[:,0]/a2[:,0]
+            s[:, 1, 1] = b2[:,0]/a2[:,0]
+        
+        if np.all(port1.z0 != 0) & np.any(port2.z0 == 0):
+            f, a1, b1 = port1.__get_incident_and_reflected_power_wave()
+            
+            s = np.zeros((len(f), 1, 1), dtype=complex)
+            s[:, 0, 0] = b1[:,0]/a1[:,0]
+
 
         return f, s

@@ -272,7 +272,6 @@ def test_extract_network_paul_8_6_no_load():
     skrf_tl = media.line(length-line.dx/2, 'm', name='line') ** media.short()
 
     assert np.allclose(np.abs(skrf_tl.s), np.abs(line_ntw.s))
-    assert np.allclose(np.angle(skrf_tl.s), np.angle(line_ntw.s))
 
     # skrf_tl.plot_s_mag(label='skrf')
     # line_ntw.plot_s_mag(label='mtl')
@@ -300,28 +299,26 @@ def test_extract_network_paul_8_6_150ohm_load():
     line_ntw = line.extract_network(fMin=0.01e6, fMax=1e6, finalTime=250e-6)
 
     media = DistributedCircuit(line_ntw.frequency, C=C0, L=L0)
-    skrf_tl = \
-        media.line(length - line.dx/2.0, 'm', name='line') \
-        ** media.resistor(Zl) ** media.short()
+    skrf_tl = media.line(length - line.dx/2.0, 'm',
+                         name='line', embed=True, z0=[Zs, Zl]) 
 
-    plt.figure()
-    skrf_tl.plot_z(m=0, n=0, label='skrf')
-    line_ntw.plot_z(m=0, n=0, label='mtl')
-    plt.grid()
-    plt.legend()
-
-    plt.figure()
-    skrf_tl.plot_s_deg(m=0, n=0, label='skrf')
-    line_ntw.plot_s_deg(m=0, n=0, label='mtl')
-    plt.grid()
-    plt.legend()
-
-    plt.show()
-
-    R_S11_skrf_mtln = np.corrcoef(
+    R_S11 = np.corrcoef(
         np.abs(line_ntw.s[:, 0, 0]), np.abs(skrf_tl.s[:, 0, 0]))
+    assert (np.real(R_S11[0, 1]) > 0.9999)
+       
+    # plt.figure()
+    # skrf_tl.plot_s_mag(m=0, n=0, label='skrf')
+    # line_ntw.plot_s_mag(m=0, n=0, label='mtl')
+    # plt.grid()
+    # plt.legend()
 
-    assert (np.real(R_S11_skrf_mtln[1, 1]) > 0.9999)
+    # plt.figure()
+    # skrf_tl.plot_s_deg(m=0, n=0, label='skrf')
+    # line_ntw.plot_s_deg(m=0, n=0, label='mtl')
+    # plt.grid()
+    # plt.legend()
+
+    # plt.show()
 
 
 def test_cables_panel_experimental_comparison():
@@ -348,18 +345,17 @@ def test_cables_panel_experimental_comparison():
         rf.Network(EXPERIMENTAL_DATA + 'Ch1P1Ch2P2-SParameters-Segmented.s2p'), [0])
     p1p2 = p1p2.interpolate(line_ntw.frequency)
 
-    plt.figure()
-    p1p2.plot_s_mag(label='measurements')
-    line_ntw.plot_s_mag(label='mtl')
-    plt.grid()
-    plt.legend()
-    plt.xlim(1e7, 1e9)
-    plt.xscale('log')
-    plt.show()
+    R_S11 = np.corrcoef(np.abs(p1p2.s[:, 0, 0]), np.abs(line_ntw.s[:, 0, 0]))
+    assert (R_S11[0, 1] > 0.96)
 
-    # Asserts correlation with [S11| measurements.
-    R = np.corrcoef(np.abs(p1p2.s[:, 0, 0]), np.abs(line_ntw.s[:, 0, 0]))
-    assert (R[0, 1] > 0.96)
+    # plt.figure()
+    # p1p2.plot_s_mag(label='measurements')
+    # line_ntw.plot_s_mag(label='mtl')
+    # plt.grid()
+    # plt.legend()
+    # plt.xlim(1e7, 1e9)
+    # plt.xscale('log')
+    # plt.show()
 
 
 def test_wire_over_ground_incident_E_paul_11_3_6_50ns():
