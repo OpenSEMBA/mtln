@@ -11,6 +11,7 @@ import src.waveforms as wf
 import skrf as rf
 from skrf.media import DistributedCircuit
 
+EXPERIMENTAL_DATA = 'python/testData/cable_panel/experimental_measurements/'
 
 def test_trapezoidal_pulse_sp():
 
@@ -76,8 +77,8 @@ def test_coaxial_line_paul_8_6_square():
 
     def magnitude(t): return wf.square_pulse(t, 100, 6e-6)
     line.add_voltage_source(position=0.0, conductor=0, magnitude=magnitude)
-    v_probe = line.add_probe(position=0.0, conductor=0, type='voltage')
-    i_probe = line.add_probe(position=400.0, conductor=0, type='current')
+    v_probe = line.add_probe(position=0.0, type='voltage')
+    i_probe = line.add_probe(position=400.0, type='current')
 
     line.run_until(finalTime)
 
@@ -90,7 +91,7 @@ def test_coaxial_line_paul_8_6_square():
     for (t_start, t_end, v) in zip(start_times, end_times, check_voltages):
         start = np.argmin(np.abs(v_probe.t - t_start*1e-6))
         end = np.argmin(np.abs(v_probe.t - t_end*1e-6))
-        assert np.all(np.isclose(v_probe.val[start:end], v))
+        assert np.all(np.isclose(v_probe.val[start:end, 0], v))
 
     # plt.figure()
     # plt.plot(1e6*v_probe.t, v_probe.val)
@@ -119,7 +120,7 @@ def test_coaxial_line_paul_8_6_triangle():
 
     def magnitude(t): return wf.triangle_pulse(t, 100, 6e-6)
     line.add_voltage_source(position=0.0, conductor=0, magnitude=magnitude)
-    v_probe = line.add_probe(position=0.0, conductor=0, type='voltage')
+    v_probe = line.add_probe(position=0.0, type='voltage')
 
     line.run_until(finalTime)
 
@@ -127,7 +128,7 @@ def test_coaxial_line_paul_8_6_triangle():
     voltages = [16.67, 12.5, -12.5, -25, 6.25, 12.5]
     for (t, v) in zip(times, voltages):
         index = np.argmin(np.abs(v_probe.t - t*1e-6))
-        assert np.all(np.isclose(v_probe.val[index], v, atol=0.5))
+        assert np.all(np.isclose(v_probe.val[index, 0], v, atol=0.5))
 
     # xticks = range(int(np.floor(min(1e6*v_probe.t))), int(np.ceil(max(1e6*v_probe.t))+1))
 
@@ -160,13 +161,13 @@ def test_ribbon_cable_20ns_paul_9_3():
     def magnitude(t): return wf.trapezoidal_wave(
         t, A=1, rise_time=20e-9, fall_time=20e-9, f0=1e6, D=0.5)
     line.add_voltage_source(position=0.0, conductor=1, magnitude=magnitude)
-    v_probe = line.add_probe(position=0.0, conductor=0, type='voltage')
+    v_probe = line.add_probe(position=0.0, type='voltage')
 
     line.run_until(finalTime)
 
     # From Paul's book:
     # "The crosstalk waveform rises to a peak of around 110 mV [...]"
-    assert (np.isclose(np.max(v_probe.val), 113e-3, atol=1e-3))
+    assert (np.isclose(np.max(v_probe.val[:,0]), 113e-3, atol=1e-3))
 
     # plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
     # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
@@ -198,7 +199,7 @@ def test_ribbon_cable_1ns_paul_9_3():
     def magnitude(t): return wf.trapezoidal_wave(
         t, A=1, rise_time=1e-9, fall_time=1e-9, f0=1e6, D=0.5)
     line.add_voltage_source(position=0.0, conductor=1, magnitude=magnitude)
-    v_probe = line.add_probe(position=0.0, conductor=0, type='voltage')
+    v_probe = line.add_probe(position=0.0, type='voltage')
 
     line.run_until(finalTime)
 
@@ -206,7 +207,7 @@ def test_ribbon_cable_1ns_paul_9_3():
     voltages = [120, 95, 55, 32]
     for (t, v) in zip(times, voltages):
         index = np.argmin(np.abs(v_probe.t - t*1e-9))
-        assert np.all(np.isclose(v_probe.val[index], v*1e-3, atol=10e-3))
+        assert np.all(np.isclose(v_probe.val[index,0], v*1e-3, atol=10e-3))
 
     # plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
     # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
@@ -238,7 +239,7 @@ def test_pcb_paul_9_3_2():
     def magnitude(t): return wf.trapezoidal_wave(
         t, A=1, rise_time=6.25e-9, fall_time=6.25e-9, f0=1e6, D=0.5)
     line.add_voltage_source(position=0.0, conductor=1, magnitude=magnitude)
-    v_probe = line.add_probe(position=0.0, conductor=0, type='voltage')
+    v_probe = line.add_probe(position=0.0, type='voltage')
 
     line.run_until(finalTime)
 
@@ -246,7 +247,7 @@ def test_pcb_paul_9_3_2():
     voltages = [80, 62.5, 23, 8]
     for (t, v) in zip(times, voltages):
         index = np.argmin(np.abs(v_probe.t - t*1e-9))
-        assert np.all(np.isclose(v_probe.val[index], v*1e-3, atol=10e-3))
+        assert np.all(np.isclose(v_probe.val[index,0], v*1e-3, atol=10e-3))
 
     # plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
     # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
@@ -344,22 +345,21 @@ def test_cables_panel_experimental_comparison():
     line_ntw = line.extract_network(fMin=1e7, fMax=1e9, finalTime=finalTime)
 
     p1p2 = rf.subnetwork(
-        rf.Network(
-            'python/testData/cable_panel/experimental_measurements/Ch1P1Ch2P2-SParameters-Segmented.s2p'), [0])
+        rf.Network(EXPERIMENTAL_DATA + 'Ch1P1Ch2P2-SParameters-Segmented.s2p'), [0])
     p1p2 = p1p2.interpolate(line_ntw.frequency)
+
+    plt.figure()
+    p1p2.plot_s_mag(label='measurements')
+    line_ntw.plot_s_mag(label='mtl')
+    plt.grid()
+    plt.legend()
+    plt.xlim(1e7, 1e9)
+    plt.xscale('log')
+    plt.show()
 
     # Asserts correlation with [S11| measurements.
     R = np.corrcoef(np.abs(p1p2.s[:, 0, 0]), np.abs(line_ntw.s[:, 0, 0]))
-    assert (R[0, 1] >= 0.96)
-
-    # plt.figure()
-    # p1p2.plot_s_mag(label='measurements')
-    # line_ntw.plot_s_mag(label='mtl')
-    # plt.grid()
-    # plt.legend()
-    # plt.xlim(1e7, 1e9)
-    # plt.xscale('log')
-    # plt.show()
+    assert (R[0, 1] > 0.96)
 
 
 def test_wire_over_ground_incident_E_paul_11_3_6_50ns():
@@ -389,7 +389,7 @@ def test_wire_over_ground_incident_E_paul_11_3_6_50ns():
     line.add_external_field(e_x, e_z, ref_distance=0.0,
                             distances=np.array([wire_separation]))
 
-    v_probe = line.add_probe(position=0.0, conductor=0, type='voltage')
+    v_probe = line.add_probe(position=0.0, type='voltage')
     
     line.run_until(finalTime)
 
@@ -397,7 +397,7 @@ def test_wire_over_ground_incident_E_paul_11_3_6_50ns():
     voltages = [-1.61, -0.78, -0.99, -0.87, 0.75, -0.1315, 0.1, -0.015]
     for (t, v) in zip(times, voltages):
         index = np.argmin(np.abs(v_probe.t - t*1e-9))
-        assert np.all(np.isclose(v_probe.val[index], v*1e-3, atol=2.5e-3))
+        assert np.all(np.isclose(v_probe.val[index,0], v*1e-3, atol=2.5e-3))
 
     # plt.plot(1e9*probe.v0.t, 1e3*probe.v0.val, label='port')
     # plt.plot(1e9*v_probe.t, 1e3*v_probe.val, label='v probe')
@@ -436,7 +436,7 @@ def test_wire_over_ground_incident_E_paul_11_3_6_10ns():
     line.add_external_field(e_x, e_z, ref_distance=0.0,
                             distances=np.array([wire_separation]))
 
-    v_probe = line.add_probe(position=0.0, conductor=0, type='voltage')
+    v_probe = line.add_probe(position=0.0, type='voltage')
 
     line.run_until(finalTime)
 
@@ -444,7 +444,7 @@ def test_wire_over_ground_incident_E_paul_11_3_6_10ns():
     voltages = [-8.2, -3.8, -4.8, -0.55, 0.52, -0.019, 6e-3]
     for (t, v) in zip(times, voltages):
         index = np.argmin(np.abs(v_probe.t - t*1e-9))
-        assert np.all(np.isclose(v_probe.val[index], v*1e-3, atol=1.5e-3))
+        assert np.all(np.isclose(v_probe.val[index, 0], v*1e-3, atol=1.5e-3))
 
     # plt.plot(1e9*probe.v0.t, 1e3*probe.v0.val, label='port')
     # plt.plot(1e9*v_probe.t, 1e3*v_probe.val, label='v probe')
@@ -483,7 +483,7 @@ def test_wire_over_ground_incident_E_paul_11_3_6_1ns():
     line.add_external_field(e_x, e_z, ref_distance=0.0,
                             distances=np.array([wire_separation]))
 
-    v_probe = line.add_probe(position=0.0, conductor=0, type='voltage')
+    v_probe = line.add_probe(position=0.0, type='voltage')
 
     line.run_until(finalTime)
     
@@ -491,7 +491,7 @@ def test_wire_over_ground_incident_E_paul_11_3_6_1ns():
     voltages = [-24, 12.9, -3.2, 1.5, -0.6, 0.08, -0.38]
     for (t, v) in zip(times, voltages):
         index = np.argmin(np.abs(v_probe.t - t*1e-9))
-        assert np.all(np.isclose(v_probe.val[index], v*1e-3, atol=2.5e-3))
+        assert np.all(np.isclose(v_probe.val[index, 0], v*1e-3, atol=2.5e-3))
 
     # plt.plot(1e9*probe.v0.t, 1e3*probe.v0.val, label='port')
     # plt.plot(1e9*v_probe.t, 1e3*v_probe.val, label='v probe')

@@ -127,20 +127,16 @@ class MTL:
         self.v[conductor] = voltage(self.x)
 
     def update_probes(self):
-        for probe in self.probes:
-            index = np.argmin(np.abs(self.x - probe.position))
-            if probe.type == "voltage":
-                probe.t = np.append(probe.t, self.time)
-                probe.val = np.append(
-                    probe.val, self.v[probe.conductor, index])
-            elif probe.type == "current":
-                probe.t = np.append(probe.t, self.time + self.dt/2.0)
+        for p in self.probes:
+            index = np.argmin(np.abs(self.x - p.position))
+            if p.type == "voltage":
+                p.save(self.time, self.v[:, index])
+            elif p.type == "current":
+                time =  self.time + self.dt/2.0
                 if index == self.i.shape[1]:
-                    probe.val = np.append(
-                        probe.val, self.i[probe.conductor, index-1])
+                    p.save(time, self.i[:, index-1])
                 else:
-                    probe.val = np.append(
-                        probe.val, self.i[probe.conductor, index])
+                    p.save(time, self.i[:, index])
             else:
                 raise ValueError("undefined probe")
 
@@ -192,8 +188,7 @@ class MTL:
     def add_voltage_source(self, position: float, conductor: int, magnitude):
         index = np.argmin(np.abs(self.x - position))
         self.v_sources[conductor, index] = magnitude
-        probe = self.add_probe(position, conductor, 'voltage')
-        return probe
+        return self.add_probe(position, 'voltage')
 
     def add_external_field(self, e_x, e_z, ref_distance, distances: np.ndarray):
 
@@ -221,15 +216,15 @@ class MTL:
             pos = self.x[nz]
             self.e_T[n, nz] = sp.lambdify(t, et.subs(z, pos))
 
-    def add_probe(self, position: float, conductor: int, type: str):
+    def add_probe(self, position: float, type: str):
         if (position > self.x[-1]) or (position < 0.0):
             raise ValueError("Probe position is out of MTL length.")
 
-        probe = Probe(position, conductor, type)
+        probe = Probe(position, type)
         self.probes.append(probe)
         return probe
 
-    def add_port_probe(self, terminal, conductor):
+    def add_port_probe(self, terminal):
         if terminal == 0:
             x0 = self.x[0]
             x1 = self.x[1]
@@ -239,11 +234,11 @@ class MTL:
             x1 = self.x[-1]
             z0 = self.zl
 
-        v0 = self.add_probe(position=x0, conductor=0, type='voltage')
-        v1 = self.add_probe(position=x1, conductor=0, type='voltage')
-        i0 = self.add_probe(position=(x0+x1)/2.0, conductor=0, type='current')
+        v0 = self.add_probe(position=x0, type='voltage')
+        v1 = self.add_probe(position=x1, type='voltage')
+        i0 = self.add_probe(position=(x0+x1)/2.0, type='current')
 
-        port_probe = PortProbe(v0, v1, i0, z0)
+        port_probe = Port(v0, v1, i0, z0)
         self.port_probes.append(port_probe)
 
         return port_probe
@@ -265,12 +260,12 @@ class MTL:
         def gauss(t):
             return np.exp(- (t-delay)**2 / (2*spread**2))
         line.add_voltage_source(position=line.x[0], conductor=0, magnitude=gauss)
-        port_1 = line.add_port_probe(terminal=0, conductor=0)
-        port_2 = line.add_port_probe(terminal=1, conductor=0)
+        pS = line.add_port_probe(terminal=0)
+        pL = line.add_port_probe(terminal=1)
 
         line.run_until(finalTime)
 
-        f, s = PortProbe.extract_s(port_1, port_2)
+        f, s = Port.extract_s(pS, pL)
         fq = rf.Frequency.from_f(f[(f >= fMin) & (f < fMax)], unit='Hz')
         return rf.Network(frequency=fq, s=s[(f >= fMin) & (f < fMax), :, :])
 
