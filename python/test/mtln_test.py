@@ -4,8 +4,6 @@ import matplotlib.pyplot as plt
 import sympy as sp
 from scipy.constants import epsilon_0, mu_0, speed_of_light
 
-import src.mtln as mtln
-
 import src.waveforms as wf
 
 import skrf as rf
