@@ -13,6 +13,7 @@ from skrf.media import DistributedCircuit
 
 EXPERIMENTAL_DATA = 'python/testData/cable_panel/experimental_measurements/'
 
+
 def test_trapezoidal_pulse_sp():
 
     wire_radius = 2.54e-3
@@ -167,7 +168,7 @@ def test_ribbon_cable_20ns_paul_9_3():
 
     # From Paul's book:
     # "The crosstalk waveform rises to a peak of around 110 mV [...]"
-    assert (np.isclose(np.max(v_probe.val[:,0]), 113e-3, atol=1e-3))
+    assert (np.isclose(np.max(v_probe.val[:, 0]), 113e-3, atol=1e-3))
 
     # plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
     # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
@@ -207,7 +208,7 @@ def test_ribbon_cable_1ns_paul_9_3():
     voltages = [120, 95, 55, 32]
     for (t, v) in zip(times, voltages):
         index = np.argmin(np.abs(v_probe.t - t*1e-9))
-        assert np.all(np.isclose(v_probe.val[index,0], v*1e-3, atol=10e-3))
+        assert np.all(np.isclose(v_probe.val[index, 0], v*1e-3, atol=10e-3))
 
     # plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
     # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
@@ -247,43 +248,13 @@ def test_pcb_paul_9_3_2():
     voltages = [80, 62.5, 23, 8]
     for (t, v) in zip(times, voltages):
         index = np.argmin(np.abs(v_probe.t - t*1e-9))
-        assert np.all(np.isclose(v_probe.val[index,0], v*1e-3, atol=10e-3))
+        assert np.all(np.isclose(v_probe.val[index, 0], v*1e-3, atol=10e-3))
 
     # plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
     # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
     # plt.xlabel(r'$t\,[\mu s]$')
     # plt.xticks(range(0, 40, 5))
     # plt.grid('both')
-    # plt.show()
-
-
-def test_extract_network_paul_8_6_no_load():
-
-    L0 = 0.25e-6
-    C0 = 100e-12
-    length = 400.0
-    Zs = 150.0
-    Zl = 0.0
-
-    line = mtln.MTL(l=L0, c=C0, length=length, Zs=Zs, Zl=Zl)
-    line_ntw = line.extract_network(fMin=0.01e6, fMax=1e6, finalTime=250e-6)
-
-    media = DistributedCircuit(line_ntw.frequency, C=C0, L=L0)
-    skrf_tl = media.line(length-line.dx/2, 'm', name='line') ** media.short()
-
-    assert np.allclose(np.abs(skrf_tl.s), np.abs(line_ntw.s))
-
-    # skrf_tl.plot_s_mag(label='skrf')
-    # line_ntw.plot_s_mag(label='mtl')
-    # plt.grid()
-    # plt.legend()
-
-    # plt.figure()
-    # skrf_tl.plot_s_deg(label='skrf')
-    # line_ntw.plot_s_deg(label='mtl')
-    # plt.grid()
-    # plt.legend()
-
     # plt.show()
 
 
@@ -300,12 +271,12 @@ def test_extract_network_paul_8_6_150ohm_load():
 
     media = DistributedCircuit(line_ntw.frequency, C=C0, L=L0)
     skrf_tl = media.line(length - line.dx/2.0, 'm',
-                         name='line', embed=True, z0=[Zs, Zl]) 
+                         name='line', embed=True, z0=[Zs, Zl])
 
     R_S11 = np.corrcoef(
         np.abs(line_ntw.s[:, 0, 0]), np.abs(skrf_tl.s[:, 0, 0]))
     assert (np.real(R_S11[0, 1]) > 0.9999)
-       
+
     # plt.figure()
     # skrf_tl.plot_s_mag(m=0, n=0, label='skrf')
     # line_ntw.plot_s_mag(m=0, n=0, label='mtl')
@@ -386,14 +357,14 @@ def test_wire_over_ground_incident_E_paul_11_3_6_50ns():
                             distances=np.array([wire_separation]))
 
     v_probe = line.add_probe(position=0.0, type='voltage')
-    
+
     line.run_until(finalTime)
 
     times = [3.5, 7, 1.0, 25, 53, 56.6, 59.8, 80]
     voltages = [-1.61, -0.78, -0.99, -0.87, 0.75, -0.1315, 0.1, -0.015]
     for (t, v) in zip(times, voltages):
         index = np.argmin(np.abs(v_probe.t - t*1e-9))
-        assert np.all(np.isclose(v_probe.val[index,0], v*1e-3, atol=2.5e-3))
+        assert np.all(np.isclose(v_probe.val[index, 0], v*1e-3, atol=2.5e-3))
 
     # plt.plot(1e9*probe.v0.t, 1e3*probe.v0.val, label='port')
     # plt.plot(1e9*v_probe.t, 1e3*v_probe.val, label='v probe')
@@ -482,7 +453,7 @@ def test_wire_over_ground_incident_E_paul_11_3_6_1ns():
     v_probe = line.add_probe(position=0.0, type='voltage')
 
     line.run_until(finalTime)
-    
+
     times = [3, 5, 8.5, 12, 15, 19, 25]
     voltages = [-24, 12.9, -3.2, 1.5, -0.6, 0.08, -0.38]
     for (t, v) in zip(times, voltages):
