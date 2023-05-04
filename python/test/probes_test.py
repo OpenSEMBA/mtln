@@ -33,33 +33,28 @@ def test_port_s_extraction():
     p1 = line.add_port_probe(terminal=0)
     p2 = line.add_port_probe(terminal=1)
     line.run_until(finalTime)
-
-    line_f, line_s = Port.extract_s(p1, p2)
-    fq = rf.Frequency.from_f(
-        f=line_f[(line_f >= fMin) & (line_f < fMax)], unit='Hz')
-    line_s = line_s[(line_f >= fMin) & (line_f < fMax)]
-    nw_mtln = rf.Network(frequency=fq, s=line_s)
+    f, s = Port.extract_s_reciprocal(p1, p2) 
+    
+    fq = rf.Frequency.from_f(f=f[(f >= fMin) & (f < fMax)], unit='Hz')
+    s = s[(f >= fMin) & (f < fMax)]
+    nw_mtln = rf.Network(frequency=fq, s=s)
 
     media = DistributedCircuit(fq, C=C0, L=L0)
     nw_skrf = media.line(length - line.dx/2.0, 'm',
                          name='line', embed=True, z0=[Zs, Zl])
 
     R_S11 = np.corrcoef(np.abs(nw_mtln.s[:, 0, 0]), np.abs(nw_skrf.s[:, 0, 0]))
-    assert (np.real(R_S11[1, 1]) > 0.99999)
+    assert (np.real(R_S11[0, 1]) > 0.99999)
     R_S21 = np.corrcoef(np.abs(nw_mtln.s[:, 1, 0]), np.abs(nw_skrf.s[:, 1, 0]))
-    assert (np.real(R_S21[1, 1]) > 0.99999)
-    R_S22 = np.corrcoef(np.abs(nw_mtln.s[:, 1, 1]), np.abs(nw_skrf.s[:, 1, 1]))
-    assert (np.real(R_S21[1, 1]) > 0.99999)
+    assert (np.real(R_S21[0, 1]) > 0.999)
 
-    plt.figure()
+    # plt.figure()
     # nw_skrf.plot_s_mag(m=0, n=0, label='S11 skrf')
     # nw_mtln.plot_s_mag(m=0, n=0, label='S11 mtln')
     # nw_skrf.plot_s_mag(m=1, n=0, label='S21 skrf')
     # nw_mtln.plot_s_mag(m=1, n=0, label='S21 mtln')
-    # nw_skrf.plot_s_mag(m=1, n=1, label='S22 skrf')
-    # nw_mtln.plot_s_mag(m=1, n=1, label='S22 mtln')
-    plt.legend()
-    plt.show()
+    # plt.legend()
+    # plt.show()
 
 
 def test_cables_panel_s_extraction():
@@ -70,15 +65,15 @@ def test_cables_panel_s_extraction():
     fMin = 10e6
     fMax = 1e9
 
-    line_f, line_s_p12 = Port.extract_s(pS, pL, 0, 0)
-    line_s_p12 = line_s_p12[(line_f>=fMin)&(line_f<fMax),:]
+    f, s_p12 = Port.extract_s_reciprocal(pS, pL, 0, 0)
+    s_p12 = s_p12[(f>=fMin)&(f<fMax),:]
     
-    _, line_s_p14 = Port.extract_s(pS, pL, 0, 1)
-    line_s_p14 = line_s_p14[(line_f>=fMin)&(line_f<fMax),:]
+    _, s_p14 = Port.extract_s_reciprocal(pS, pL, 0, 1)
+    s_p14 = s_p14[(f>=fMin)&(f<fMax),:]
     
-    fq = rf.Frequency.from_f(f=line_f[(line_f>=fMin)&(line_f<fMax)], unit='Hz')
-    mtln_12 = rf.Network(frequency=fq, s=line_s_p12)
-    mtln_14 = rf.Network(frequency=fq, s=line_s_p14)
+    fq = rf.Frequency.from_f(f=f[(f>=fMin)&(f<fMax)], unit='Hz')
+    mtln_12 = rf.Network(frequency=fq, s=s_p12)
+    mtln_14 = rf.Network(frequency=fq, s=s_p14)
     
     inta_12 = rf.Network(EXPERIMENTAL_DATA + 'Ch1P1Ch2P2-SParameters-Segmented.s2p').interpolate(mtln_12.frequency)
     inta_14 = rf.Network(EXPERIMENTAL_DATA + 'Ch1P1Ch2P4-SParameters-Segmented.s2p').interpolate(mtln_12.frequency)

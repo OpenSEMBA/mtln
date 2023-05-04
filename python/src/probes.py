@@ -66,33 +66,36 @@ class Port:
         return f, v_fft, i_fft
 
     def __get_incident_and_reflected_power_wave(self, conductor, invertCurrent=False):
+        z0 = self.z0[conductor]
+        assert (z0 != 0.0)
+
         f, v, i = self.__get_v_i_fft(conductor)
         if invertCurrent:
             i = -i
-        z0 = self.z0[conductor]
+
         a = (1.0/2.0) * (v + z0*i)/np.sqrt(z0)
         b = (1.0/2.0) * (v - z0*i)/np.sqrt(z0)
+
         return f, a, b
 
     @staticmethod
-    def extract_s(portS, portL, pS_conductor=0, pL_conductor=0):
-        ''' Using: https://en.wikipedia.org/wiki/Scattering_parameters '''
-        if (np.all(portS.z0 != 0) & np.all(portL.z0 != 0)):
-            f, a1, b1 = portS.__get_incident_and_reflected_power_wave(
-                pS_conductor)
-            _, a2, b2 = portL.__get_incident_and_reflected_power_wave(pL_conductor,
-                                                                      invertCurrent=True)
-
-            s = np.zeros((len(f), 2, 2), dtype=complex)
-            s[:, 0, 0] = b1/a1
-            s[:, 1, 0] = b2/a1
-            s[:, 0, 1] = s[:, 1, 0] # WARNING: Assumes reciprocity
-            s[:, 1, 1] = s[:, 0, 0] # WARNING: Assumes reciprocity
-
-        if np.all(portS.z0 != 0) & np.any(portL.z0 == 0):
-            f, a1, b1 = portS.__get_incident_and_reflected_power_wave()
-
-            s = np.zeros((len(f), 1, 1), dtype=complex)
-            s[:, 0, 0] = b1[:, 0]/a1[:, 0]
-
+    def extract_s_reciprocal(p1, p2, p1_conductor=0, p2_conductor=0):
+        ''' 
+        Extracts s-paramters assuming that only port 1 is excited.
+        This assumes the network is reciprocal, use with care.
+        Reference: https://en.wikipedia.org/wiki/Scattering_parameters 
+        '''
+        f, a1, b1 = p1.__get_incident_and_reflected_power_wave(
+            p1_conductor)
+        _, _, b2 = p2.__get_incident_and_reflected_power_wave(p2_conductor,
+                                                                    invertCurrent=True)
+        s11 = b1/a1
+        s21 = b2/a1
+   
+        s = np.zeros((len(f), 2, 2), dtype=complex) 
+        s[:,0,0] = s11
+        s[:,1,0] = s21
+        s[:,0,1] = s[:,1,0] # Forcing reciprocity.
+        s[:,1,1] = s[:,0,0]
+    
         return f, s

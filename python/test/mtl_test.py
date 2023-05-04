@@ -63,6 +63,31 @@ def test_coaxial_line_paul_8_6_square():
     # plt.show()
 
 
+def test_symmetry_in_voltage_excitation():
+    """ 
+    Test results are identical when exciting from S or from L.
+    """
+    def magnitude(t): return wf.square_pulse(t, 100, 6e-6)
+    finalTime = 18e-6
+
+    line_vs = mtl.MTL(l=0.25e-6, c=100e-12, length=400.0, Zs=150, Zl=150)
+    line_vs.add_voltage_source(position=0.0, conductor=0, magnitude=magnitude)
+    vs_probe = line_vs.add_probe(position=0.0, type='voltage')
+    line_vs.run_until(finalTime)
+
+    line_vl = mtl.MTL(l=0.25e-6, c=100e-12, length=400.0, Zs=150, Zl=150)
+    line_vl.add_voltage_source(position=400.0, conductor=0, magnitude=magnitude)
+    vl_probe = line_vl.add_probe(position=400.0, type='voltage')
+    line_vl.run_until(finalTime)
+
+    assert np.all(vl_probe.val == vs_probe.val)
+    
+    # plt.figure()
+    # plt.plot(vs_probe.t, vs_probe.val)
+    # plt.plot(vl_probe.t, vl_probe.val)
+    # plt.show()
+
+
 def test_coaxial_line_paul_8_6_triangle():
     """ 
     Described in Ch. 8 of Paul Clayton, 
@@ -228,13 +253,19 @@ def test_extract_network_paul_8_6_150ohm_load():
 
     R_S11 = np.corrcoef(
         np.abs(line_ntw.s[:, 0, 0]), np.abs(skrf_tl.s[:, 0, 0]))
+    R_S22 = np.corrcoef(
+        np.abs(line_ntw.s[:, 1, 1]), np.abs(skrf_tl.s[:, 1, 1]))
+       
     assert (np.real(R_S11[0, 1]) > 0.9999)
+    assert (np.real(R_S22[0, 1]) > 0.9999)
 
-    # plt.figure()
-    # skrf_tl.plot_s_mag(m=0, n=0, label='skrf')
-    # line_ntw.plot_s_mag(m=0, n=0, label='mtl')
-    # plt.grid()
-    # plt.legend()
+    plt.figure()
+    skrf_tl.plot_s_mag(m=0, n=0, label='skrf')
+    line_ntw.plot_s_mag(m=0, n=0, label='mtl')
+    skrf_tl.plot_s_mag(m=1, n=1, label='skrf')
+    line_ntw.plot_s_mag(m=1, n=1, label='mtl')
+    plt.grid()
+    plt.legend()
 
     # plt.figure()
     # skrf_tl.plot_s_deg(m=0, n=0, label='skrf')

@@ -303,20 +303,30 @@ class MTL:
 
     def extract_2p_network(self, fMin, fMax, finalTime, pS_conductor=0, pL_conductor=0):
 
-        line = self.create_clean_copy()
-
         spread = 1/fMax/2.0
         delay = 8*spread
-
         def gauss(t):
             return np.exp(- (t-delay)**2 / (2*spread**2))
-        line.add_voltage_source(position=line.x[0], conductor=0, magnitude=gauss)
-        pS = line.add_port_probe(terminal=0)
-        pL = line.add_port_probe(terminal=1)
-
-        line.run_until(finalTime)
-
-        f, s = Port.extract_s(pS, pL, pS_conductor, pL_conductor)
+        
+        lineS = self.create_clean_copy()
+        lineS.add_voltage_source(position=lineS.x[0], conductor=pS_conductor, magnitude=gauss)
+        p1 = lineS.add_port_probe(terminal=0)
+        p2 = lineS.add_port_probe(terminal=1)
+        lineS.run_until(finalTime)
+        f, sS = Port.extract_s_reciprocal(p1, p2, pS_conductor, pL_conductor)
+        
+        lineL = self.create_clean_copy()
+        lineL.add_voltage_source(position=lineL.x[-1], conductor=pL_conductor, magnitude=gauss)
+        p1 = lineL.add_port_probe(terminal=0)
+        p2 = lineL.add_port_probe(terminal=1)
+        lineL.run_until(finalTime)
+        f, sL = Port.extract_s_reciprocal(p1, p2, pS_conductor, pL_conductor)
+        
+        s = np.zeros((len(f), 2, 2), dtype=complex)
+        s[:,0,0] = sS[:,0,0]
+        s[:,1,0] = sS[:,1,0]
+        s[:,0,1] = sL[:,0,1]
+        s[:,1,1] = sL[:,1,1]
         fq = rf.Frequency.from_f(f[(f >= fMin) & (f < fMax)], unit='Hz')
         return rf.Network(frequency=fq, s=s[(f >= fMin) & (f < fMax), :, :])
 
