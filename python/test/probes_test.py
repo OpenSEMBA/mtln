@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle
 
-import src.mtln as mtln
+import src.mtl as mtl
 from src.probes import *
 
 import skrf as rf
@@ -28,7 +28,7 @@ def test_port_s_extraction():
         delay = 8*spread
         return np.exp(- (t-delay)**2 / (2*spread**2))
 
-    line = mtln.MTL(l=L0, c=C0, length=length, Zs=Zs, Zl=Zl)
+    line = mtl.MTL(l=L0, c=C0, length=length, Zs=Zs, Zl=Zl)
     line.add_voltage_source(position=line.x[0], conductor=0, magnitude=gauss)
     p1 = line.add_port_probe(terminal=0)
     p2 = line.add_port_probe(terminal=1)
