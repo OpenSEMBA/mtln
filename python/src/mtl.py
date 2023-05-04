@@ -301,7 +301,7 @@ class MTL:
         r.time = 0.0
         return r
 
-    def extract_network(self, fMin, fMax, finalTime):
+    def extract_2p_network(self, fMin, fMax, finalTime, pS_conductor=0, pL_conductor=0):
 
         line = self.create_clean_copy()
 
@@ -316,7 +316,7 @@ class MTL:
 
         line.run_until(finalTime)
 
-        f, s = Port.extract_s(pS, pL)
+        f, s = Port.extract_s(pS, pL, pS_conductor, pL_conductor)
         fq = rf.Frequency.from_f(f[(f >= fMin) & (f < fMax)], unit='Hz')
         return rf.Network(frequency=fq, s=s[(f >= fMin) & (f < fMax), :, :])
 

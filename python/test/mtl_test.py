@@ -220,7 +220,7 @@ def test_extract_network_paul_8_6_150ohm_load():
     Zl = 150.0
 
     line = mtl.MTL(l=L0, c=C0, length=length, Zs=Zs, Zl=Zl)
-    line_ntw = line.extract_network(fMin=0.01e6, fMax=1e6, finalTime=250e-6)
+    line_ntw = line.extract_2p_network(fMin=0.01e6, fMax=1e6, finalTime=250e-6)
 
     media = DistributedCircuit(line_ntw.frequency, C=C0, L=L0)
     skrf_tl = media.line(length - line.dx/2.0, 'm',
@@ -262,7 +262,7 @@ def test_cables_panel_experimental_comparison():
     line = mtl.MTL(l=L, c=C, length=length, Zs=Zs, Zl=Zl)
 
     finalTime = 300e-9
-    line_ntw = line.extract_network(fMin=1e7, fMax=1e9, finalTime=finalTime)
+    line_ntw = line.extract_2p_network(fMin=1e7, fMax=1e9, finalTime=finalTime)
 
     p1p2 = rf.subnetwork(
         rf.Network(EXPERIMENTAL_DATA + 'Ch1P1Ch2P2-SParameters-Segmented.s2p'), [0])
