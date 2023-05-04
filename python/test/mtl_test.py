@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+
 import sympy as sp
 from scipy.constants import epsilon_0, mu_0, speed_of_light
 
@@ -11,7 +12,6 @@ import skrf as rf
 from skrf.media import DistributedCircuit
 
 EXPERIMENTAL_DATA = 'python/testData/cable_panel/experimental_measurements/'
-
 
 def test_get_phase_velocities():
     v = mtl.MTL(l=0.25e-6, c=100e-12).get_phase_velocities()
