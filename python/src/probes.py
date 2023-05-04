@@ -56,13 +56,13 @@ class Port:
     def __get_v_i_fft(self, n):
         dt = self.v1.t[1] - self.v0.t[0]
         f = fftshift(fftfreq(len(self.v0.t), dt))
-        v0_fft = fftshift(fft(self.v0.val[:,n]))
-        v1_fft = fftshift(fft(self.v1.val[:,n]))
+        v0_fft = fftshift(fft(self.v0.val[:, n]))
+        v1_fft = fftshift(fft(self.v1.val[:, n]))
         v_fft = (v0_fft + v1_fft) / 2.0
 
         valAux = np.vstack((self.i0.val[0, :], self.i0.val))
         i = (valAux[:-1, :] + valAux[1:, :]) / 2.0
-        i_fft = fftshift(fft(i[:,n]))
+        i_fft = fftshift(fft(i[:, n]))
         return f, v_fft, i_fft
 
     def __get_incident_and_reflected_power_wave(self, conductor, invertCurrent=False):
@@ -81,21 +81,17 @@ class Port:
     @staticmethod
     def extract_s_reciprocal(p1, p2, p1_conductor=0, p2_conductor=0):
         ''' 
-        Extracts s-paramters assuming that only port 1 is excited.
-        This assumes the network is reciprocal, use with care.
+        Extracts s-parameters. Only valid parameters are the ones related to the illuminated port.
         Reference: https://en.wikipedia.org/wiki/Scattering_parameters 
         '''
         f, a1, b1 = p1.__get_incident_and_reflected_power_wave(
             p1_conductor)
-        _, _, b2 = p2.__get_incident_and_reflected_power_wave(p2_conductor,
-                                                                    invertCurrent=True)
-        s11 = b1/a1
-        s21 = b2/a1
-   
-        s = np.zeros((len(f), 2, 2), dtype=complex) 
-        s[:,0,0] = s11
-        s[:,1,0] = s21
-        s[:,0,1] = s[:,1,0] # Forcing reciprocity.
-        s[:,1,1] = s[:,0,0]
-    
+        _, a2, b2 = p2.__get_incident_and_reflected_power_wave(p2_conductor,
+                                                               invertCurrent=True)
+        s = np.zeros((len(f), 2, 2), dtype=complex)
+        s[:, 0, 0] = b1/a1
+        s[:, 1, 0] = b2/a1
+        s[:, 0, 1] = b1/a2
+        s[:, 1, 1] = b2/a2
+
         return f, s

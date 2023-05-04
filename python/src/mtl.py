@@ -293,6 +293,9 @@ class MTL:
         self.port_probes.append(port_probe)
 
         return port_probe
+    
+    def add_port_probes(self):
+        return self.add_port_probe(0), self.add_port_probe(1)
 
     def create_clean_copy(self):
         r = deepcopy(self)
@@ -310,17 +313,15 @@ class MTL:
         
         lineS = self.create_clean_copy()
         lineS.add_voltage_source(position=lineS.x[0], conductor=pS_conductor, magnitude=gauss)
-        p1 = lineS.add_port_probe(terminal=0)
-        p2 = lineS.add_port_probe(terminal=1)
+        pS_1, pS_2 = lineS.add_port_probes()
         lineS.run_until(finalTime)
-        f, sS = Port.extract_s_reciprocal(p1, p2, pS_conductor, pL_conductor)
+        f, sS = Port.extract_s_reciprocal(pS_1, pS_2, pS_conductor, pL_conductor)
         
         lineL = self.create_clean_copy()
         lineL.add_voltage_source(position=lineL.x[-1], conductor=pL_conductor, magnitude=gauss)
-        p1 = lineL.add_port_probe(terminal=0)
-        p2 = lineL.add_port_probe(terminal=1)
+        pL_1, pL_2 = lineL.add_port_probes()
         lineL.run_until(finalTime)
-        f, sL = Port.extract_s_reciprocal(p1, p2, pS_conductor, pL_conductor)
+        f, sL = Port.extract_s_reciprocal(pL_1, pL_2, pS_conductor, pL_conductor)
         
         s = np.zeros((len(f), 2, 2), dtype=complex)
         s[:,0,0] = sS[:,0,0]

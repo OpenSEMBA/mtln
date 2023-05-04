@@ -259,13 +259,13 @@ def test_extract_network_paul_8_6_150ohm_load():
     assert (np.real(R_S11[0, 1]) > 0.9999)
     assert (np.real(R_S22[0, 1]) > 0.9999)
 
-    plt.figure()
-    skrf_tl.plot_s_mag(m=0, n=0, label='skrf')
-    line_ntw.plot_s_mag(m=0, n=0, label='mtl')
-    skrf_tl.plot_s_mag(m=1, n=1, label='skrf')
-    line_ntw.plot_s_mag(m=1, n=1, label='mtl')
-    plt.grid()
-    plt.legend()
+    # plt.figure()
+    # skrf_tl.plot_s_mag(m=0, n=0, label='S11 skrf')
+    # line_ntw.plot_s_mag(m=0, n=0, label='S11 mtl')
+    # skrf_tl.plot_s_mag(m=1, n=1, label='S22 skrf')
+    # line_ntw.plot_s_mag(m=1, n=1, label='S22 mtl')
+    # plt.grid()
+    # plt.legend()
 
     # plt.figure()
     # skrf_tl.plot_s_deg(m=0, n=0, label='skrf')
@@ -273,7 +273,7 @@ def test_extract_network_paul_8_6_150ohm_load():
     # plt.grid()
     # plt.legend()
 
-    # plt.show()
+    plt.show()
 
 
 def test_cables_panel_experimental_comparison():
