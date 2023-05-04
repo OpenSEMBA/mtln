@@ -13,24 +13,11 @@ from skrf.media import DistributedCircuit
 
 EXPERIMENTAL_DATA = 'python/testData/cable_panel/experimental_measurements/'
 
+
 def test_get_phase_velocities():
     v = mtl.MTL(l=0.25e-6, c=100e-12).get_phase_velocities()
     assert v.shape == (1,)
     assert np.isclose(2e8, v[0])
-
-
-def test_coaxial_line_initial_voltage():
-    line = mtl.MTL(l=0.25e-6, c=100e-12, length=400)
-    line.set_voltage(0, lambda x: wf.gaussian(x, 200, 50))
-    v_probe = line.add_probe(position=200, type='voltage')
-
-    finalTime = 10e-6
-    for t in line.get_time_range(finalTime):
-        line.step()
-
-    # plt.plot(v_probe.t, v_probe.val)
-    # plt.show()
-    # assert
 
 
 def test_coaxial_line_paul_8_6_square():
@@ -47,8 +34,7 @@ def test_coaxial_line_paul_8_6_square():
     v_probe = line.add_probe(position=0.0, type='voltage')
     i_probe = line.add_probe(position=400.0, type='current')
 
-    for t in line.get_time_range(finalTime):
-        line.step()
+    line.run_until(finalTime)
 
     xticks = range(int(np.floor(min(1e6*i_probe.t))),
                    int(np.ceil(max(1e6*i_probe.t))+1))
@@ -90,8 +76,7 @@ def test_coaxial_line_paul_8_6_triangle():
     line.add_voltage_source(position=0.0, conductor=0, magnitude=magnitude)
     v_probe = line.add_probe(position=0.0, type='voltage')
 
-    for t in line.get_time_range(finalTime):
-        line.step()
+    line.run_until(finalTime)
 
     times = [4.0, 5.9, 6.1, 8.0, 10.1, 12]
     voltages = [16.67, 12.5, -12.5, -25, 6.25, 12.5]
@@ -271,7 +256,6 @@ def test_cables_panel_experimental_comparison():
          [-1.71281372E-12,  1.13658354E-11, -1.33594804E-12],
          [-4.79422869E-13, -1.33594804E-12,  1.12858157E-11]])
 
-    # Models MTL amd extracts S11.
     length = 398e-3
     Zs = np.ones([1, 3]) * 50.0
     Zl = Zs

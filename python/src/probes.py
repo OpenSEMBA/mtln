@@ -3,19 +3,47 @@ from numpy.fft import fft, fftfreq, fftshift
 
 
 class Probe:
-    def __init__(self, position, type):
+    def __init__(self, position, type, dt, x):
         self.type = type
-        self.position = position
+        
         self.t = np.array([])
         self.val = np.array([])
 
-    def save(self, time, new_values):
-        self.t = np.append(self.t, time)
+        self.dt = dt
+        self.current_frame = 0
 
-        if self.val.shape == (0,):
-            self.val = new_values
+        self.position = position
+        self.index = np.argmin(np.abs(x - position))
+    
+    def resize_frames(self, num_frames, num_conductors):
+        self.current_frame = 0
+        self.t = np.zeros(num_frames)
+        self.val = np.zeros((num_frames, num_conductors))
+
+    def update(self, t, x, v, i):
+        if self.type == "voltage":
+            self.__save_frame(t, v[:, self.index])
+        elif self.type == "current":
+            t =  t + self.dt/2.0
+            if self.index == i.shape[1]:
+                self.__save_frame(t, i[:, self.index-1])
+            else:
+                self.__save_frame(t, i[:, self.index])
         else:
-            self.val = np.vstack((self.val, new_values))
+            raise ValueError("undefined probe")
+
+    def __save_frame(self, time, new_values):
+        if self.current_frame < len(self.t):
+            self.t[self.current_frame] = time
+            self.val[self.current_frame] = new_values
+        else:
+            self.t = np.append(self.t, time)
+            if self.val.shape == (0,):
+                self.val = new_values
+            else:
+                self.val = np.vstack((self.val, new_values))
+
+        self.current_frame += 1
 
 class Port:
     def __init__(self, v0: Probe, v1: Probe, i0: Probe, z0):

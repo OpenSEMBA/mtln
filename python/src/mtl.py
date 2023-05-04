@@ -161,17 +161,7 @@ class MTL:
 
     def update_probes(self):
         for p in self.probes:
-            index = np.argmin(np.abs(self.x - p.position))
-            if p.type == "voltage":
-                p.save(self.time, self.v[:, index])
-            elif p.type == "current":
-                time =  self.time + self.dt/2.0
-                if index == self.i.shape[1]:
-                    p.save(time, self.i[:, index-1])
-                else:
-                    p.save(time, self.i[:, index])
-            else:
-                raise ValueError("undefined probe")
+            p.update(self.time, self.x, self.v, self.i)
 
     def update_sources(self):
         self.v_sources_now = np.vectorize(FunctionType.__call__, otypes=["float64"])(
@@ -234,13 +224,17 @@ class MTL:
         self.update_probes()
 
     def run_until(self, finalTime):
-        for _ in self.get_time_range(finalTime):
+        t = self.get_time_range(finalTime)
+
+        for p in self.probes:
+            p.resize_frames(len(t), self.number_of_conductors)
+
+        for _ in t:
             self.step()
 
     def add_voltage_source(self, position: float, conductor: int, magnitude):
         index = np.argmin(np.abs(self.x - position))
         self.v_sources[conductor, index] = magnitude
-        return self.add_probe(position, "voltage")
 
     def add_external_field(self, e_x, e_z, ref_distance, distances: np.ndarray):
         field = Field(e_x, e_z)
@@ -277,7 +271,7 @@ class MTL:
         if (position > self.x[-1]) or (position < 0.0):
             raise ValueError("Probe position is out of MTL length.")
 
-        probe = Probe(position, type)
+        probe = Probe(position, type, self.dt, self.x)
         self.probes.append(probe)
         return probe
 
@@ -291,8 +285,8 @@ class MTL:
             x1 = self.x[-1]
             z0 = self.zl
 
-        v0 = self.add_probe(position=x0, type='voltage')
-        v1 = self.add_probe(position=x1, type='voltage')
+        v0 = self.add_probe(position=x0,          type='voltage')
+        v1 = self.add_probe(position=x1,          type='voltage')
         i0 = self.add_probe(position=(x0+x1)/2.0, type='current')
 
         port_probe = Port(v0, v1, i0, z0)
