@@ -330,7 +330,7 @@ class MTL:
         s[:,0,1] = sL[:,0,1]
         s[:,1,1] = sL[:,1,1]
         fq = rf.Frequency.from_f(f[(f >= fMin) & (f < fMax)], unit='Hz')
-        return rf.Network(frequency=fq, s=s[(f >= fMin) & (f < fMax), :, :])
+        return rf.Network(frequency=fq, s=s[(f >= fMin) & (f < fMax), :, :], z0 = 50)
 
 
 class MTL_losses(MTL):
