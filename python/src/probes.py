@@ -1,7 +1,6 @@
 import numpy as np
 from numpy.fft import fft, fftfreq, fftshift
 
-
 class Probe:
     def __init__(self, position, type, dt, x):
         self.type = type
@@ -64,32 +63,22 @@ class Port:
         i = (valAux[:-1, :] + valAux[1:, :]) / 2.0
         i_fft = fftshift(fft(i[:, n]))
         return f, v_fft, i_fft
+    
+    def getTerminal(self):
+        if self.v0.position == 0.0:
+            return "S"
+        else:
+            return "L"
 
-    def __get_incident_and_reflected_power_wave(self, conductor, invertCurrent=False):
+    def get_incident_and_reflected_power_wave(self, conductor):
         z0 = self.z0[conductor]
         assert (z0 != 0.0)
 
         f, v, i = self.__get_v_i_fft(conductor)
-        if invertCurrent:
+        if self.getTerminal() == "L":
             i = -i
 
         a = (1.0/2.0) * (v + z0*i)/np.sqrt(z0)
         b = (1.0/2.0) * (v - z0*i)/np.sqrt(z0)
 
         return f, a, b
-
-    @staticmethod
-    def extract_s_reciprocal(p1, p2):
-        ''' 
-        Extracts s-parameters. Only valid parameters are the ones related to the illuminated port.
-        Reference: https://en.wikipedia.org/wiki/Scattering_parameters 
-        '''
-        f, a1, b1 = p1.__get_incident_and_reflected_power_wave(p1)
-        _, a2, b2 = p2.__get_incident_and_reflected_power_wave(p2)
-        s = np.zeros((len(f), 2, 2), dtype=complex)
-        s[:, 0, 0] = b1/a1
-        s[:, 1, 0] = b2/a1
-        s[:, 0, 1] = b1/a2
-        s[:, 1, 1] = b2/a2
-
-        return f, s
