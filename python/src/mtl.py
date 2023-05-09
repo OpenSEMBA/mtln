@@ -10,6 +10,7 @@ import sympy as sp
 from types import FunctionType
 from types import LambdaType
 
+from .probes import *
 
 class Field:
     def __init__(self, incident_x, incident_z):
@@ -17,37 +18,6 @@ class Field:
 
         self.e_x = incident_x
         self.e_z = incident_z
-
-
-class Probe:
-    def __init__(self, position, conductor, type):
-        self.type = type
-        self.position = position
-        self.conductor = conductor
-        self.t = np.array([])
-        self.val = np.array([])
-
-
-class PortProbe:
-    def __init__(self, v0: Probe, v1: Probe, i0: Probe):
-        self.v0 = v0
-        self.v1 = v1
-        self.i0 = i0
-
-    def extract_z(self):
-        dt = self.v1.t[1] - self.v0.t[0]
-        f = fftshift(fftfreq(len(self.v0.t), dt))
-        v0_fft = fftshift(fft(self.v0.val))
-        v1_fft = fftshift(fft(self.v1.val))
-
-        tAux = np.append(-dt / 2.0, self.i0.t)
-        self.i0.t = (tAux[:-1] + tAux[1:]) / 2.0
-        valAux = np.append(self.i0.val[0], self.i0.val)
-        self.i0.val = (valAux[:-1] + valAux[1:]) / 2.0
-        i0_fft = fftshift(fft(self.i0.val))
-        z11_fft = (v0_fft + v1_fft) / 2.0 / i0_fft
-
-        return f, z11_fft
 
 
 class MTL:
@@ -192,30 +162,8 @@ class MTL:
         self.v[conductor] = voltage(self.x)
 
     def update_probes(self):
-        for probe in self.probes:
-            index = np.argmin(np.abs(self.x - probe.position))
-            if probe.type == "voltage":
-                probe.t = np.append(probe.t, self.time)
-                probe.val = np.append(probe.val, self.v[probe.conductor, index])
-            elif probe.type == "current":
-                probe.t = np.append(probe.t, self.time + self.dt / 2.0)
-                if index == self.i.shape[1]:
-                    probe.val = np.append(probe.val, self.i[probe.conductor, index - 1])
-                else:
-                    probe.val = np.append(probe.val, self.i[probe.conductor, index])
-            elif probe.type == "current at terminal":
-                probe.t = np.append(probe.t, self.time)
-                vs = self.v_sources[probe.conductor, index](self.time)
-                v1 = self.v[probe.conductor, index]
-                if index == 0:
-                    Gs = 1 / self.zs[probe.conductor]
-                else:
-                    Gs = 1 / self.zl[probe.conductor]
-
-                Is = -Gs * v1 + Gs * vs
-                probe.val = np.append(probe.val, Is)
-            else:
-                raise ValueError("undefined probe")
+        for p in self.probes:
+            p.update(self.time, self.x, self.v, self.i)
 
     def update_sources(self):
         self.v_sources_now = np.vectorize(FunctionType.__call__, otypes=["float64"])(
@@ -276,11 +224,18 @@ class MTL:
         self.time += self.dt
         self.update_probes()
 
+    def run_until(self, finalTime):
+        t = self.get_time_range(finalTime)
+
+        for p in self.probes:
+            p.resize_frames(len(t), self.number_of_conductors)
+
+        for _ in t:
+            self.step()
+
     def add_voltage_source(self, position: float, conductor: int, magnitude):
         index = np.argmin(np.abs(self.x - position))
         self.v_sources[conductor, index] = magnitude
-        probe = self.add_probe(position, conductor, "voltage")
-        return probe
 
     def add_external_field(self, e_x, e_z, ref_distance, distances: np.ndarray):
         field = Field(e_x, e_z)
@@ -313,36 +268,35 @@ class MTL:
             pos = self.x[nz]
             self.e_T[n, nz] = sp.lambdify(t, et.subs(z, pos))
 
-    def add_probe(self, position: float, conductor: int, type: str):
+    def add_probe(self, position: float, type: str):
         if (position > self.x[-1]) or (position < 0.0):
             raise ValueError("Probe position is out of MTL length.")
-        if type == "current at terminal":
-            if (position != 0.0) and (position != self.x[-1]):
-                raise ValueError(
-                    "Current at terminal probe must be on and end of the MTL."
-                )
 
-        probe = Probe(position, conductor, type)
+        probe = Probe(position, type, self.dt, self.x)
         self.probes.append(probe)
         return probe
 
-    def add_port_probe(self, terminal, conductor):
+    def add_port_probe(self, terminal):
         if terminal == 0:
             x0 = self.x[0]
             x1 = self.x[1]
-        elif terminal == 1:
-            x0 = self.x[-1]
-            x1 = self.x[-2]
-            
-        
-        v0 = self.add_probe(position=x0, conductor=0, type="voltage")
-        v1 = self.add_probe(position=x1, conductor=0, type="voltage")
-        i0 = self.add_probe(position=(x0 + x1) / 2.0, conductor=0, type="current")
+            z0 = self.zs
+        if terminal == 1:
+            x0 = self.x[-2]
+            x1 = self.x[-1]
+            z0 = self.zl
 
-        port_probe = PortProbe(v0, v1, i0)
+        v0 = self.add_probe(position=x0,          type='voltage')
+        v1 = self.add_probe(position=x1,          type='voltage')
+        i0 = self.add_probe(position=(x0+x1)/2.0, type='current')
+
+        port_probe = Port(v0, v1, i0, z0)
         self.port_probes.append(port_probe)
 
         return port_probe
+    
+    def add_port_probes(self):
+        return self.add_port_probe(0), self.add_port_probe(1)
 
     def create_clean_copy(self):
         r = deepcopy(self)
@@ -351,30 +305,32 @@ class MTL:
         r.time = 0.0
         return r
 
-    def extract_network(self, fMin, fMax, finalTime):
-        line = self.create_clean_copy()
+    def extract_2p_network(self, fMin, fMax, finalTime, pS_conductor=0, pL_conductor=0):
 
-        spread = 1 / fMax / 2.0
-        delay = 8 * spread
-
+        spread = 1/fMax/2.0
+        delay = 8*spread
         def gauss(t):
-            return np.exp(-((t - delay) ** 2) / (2 * spread**2))
-
-        line.add_voltage_source(position=self.x[0], conductor=0, magnitude=gauss)
-        p11 = line.add_port_probe(terminal=0, conductor=0)
-
-        for _ in line.get_time_range(finalTime):
-            line.step()
-
-        f, z11_fft = p11.extract_z()
-        fq = rf.Frequency.from_f(f[(f >= fMin) & (f < fMax)], unit="Hz")
-        z11 = np.zeros((len(fq.f), 1, 1), dtype="complex64")
-        z11[:, 0, 0] = z11_fft[(f >= fMin) & (f < fMax)]
-
-        ntw = rf.Network.from_z(z11)
-        ntw.frequency = fq
-
-        return ntw
+            return np.exp(- (t-delay)**2 / (2*spread**2))
+        
+        lineS = self.create_clean_copy()
+        lineS.add_voltage_source(position=lineS.x[0], conductor=pS_conductor, magnitude=gauss)
+        pS_1, pS_2 = lineS.add_port_probes()
+        lineS.run_until(finalTime)
+        f, sS = Port.extract_s_reciprocal(pS_1, pS_2, pS_conductor, pL_conductor)
+        
+        lineL = self.create_clean_copy()
+        lineL.add_voltage_source(position=lineL.x[-1], conductor=pL_conductor, magnitude=gauss)
+        pL_1, pL_2 = lineL.add_port_probes()
+        lineL.run_until(finalTime)
+        f, sL = Port.extract_s_reciprocal(pL_1, pL_2, pS_conductor, pL_conductor)
+        
+        s = np.zeros((len(f), 2, 2), dtype=complex)
+        s[:,0,0] = sS[:,0,0]
+        s[:,1,0] = sS[:,1,0]
+        s[:,0,1] = sL[:,0,1]
+        s[:,1,1] = sL[:,1,1]
+        fq = rf.Frequency.from_f(f[(f >= fMin) & (f < fMax)], unit='Hz')
+        return rf.Network(frequency=fq, s=s[(f >= fMin) & (f < fMax), :, :])
 
 
 class MTL_losses(MTL):
