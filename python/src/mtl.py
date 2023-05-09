@@ -304,30 +304,43 @@ class MTL:
         r.time = 0.0
         return r
 
-    def extract_2p_network(self, fMin, fMax, finalTime, pS_conductor=0, pL_conductor=0):
+    def extract_2p_network(
+            self, fMin, fMax, finalTime, 
+            p1 = {"terminal": "S", "conductor": 0}, 
+            p2 = {"terminal": "L", "conductor": 0}):
+        
+        assert p1 != p2
+
 
         spread = 1/fMax/2.0
         delay = 8*spread
         def gauss(t):
             return np.exp(- (t-delay)**2 / (2*spread**2))
         
-        lineS = self.create_clean_copy()
-        lineS.add_voltage_source(position=lineS.x[0], conductor=pS_conductor, magnitude=gauss)
-        pS_1, pS_2 = lineS.add_port_probes()
-        lineS.run_until(finalTime)
-        f, sS = Port.extract_s_reciprocal(pS_1, pS_2, pS_conductor, pL_conductor)
-        
-        lineL = self.create_clean_copy()
-        lineL.add_voltage_source(position=lineL.x[-1], conductor=pL_conductor, magnitude=gauss)
-        pL_1, pL_2 = lineL.add_port_probes()
-        lineL.run_until(finalTime)
-        f, sL = Port.extract_s_reciprocal(pL_1, pL_2, pS_conductor, pL_conductor)
+        line1 = self.create_clean_copy()
+        if p1["terminal"] == "S":
+            line1.add_voltage_source(position=line1.x[0],  conductor=p1["conductor"], magnitude=gauss)
+            p_1, p_2 = line1.add_port_probes()
+        else:
+            line1.add_voltage_source(position=line1.x[-1], conductor=p1["conductor"], magnitude=gauss)
+            p_2, p_1 = line1.add_port_probes()
+        line1.run_until(finalTime)
+        f, s_line1 = Port.extract_s_reciprocal(p_1, p_2, p1["conductor"], p2["conductor"])
+    
+        line2 = self.create_clean_copy()
+        if p2["terminal"] == "S":
+            line2.add_voltage_source(position=line2.x[0],  conductor=p2["conductor"], magnitude=gauss)
+            p2_1, p2_2 = line2.add_port_probes()
+        else:
+            line2.add_voltage_source(position=line2.x[-1], conductor=p2["conductor"], magnitude=gauss)
+        line2.run_until(finalTime)
+        f, s_line2 = Port.extract_s_reciprocal(p2_1, p2_2, p1["conductor"], p2["conductor"])
         
         s = np.zeros((len(f), 2, 2), dtype=complex)
-        s[:,0,0] = sS[:,0,0]
-        s[:,1,0] = sS[:,1,0]
-        s[:,0,1] = sL[:,0,1]
-        s[:,1,1] = sL[:,1,1]
+        s[:,0,0] = s_line1[:,0,0]
+        s[:,1,0] = s_line1[:,1,0]
+        s[:,0,1] = s_line2[:,1,0]
+        s[:,1,1] = s_line2[:,0,0]
         fq = rf.Frequency.from_f(f[(f >= fMin) & (f < fMax)], unit='Hz')
         return rf.Network(frequency=fq, s=s[(f >= fMin) & (f < fMax), :, :])
 

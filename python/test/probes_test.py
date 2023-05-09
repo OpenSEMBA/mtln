@@ -70,13 +70,18 @@ def test_cables_panel_s_extraction():
     
     _, s_p14 = Port.extract_s_reciprocal(pS, pL, 0, 1)
     s_p14 = s_p14[(f>=fMin)&(f<fMax),:]
+
+    _, s_p15 = Port.extract_s_reciprocal(pS, pS, 0, 2)
+    s_p15 = s_p15[(f>=fMin)&(f<fMax),:]
     
     fq = rf.Frequency.from_f(f=f[(f>=fMin)&(f<fMax)], unit='Hz')
     mtln_12 = rf.Network(frequency=fq, s=s_p12)
     mtln_14 = rf.Network(frequency=fq, s=s_p14)
+    mtln_15 = rf.Network(frequency=fq, s=s_p15)
     
-    inta_12 = rf.Network(EXPERIMENTAL_DATA + 'Ch1P1Ch2P2-SParameters-Segmented.s2p').interpolate(mtln_12.frequency)
-    inta_14 = rf.Network(EXPERIMENTAL_DATA + 'Ch1P1Ch2P4-SParameters-Segmented.s2p').interpolate(mtln_12.frequency)
+    inta_12 = rf.Network(EXPERIMENTAL_DATA + 'Ch1P1Ch2P2-SParameters-Segmented.s2p').interpolate(fq)
+    inta_14 = rf.Network(EXPERIMENTAL_DATA + 'Ch1P1Ch2P4-SParameters-Segmented.s2p').interpolate(fq)
+    inta_26 = rf.Network(EXPERIMENTAL_DATA + 'Ch1P2Ch2P6-SParameters-Segmented.s2p').interpolate(fq)
     
     R_S11 = np.corrcoef(np.abs(mtln_12.s[:,0,0]), np.abs(inta_12.s[:,0,0]))
     R_S21 = np.corrcoef(np.abs(mtln_12.s[:,1,0]), np.abs(inta_12.s[:,1,0]))
@@ -99,6 +104,14 @@ def test_cables_panel_s_extraction():
     # plt.xscale('log')
     # plt.ylim(-40,0)
 
-    # plt.show()
+    plt.figure()
+    mtln_15.plot_s_db(m=0,n=0,label='S11 mtln')
+    inta_26.plot_s_db(m=0,n=0,label='S22 INTA')
+    mtln_15.plot_s_db(m=1,n=0,label='S15 mtln')
+    inta_26.plot_s_db(m=1,n=0,label='S62 INTA')
+    plt.xscale('log')
+    plt.ylim(-60,0)
+
+    plt.show()
 
     
