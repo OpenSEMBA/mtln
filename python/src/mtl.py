@@ -443,6 +443,30 @@ class MTL_losses(MTL):
             + np.eye(self.number_of_conductors)
         )
 
+    def __update_v_i_terms(self):
+        for kz in range(self.x.shape[0] - 1):
+            self.v_term[kz] = np.linalg.inv(
+                (self.dx / self.dt) * self.c[kz] + (self.dx / 2) * self.g[kz]
+            ).dot((self.dx / self.dt) * self.c[kz] - (self.dx / 2) * self.g[kz])
+            self.i_term[kz] = np.linalg.inv(
+                (self.dx / self.dt) * self.l[kz] + (self.dx / 2) * self.r[kz]
+            ).dot((self.dx / self.dt) * self.l[kz] - (self.dx / 2) * self.r[kz])
+
+        self.v_diff = np.linalg.inv((self.dx / self.dt) * self.l + (self.dx / 2) * self.r)
+
+
+    def add_resistance_at_point(self, position, conductor, resistance):
+        self.add_resistance_in_region(position, position, conductor, resistance)
+        
+    def add_resistance_in_region(self, begin, end, conductor, resistance):
+        assert(end >= begin)
+        index1 = np.argmin(np.abs(self.x - begin))
+        index2 = np.argmin(np.abs(self.x - end))
+        if (index1 != index2):
+            self.r[index1:index2+1][conductor][conductor] = resistance/(self.x[index2]-self.x[index1])
+        else:
+            self.r[index1:index2+1][conductor][conductor] = resistance/self.dx
+        self.__update_v_i_terms()
 
     def v_sum(self,arr:np.ndarray): 
         return np.vectorize(np.sum)(arr)
@@ -506,7 +530,7 @@ class MTL_losses(MTL):
                 (self.dx / self.dt) * self.l[kz]
                 - (self.dx / 2) * self.d[kz]
                 + (self.dx / self.dt) * self.e[kz]
-                + (self.dx / 2) * self.r[kz]
+                - (self.dx / 2) * self.r[kz]
                 - self.dx * q2sum[kz]
             )
             self.i_term[kz] = np.linalg.inv(F1).dot(F2)

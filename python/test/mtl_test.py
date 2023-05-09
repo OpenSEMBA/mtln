@@ -456,29 +456,25 @@ def test_cables_panel_experimental_comparison():
 
 def test_dispersive_R():
     
-    L = 1e-9
-    C = mu_0*epsilon_0/L
-    
-    G, R = 0.0, 0.0
     length = 500e-3
     Zs, Zl = 50.0, 50.0
 
-    line = mtl.MTL_losses(l=L, c=C, g=G, r=R, length=length, nx = 10,Zs=Zs, Zl=Zl)
+    line = mtl.MTL_losses(l=0.25e-6, c=100e-12, g=0.0, r=0.0, length=length, nx = 20,Zs=Zs, Zl=Zl)
 
-    R = 10
-    L = 1e-3
+    R = 100
+    L = 0
     poles = np.array([])    
     residues = np.array([])    
     D = R/line.dx # R pul
     E = L/line.dx # L pul
-    line.add_dispersive_connector(position = 250e-3, 
-                                conductor=0,
-                                d=D,
-                                e=E,
-                                poles=poles, 
-                                residues=residues)
-
-    finalTime = 1.0e-6
+    # line.add_dispersive_connector(position = 250e-3, 
+    #                             conductor=0,
+    #                             d=D,
+    #                             e=E,
+    #                             poles=poles, 
+    #                             residues=residues)
+    line.add_resistance_at_point(position = 250e-3, conductor = 0, resistance = 100)
+    finalTime = 600.0e-9
 
     # def magnitude(t): return wf.trapezoidal_wave(
     #     t, A=1, rise_time=1e-9, fall_time=1e-9, f0=1e5, D=0.5)
@@ -523,20 +519,24 @@ def test_dispersive_R():
     # plt.tight_layout()
     # plt.show()
 
-    line_ntw = line.extract_network(fMin=1e5, fMax=1e9, finalTime=finalTime)
+    line_ntw = line.extract_2p_network(fMin=1e6, fMax=1e9, finalTime=finalTime)
+
 
     plt.figure()
-    plt.semilogx(line_ntw.f, np.real(line_ntw.z[:,0,0]), label = "real")
-    plt.semilogx(line_ntw.f, np.imag(line_ntw.z[:,0,0]), label = "imag")
-    plt.semilogx(line_ntw.f, np.abs(line_ntw.z[:,0,0]), '--',label = "abs")
-    # line_ntw.plot_z_re(label='real')
-    # line_ntw.plot_z_im(label='imag')
-    # line_ntw.plot_z_mag(label='mag')
+    # S11 = line_ntw.z[:,0,0]
+    # Z = 50*(1-S11)/(1+S11)
+    # plt.semilogx(line_ntw.f, np.real(Z), label = "real")
+    # plt.semilogx(line_ntw.f, np.imag(Z), label = "imag")
+    # plt.semilogx(line_ntw.f, np.abs( Z), '--',label = "abs")
+
+    plt.semilogx(line_ntw.f, np.real(line_ntw.z[:,0,0]), label = "real00")
+    plt.semilogx(line_ntw.f, np.real(line_ntw.z[:,0,1]), label = "real01")
+    # plt.semilogx(line_ntw.f, np.imag(line_ntw.z[:,1,0]), label = "imag")
+    # plt.semilogx(line_ntw.f, np.abs(line_ntw.z[:,1,0]), '--',label = "abs")
+
     plt.grid()
     plt.legend()
-    plt.xlim(1e5, 1e9)
-    # plt.xscale('log')
-    # plt.yscale('log')
+    plt.xlim(1e6, 1e9)
     plt.show()
 
     
@@ -552,7 +552,7 @@ def test_lossy_R():
     line = mtl.MTL_losses(l=L, c=C, g=G, r=R, length=length, nx = 20,Zs=Zs, Zl=Zl)
 
     finalTime = 5e-8
-    line_ntw = line.extract_network(fMin=1e5, fMax=1e9, finalTime=finalTime)
+    line_ntw = line.extract_2p_network(fMin=1e5, fMax=1e9, finalTime=finalTime)
 
     plt.figure()
     plt.semilogx(line_ntw.f, np.abs(np.real(line_ntw.z[:,0,0])), label = "real")
