@@ -435,7 +435,13 @@ def test_cables_panel_experimental_comparison():
     line = mtl.MTL(l=L, c=C, length=length, Zs=Zs, Zl=Zl)
 
     finalTime = 300e-9
-    line_ntw = line.extract_2p_network(fMin=1e7, fMax=1e9, finalTime=finalTime)
+    line_ntw = line.extract_2p_network(
+        fMin=1e7, fMax=1e9, finalTime=finalTime, \
+        p1={"terminal":"L", "conductor":0}, \
+        p2={"terminal":"L", "conductor":2} \
+    )
+
+    line_ntw.write_touchstone("mtln_no_ferrite_p26.s2p")
 
     p1p2 = rf.subnetwork(
         rf.Network(EXPERIMENTAL_DATA + 'Ch1P1Ch2P2-SParameters-Segmented.s2p'), [0])

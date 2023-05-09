@@ -79,15 +79,13 @@ class Port:
         return f, a, b
 
     @staticmethod
-    def extract_s_reciprocal(p1, p2, p1_conductor=0, p2_conductor=0):
+    def extract_s_reciprocal(p1, p2):
         ''' 
         Extracts s-parameters. Only valid parameters are the ones related to the illuminated port.
         Reference: https://en.wikipedia.org/wiki/Scattering_parameters 
         '''
-        f, a1, b1 = p1.__get_incident_and_reflected_power_wave(
-            p1_conductor)
-        _, a2, b2 = p2.__get_incident_and_reflected_power_wave(p2_conductor,
-                                                               invertCurrent=True)
+        f, a1, b1 = p1.__get_incident_and_reflected_power_wave(p1)
+        _, a2, b2 = p2.__get_incident_and_reflected_power_wave(p2)
         s = np.zeros((len(f), 2, 2), dtype=complex)
         s[:, 0, 0] = b1/a1
         s[:, 1, 0] = b2/a1
