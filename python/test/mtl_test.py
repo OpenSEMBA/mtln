@@ -184,12 +184,12 @@ def test_ribbon_cable_20ns_paul_9_3():
     # "The crosstalk waveform rises to a peak of around 110 mV [...]"
     assert (np.isclose(np.max(v_probe.val), 113e-3, atol=1e-3))
 
-    plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
-    plt.ylabel(r'$V_1 (0, t)\,[mV]$')
-    plt.xlabel(r'$t\,[ns]$')
-    plt.xticks(range(0, 200 ,50))
-    plt.grid('both')
-    plt.show()
+    # plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
+    # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+    # plt.xlabel(r'$t\,[ns]$')
+    # plt.xticks(range(0, 200 ,50))
+    # plt.grid('both')
+    # plt.show()
 
 
 def test_ribbon_cable_1ns_paul_9_3():
@@ -222,6 +222,7 @@ def test_ribbon_cable_1ns_paul_9_3():
     # plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
     # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
     # plt.xlabel(r'$t\,[ns]$')
+    # # plt.ylim(0,130)
     # plt.xticks(range(0, 200, 50))
     # plt.grid('both')
     # plt.show()
@@ -276,6 +277,52 @@ def test_ribbon_cable_1ns_paul_9_3_lossless_lossy():
     for (t, v) in zip(times, voltages):
         index = np.argmin(np.abs(v_probe.t - t*1e-9))
         assert np.all(np.isclose(v_probe.val[index], v*1e-3, atol=10e-3))
+
+
+def test_lumped_dispersive():
+    """
+    Uses lossy mtl class with dispersive lumped connector
+    """
+    l = np.zeros([2, 2])
+    l[0] = [0.7485*1e-6, 0.5077*1e-6]
+    l[1] = [0.5077*1e-6, 1.0154*1e-6]
+    c = np.zeros([2, 2])
+    c[0] = [37.432*1e-12, -18.716*1e-12]
+    c[1] = [-18.716*1e-12, 24.982*1e-12]
+
+    Zs, Zl = np.zeros([1, 2]), np.zeros([1, 2])
+    Zs[:] = [50, 50]
+    Zl[:] = [50, 50]
+
+    g = np.zeros([2, 2])
+    r = np.zeros([2, 2])
+    line = mtl.MTL_losses(l=l, c=c, g=g, r=r, length=2.0, nx=4, Zs=Zs, Zl=Zl)
+    finalTime = 200e-9
+
+    poles = np.array((-1e6,-1e9))
+    residues = np.array((1e5, 1e7))
+    line.add_dispersive_connector(position = 1.0, conductor=0,d=1,e=1,poles=poles, residues=residues)
+
+    def magnitude(t): return wf.trapezoidal_wave(
+        t, A=1, rise_time=1e-9, fall_time=1e-9, f0=1e6, D=0.5)
+    line.add_voltage_source(position=0.0, conductor=1, magnitude=magnitude)
+    v_probe = line.add_probe(position=0.0, conductor=0, type='voltage')
+
+    for t in line.get_time_range(finalTime):
+        line.step()
+
+    plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
+    plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+    plt.xlabel(r'$t\,[ns]$')
+    plt.xticks(range(0, 200, 50))
+    plt.grid('both')
+    plt.show()
+
+    # times = [12.5, 25, 40, 55]
+    # voltages = [120, 95, 55, 32]
+    # for (t, v) in zip(times, voltages):
+    #     index = np.argmin(np.abs(v_probe.t - t*1e-9))
+    #     assert np.all(np.isclose(v_probe.val[index], v*1e-3, atol=10e-3))
 
 
 def test_pcb_paul_9_3_2():
@@ -422,6 +469,173 @@ def test_cables_panel_experimental_comparison():
     # plt.xscale('log')
     # plt.show()
     
+def test_dispersive_R():
+    
+    L = 1e-9
+    C = mu_0*epsilon_0/L
+    
+    G, R = 0.0, 0.0
+    length = 500e-3
+    Zs, Zl = 50.0, 50.0
+
+    line = mtl.MTL_losses(l=L, c=C, g=G, r=R, length=length, nx = 10,Zs=Zs, Zl=Zl)
+
+    R = 10
+    L = 1e-3
+    poles = np.array([])    
+    residues = np.array([])    
+    D = R/line.dx # R pul
+    E = L/line.dx # L pul
+    line.add_dispersive_connector(position = 250e-3, 
+                                conductor=0,
+                                d=D,
+                                e=E,
+                                poles=poles, 
+                                residues=residues)
+
+    finalTime = 1.0e-6
+
+    # def magnitude(t): return wf.trapezoidal_wave(
+    #     t, A=1, rise_time=1e-9, fall_time=1e-9, f0=1e5, D=0.5)
+    # line.add_voltage_source(position=0.0, conductor=0, magnitude=magnitude)
+
+    # port_probe_0 = line.add_port_probe(0,0)
+    # port_probe_1 = line.add_port_probe(1,0)
+
+    # v_probe_L = line.add_probe(220e-3,0,"voltage")
+    # v_probe_R = line.add_probe(280e-3,0,"voltage")
+
+    # for t in line.get_time_range(finalTime):
+    #     line.step()
+
+    # fig, ax = plt.subplots(1,3)
+
+    # ax[0].plot(1e9*port_probe_0.v0.t, 1e3*port_probe_0.v0.val, label ='port 0')
+    # ax[0].plot(1e9*port_probe_1.v0.t, 1e3*port_probe_1.v0.val, label ='port 1')
+    # ax[0].set_ylabel(r'$V_1 (0, t)\,[mV]$')
+    # ax[0].set_xlabel(r'$t\,[ns]$')
+    # ax[0].set_xticks(range(0, int(finalTime*1e9), 100))
+    # ax[0].grid('both')
+
+    # ax[1].plot(1e9*port_probe_0.i0.t, port_probe_0.i0.val, label ='port 0')
+    # ax[1].plot(1e9*port_probe_1.i0.t, port_probe_1.i0.val, label ='port 1')
+    # ax[1].set_ylabel(r'$I_1 (0, t)\,[A]$')
+    # ax[1].set_xlabel(r'$t\,[ns]$')
+    # ax[1].set_xticks(range(0, int(finalTime*1e9), 100))
+    # ax[1].grid('both')
+
+    # # ax[2].plot(1e9*port_probe_0.i0.t, port_probe_0.v0.val/port_probe_0.i0.val, label ='port 0')
+    # # ax[2].plot(1e9*port_probe_1.i0.t, port_probe_1.v0.val/port_probe_1.i0.val, label ='port 1')
+    # ax[2].plot(1e9*port_probe_1.i0.t, (v_probe_L.val-v_probe_R.val)/port_probe_1.i0.val, label ='delta V /I')
+    # ax[2].set_ylabel(r'$Z (0, t)\,[\Omega]$')
+    # ax[2].set_xlabel(r'$t\,[ns]$')
+    # ax[2].set_xticks(range(0, int(finalTime*1e9), 100))
+    # ax[2].set_xlim(10, finalTime*1e9)
+    # # ax[2].set_ylim(0,3000)
+    # ax[2].set_yscale('log')
+    # ax[2].grid('both')
+    # ax[2].legend()
+
+    # plt.tight_layout()
+    # plt.show()
+
+    line_ntw = line.extract_network(fMin=1e5, fMax=1e9, finalTime=finalTime)
+
+    plt.figure()
+    plt.semilogx(line_ntw.f, np.real(line_ntw.z[:,0,0]), label = "real")
+    plt.semilogx(line_ntw.f, np.imag(line_ntw.z[:,0,0]), label = "imag")
+    plt.semilogx(line_ntw.f, np.abs(line_ntw.z[:,0,0]), '--',label = "abs")
+    # line_ntw.plot_z_re(label='real')
+    # line_ntw.plot_z_im(label='imag')
+    # line_ntw.plot_z_mag(label='mag')
+    plt.grid()
+    plt.legend()
+    plt.xlim(1e5, 1e9)
+    # plt.xscale('log')
+    # plt.yscale('log')
+    plt.show()
+
+    
+def test_lossy_R():
+    
+    L = 1e-9
+    C = mu_0*epsilon_0/L
+    
+    G, R = 0.0, 10.0
+    length = 500e-3
+    Zs, Zl = 50.0, 50.0
+
+    line = mtl.MTL_losses(l=L, c=C, g=G, r=R, length=length, nx = 20,Zs=Zs, Zl=Zl)
+
+    finalTime = 5e-8
+    line_ntw = line.extract_network(fMin=1e5, fMax=1e9, finalTime=finalTime)
+
+    plt.figure()
+    plt.semilogx(line_ntw.f, np.abs(np.real(line_ntw.z[:,0,0])), label = "real")
+    plt.semilogx(line_ntw.f, np.abs(np.imag(line_ntw.z[:,0,0])), label = "imag")
+    plt.semilogx(line_ntw.f, np.abs(np.abs(line_ntw.z[:,0,0])), '--',label = "abs")
+    # line_ntw.plot_z_re(label='real')
+    # line_ntw.plot_z_im(label='imag')
+    # line_ntw.plot_z_mag(label='mag')
+    plt.grid()
+    plt.legend()
+    plt.xlim(1e5, 1e9)
+    # plt.xscale('log')
+    # plt.yscale('log')
+    plt.show()
+
+    
+def test_cables_panel_with_empty_dispersive():
+    # Gets L and C matrices from SACAMOS cable_panel_4cm.bundle
+    L = np.array( \
+        [[  7.92796549E-07,  1.25173387E-07,  4.84953816E-08],
+         [  1.25173387E-07,  1.01251901E-06,  1.25173387E-07],
+         [  4.84953816E-08,  1.25173387E-07,  1.00276097E-06]])
+    C = np.array( \
+        [[  1.43342565E-11, -1.71281372E-12, -4.79422869E-13],
+         [ -1.71281372E-12,  1.13658354E-11, -1.33594804E-12],
+         [ -4.79422869E-13, -1.33594804E-12,  1.12858157E-11]])
+
+    G = np.zeros([3,3])
+    R = np.zeros([3,3])
+    # Models MTL amd extracts S11.
+    length = 398e-3
+    Zs = np.ones([1, 3]) * 50.0
+    Zl = Zs
+    line = mtl.MTL_losses(l=L, c=C, g=G, r=R, length=length, Zs=Zs, Zl=Zl)
+    
+    poles = np.array([])    
+    residues = np.array([])    
+    D = 0
+    E = 0
+    line.add_dispersive_connector(position = 200e-3, 
+                                conductor=0,
+                                d=D,
+                                e=E,
+                                poles=poles, 
+                                residues=residues)
+
+    finalTime = 300e-9
+    line_ntw = line.extract_network(fMin=1e7, fMax=1e9, finalTime=finalTime)
+    
+    p1p2 = rf.subnetwork(
+        rf.Network(
+        'python/testData/cable_panel/experimental_measurements/Ch1P1Ch2P2-SParameters-Segmented.s2p'), [0])
+    p1p2 = p1p2.interpolate(line_ntw.frequency)
+
+    
+    # Asserts correlation with [S11| measurements.
+    R = np.corrcoef(np.abs(p1p2.s[:,0,0]), np.abs(line_ntw.s[:,0,0]))
+    assert(R[0,1] >= 0.96)
+
+    plt.figure()
+    p1p2.plot_s_mag(label='measurements')
+    line_ntw.plot_s_mag(label='mtl')
+    plt.grid()
+    plt.legend()
+    plt.xlim(1e7, 1e9)
+    plt.xscale('log')
+    plt.show()
 
 def test_wire_over_ground_incident_E_paul_11_3_6_50ns():
     """

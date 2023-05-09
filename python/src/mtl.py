@@ -1,6 +1,8 @@
 import numpy as np
 import skrf as rf
 
+from numba import jit
+
 from copy import deepcopy
 from numpy.fft import fft, fftfreq, fftshift
 import sympy as sp
@@ -236,6 +238,8 @@ class MTL:
             self.e_T, self.time - self.dt
         )
 
+        
+
     def step(self):
         self.update_sources()
 
@@ -248,12 +252,10 @@ class MTL:
             * (self.zs.dot(self.c[0])).dot(self.e_T_now[:, 0] - self.e_T_prev[:, 0])
         )
 
-        for kz in range(1, self.v.shape[1] - 1):
-            self.v[:, kz] = (
-                self.v_term[kz].dot(self.v[:, kz])
-                - self.i_diff[kz].dot(self.i[:, kz] - self.i[:, kz - 1])
-                - (self.e_T_now[:, kz] - self.e_T_prev[:, kz])
-            )
+        self.v[:, 1:-1] = np.einsum('...ij,...j->...i',self.v_term[1:-1,:,:],self.v.T[1:-1,:]).T-\
+                          np.einsum('...ij,...j->...i',self.i_diff[1:-1,:,:],(self.i[:,1:]-self.i[:,:-1]).T).T-\
+                          (self.e_T_now[:, 1:-1] - self.e_T_prev[:, 1:-1])
+
 
         self.v[:, -1] = self.right_port_term_1.dot(
             self.v[:, -1]
@@ -264,13 +266,12 @@ class MTL:
             * (self.zl.dot(self.c[-1])).dot(self.e_T_now[:, -1] - self.e_T_prev[:, -1])
         )
 
-        for kz in range(0, self.i.shape[1]):
-            self.i[:, kz] = self.i_term[kz].dot(self.i[:, kz]) - self.v_diff[kz].dot(
-                self.v[:, kz + 1]
-                - self.v[:, kz]
-                + (self.e_T_now[:, kz + 1] - self.e_T_now[:, kz])
-                - (self.dx / 2) * (self.e_L_now[:, kz] + self.e_L_prev[:, kz])
-            )
+
+        self.i[:, :] = np.einsum('...ij,...j->...i',self.i_term[:,:,:],self.i.T[:,:]).T-\
+                       np.einsum('...ij,...j->...i',self.v_diff[:,:,:],(self.v[:, 1:] - self.v[:, :-1]
+                                                    + (self.e_T_now[:, 1:] - self.e_T_now[:, :-1])
+                                                    - (self.dx / 2) * (self.e_L_now[:, :] + self.e_L_prev[:, :])).T).T
+
 
         self.time += self.dt
         self.update_probes()
@@ -329,7 +330,11 @@ class MTL:
         if terminal == 0:
             x0 = self.x[0]
             x1 = self.x[1]
-
+        elif terminal == 1:
+            x0 = self.x[-1]
+            x1 = self.x[-2]
+            
+        
         v0 = self.add_probe(position=x0, conductor=0, type="voltage")
         v1 = self.add_probe(position=x1, conductor=0, type="voltage")
         i0 = self.add_probe(position=(x0 + x1) / 2.0, conductor=0, type="current")
@@ -397,31 +402,36 @@ class MTL_losses(MTL):
 
         self.phi = np.zeros(
             shape=(
-                self.x.shape[0],
-                self.number_of_conductors,
+                self.x.shape[0]-1,
                 self.number_of_conductors
             ), dtype = np.ndarray
         )
         self.q1 = np.zeros(
             shape=(
-                self.x.shape[0],
+                self.x.shape[0]-1,
                 self.number_of_conductors,
                 self.number_of_conductors
             ), dtype = np.ndarray
         )
         self.q2 = np.zeros(
             shape=(
-                self.x.shape[0],
+                self.x.shape[0]-1,
                 self.number_of_conductors,
                 self.number_of_conductors
             ), dtype = np.ndarray
         )
         self.q3 = np.zeros(
             shape=(
-                self.x.shape[0],
+                self.x.shape[0]-1,
                 self.number_of_conductors,
                 self.number_of_conductors
             ), dtype = np.ndarray
+        )
+        self.q3_phi_term = np.zeros(
+            shape=(
+                self.x.shape[0]-1,
+                self.number_of_conductors
+            )
         )
 
 
@@ -478,7 +488,7 @@ class MTL_losses(MTL):
         )
 
 
-    def v_sum(arr:np.ndarray): 
+    def v_sum(self,arr:np.ndarray): 
         return np.vectorize(np.sum)(arr)
 
     def add_dispersive_connector(
@@ -495,55 +505,20 @@ class MTL_losses(MTL):
         if (position > self.x[-1]) or (position < 0.0):
             raise ValueError("Connector position is out of MTL length.")
 
-        self.number_of_poles = poles.shape[0]
-        # self.phi = np.zeros(
-        #     shape=(
-        #         self.x.shape[0],
-        #         self.number_of_conductors,
-        #         self.number_of_conductors,
-        #         self.number_of_poles,
-        #     )
-        # )
-
         self.d = np.zeros(
             shape=(
-                self.x.shape[0],
+                self.x.shape[0]-1,
                 self.number_of_conductors,
                 self.number_of_conductors,
             )
         )
         self.e = np.zeros(
             shape=(
-                self.x.shape[0],
+                self.x.shape[0]-1,
                 self.number_of_conductors,
                 self.number_of_conductors,
             )
         )
-
-        # self.q1 = np.zeros(
-        #     shape=(
-        #         self.x.shape[0],
-        #         self.number_of_conductors,
-        #         self.number_of_conductors,
-        #         self.number_of_poles,
-        #     )
-        # )
-        # self.q2 = np.zeros(
-        #     shape=(
-        #         self.x.shape[0],
-        #         self.number_of_conductors,
-        #         self.number_of_conductors,
-        #         self.number_of_poles,
-        #     )
-        # )
-        # self.q3 = np.zeros(
-        #     shape=(
-        #         self.x.shape[0],
-        #         self.number_of_conductors,
-        #         self.number_of_conductors,
-        #         self.number_of_poles,
-        #     )
-        # )
 
         index = np.argmin(np.abs(self.x - position))
 
@@ -560,25 +535,40 @@ class MTL_losses(MTL):
         )
         self.q3[index, conductor, conductor] = np.exp(poles * self.dt)
 
-        self.q1sum = self.v_sum(self.q1)
-        self.q2sum = self.v_sum(self.q2)
-        # self.q2sum = np.sum(self.q2, axis=3)
+        q1sum = self.v_sum(self.q1)
+        q2sum = self.v_sum(self.q2)
 
         for kz in range(self.x.shape[0] - 1):
             F1 = (
                 (self.dx / self.dt) * self.l[kz]
-                + (self.dx / 2) * self.e[kz]
-                + (self.dx / self.dt) * self.d[kz]
-                + self.dx * self.q1sum[kz]
+                + (self.dx / 2) * self.d[kz]
+                + (self.dx / self.dt) * self.e[kz]
+                + (self.dx / 2) * self.r[kz]
+                + self.dx * q1sum[kz]
             )
             F2 = (
                 (self.dx / self.dt) * self.l[kz]
-                - (self.dx / 2) * self.e[kz]
-                + (self.dx / self.dt) * self.d[kz]
-                - self.dx * self.q2sum[kz]
+                - (self.dx / 2) * self.d[kz]
+                + (self.dx / self.dt) * self.e[kz]
+                + (self.dx / 2) * self.r[kz]
+                - self.dx * q2sum[kz]
             )
             self.i_term[kz] = np.linalg.inv(F1).dot(F2)
             self.v_diff[kz] = np.linalg.inv(F1)
+
+
+    def __update_q3_phi_term(self):
+        for kz in range(0, self.i.shape[1]):
+            self.q3_phi_term[kz] = self.v_sum(self.q3[kz].dot(self.phi[kz]))
+        
+    def __update_phi(self, i_prev, i_now):
+        for kz in range(0, self.i.shape[1]):
+            self.phi[kz, :] = (
+                self.q1[kz, :, :].dot(i_now[:, kz])+\
+                self.q2[kz, :, :].dot(i_prev[:, kz])+\
+                self.q3[kz, :,:].dot(self.phi[kz, :])
+            )
+
 
     def step(self):
         self.update_sources()
@@ -592,12 +582,10 @@ class MTL_losses(MTL):
             * (self.zs.dot(self.c[0])).dot(self.e_T_now[:, 0] - self.e_T_prev[:, 0])
         )
 
-        for kz in range(1, self.v.shape[1] - 1):
-            self.v[:, kz] = (
-                self.v_term[kz].dot(self.v[:, kz])
-                - self.i_diff[kz].dot(self.i[:, kz] - self.i[:, kz - 1])
-                - (self.e_T_now[:, kz] - self.e_T_prev[:, kz])
-            )
+        self.v[:, 1:-1] = np.einsum('...ij,...j->...i',self.v_term[1:-1,:,:],self.v.T[1:-1,:]).T-\
+                          np.einsum('...ij,...j->...i',self.i_diff[1:-1,:,:],(self.i[:,1:]-self.i[:,:-1]).T).T-\
+                          (self.e_T_now[:, 1:-1] - self.e_T_prev[:, 1:-1])
+
 
         self.v[:, -1] = self.right_port_term_1.dot(
             self.v[:, -1]
@@ -608,25 +596,18 @@ class MTL_losses(MTL):
             * (self.zl.dot(self.c[-1])).dot(self.e_T_now[:, -1] - self.e_T_prev[:, -1])
         )
 
+        self.__update_q3_phi_term()
         i_prev = self.i
-        q3_phi_sum = np.sum(self.q3 * self.phi, index=3)
-        for kz in range(0, self.i.shape[1]):
-            self.i[:, kz] = self.i_term[kz].dot(self.i[:, kz]) - self.v_diff[kz].dot(
-                self.v[:, kz + 1]
-                - self.v[:, kz]
-                + (self.e_T_now[:, kz + 1] - self.e_T_now[:, kz])
-                - (self.dx / 2) * (self.e_L_now[:, kz] + self.e_L_prev[:, kz])
-                - self.dx * q3_phi_sum[kz]
-            )
+        self.i[:, :] = np.einsum('...ij,...j->...i',self.i_term[:,:,:],self.i.T[:,:]).T-\
+                       np.einsum('...ij,...j->...i',self.v_diff[:,:,:],(self.v[:, 1:] - self.v[:, :-1]
+                                            + (self.e_T_now[:, 1:] - self.e_T_now[:, :-1])
+                                            - (self.dx / 2) * (self.e_L_now[:, :] + self.e_L_prev[:, :])).T).T-\
+                       np.einsum('...ij,...j->...i',self.v_diff[:,:,:],self.dx * self.q3_phi_term[:,:]).T
+
+        
 
         i_now = self.i
-        for kz in range(self.i.shape[1]):
-            for i in range(self.number_of_poles):
-                self.phi[kz, :, :, i] = (
-                    i_now[:, kz] * self.q1[kz, :, :, i]
-                    + i_prev[:, kz] * self.q2[kz, :, :, i]
-                    + self.phi[kz, :, :, i] * self.q3[kz, :,:, i]
-                )
+        self.__update_phi(i_prev, i_now)
 
         self.time += self.dt
         self.update_probes()
