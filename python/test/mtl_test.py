@@ -13,11 +13,17 @@ from skrf.media import DistributedCircuit
 
 EXPERIMENTAL_DATA = 'python/testData/cable_panel/experimental_measurements/'
 
+def fail():
+    assert(True==False)
 
 def test_get_phase_velocities():
-    v = mtl.MTL(l=0.25e-6, c=100e-12).get_phase_velocities()
-    assert v.shape == (1,)
-    assert np.isclose(2e8, v[0])
+    v = mtl.MTL(l=0.25e-6, c=100e-12, nx=100).get_phase_velocities()
+    assert v.shape == (100,1)
+    assert np.isclose(2e8, v[:][0])
+
+    v = mtl.MTL(l=0.25e-6, c=100e-12, nx=50).get_phase_velocities()
+    assert v.shape == (50,1)
+    assert np.isclose(2e8, v[:][0])
 
 
 def test_coaxial_line_paul_8_6_square():
@@ -223,10 +229,9 @@ def test_lumped_dispersive():
     def magnitude(t): return wf.trapezoidal_wave(
         t, A=1, rise_time=1e-9, fall_time=1e-9, f0=1e6, D=0.5)
     line.add_voltage_source(position=0.0, conductor=1, magnitude=magnitude)
-    v_probe = line.add_probe(position=0.0, conductor=0, type='voltage')
+    v_probe = line.add_probe(position=0.0, type='voltage')
 
-    for t in line.get_time_range(finalTime):
-        line.step()
+    line.run_until(finalTime)
 
     plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
     plt.ylabel(r'$V_1 (0, t)\,[mV]$')
@@ -239,7 +244,7 @@ def test_lumped_dispersive():
     # voltages = [120, 95, 55, 32]
     # for (t, v) in zip(times, voltages):
     #     index = np.argmin(np.abs(v_probe.t - t*1e-9))
-    #     assert np.all(np.isclose(v_probe.val[index], v*1e-3, atol=10e-3))
+    #     assert np.all(np.isclose(v_probe.val[index,0], v*1e-3, atol=10e-3))
 
 
 def test_lumped_dispersive():
@@ -269,23 +274,23 @@ def test_lumped_dispersive():
     def magnitude(t): return wf.trapezoidal_wave(
         t, A=1, rise_time=1e-9, fall_time=1e-9, f0=1e6, D=0.5)
     line.add_voltage_source(position=0.0, conductor=1, magnitude=magnitude)
-    v_probe = line.add_probe(position=0.0, conductor=0, type='voltage')
+    v_probe = line.add_probe(position=0.0, type='voltage')
 
-    for t in line.get_time_range(finalTime):
-        line.step()
+    line.run_until(finalTime)
 
-    plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
-    plt.ylabel(r'$V_1 (0, t)\,[mV]$')
-    plt.xlabel(r'$t\,[ns]$')
-    plt.xticks(range(0, 200, 50))
-    plt.grid('both')
-    plt.show()
+    # plt.plot(1e9*v_probe.t, 1e3*v_probe.val[:,0])
+    # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+    # plt.xlabel(r'$t\,[ns]$')
+    # plt.xticks(range(0, 200, 50))
+    # plt.grid('both')
+    # plt.show()
 
+    fail()
     # times = [12.5, 25, 40, 55]
     # voltages = [120, 95, 55, 32]
     # for (t, v) in zip(times, voltages):
     #     index = np.argmin(np.abs(v_probe.t - t*1e-9))
-    #     assert np.all(np.isclose(v_probe.val[index], v*1e-3, atol=10e-3))
+    #     assert np.all(np.isclose(v_probe.val[index.0], v*1e-3, atol=10e-3))
 
 
 def test_ribbon_cable_1ns_paul_9_3_lossless_lossy():
@@ -315,10 +320,9 @@ def test_ribbon_cable_1ns_paul_9_3_lossless_lossy():
     def magnitude(t): return wf.trapezoidal_wave(
         t, A=1, rise_time=1e-9, fall_time=1e-9, f0=1e6, D=0.5)
     line.add_voltage_source(position=0.0, conductor=1, magnitude=magnitude)
-    v_probe = line.add_probe(position=0.0, conductor=0, type='voltage')
+    v_probe = line.add_probe(position=0.0, type='voltage')
 
-    for t in line.get_time_range(finalTime):
-        line.step()
+    line.run_until(finalTime)
 
     # plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
     # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
@@ -331,7 +335,7 @@ def test_ribbon_cable_1ns_paul_9_3_lossless_lossy():
     voltages = [120, 95, 55, 32]
     for (t, v) in zip(times, voltages):
         index = np.argmin(np.abs(v_probe.t - t*1e-9))
-        assert np.all(np.isclose(v_probe.val[index], v*1e-3, atol=10e-3))
+        assert np.all(np.isclose(v_probe.val[index,0], v*1e-3, atol=10e-3))
 
 
 def test_pcb_paul_9_3_2():
@@ -486,8 +490,7 @@ def test_dispersive_R():
     # v_probe_L = line.add_probe(220e-3,0,"voltage")
     # v_probe_R = line.add_probe(280e-3,0,"voltage")
 
-    # for t in line.get_time_range(finalTime):
-    #     line.step()
+    # line.run_until(finalTime)
 
     # fig, ax = plt.subplots(1,3)
 
@@ -597,7 +600,7 @@ def test_cables_panel_with_empty_dispersive():
                                 residues=residues)
 
     finalTime = 300e-9
-    line_ntw = line.extract_network(fMin=1e7, fMax=1e9, finalTime=finalTime)
+    line_ntw = line.extract_2p_network(fMin=1e7, fMax=1e9, finalTime=finalTime)
     
     p1p2 = rf.subnetwork(
         rf.Network(

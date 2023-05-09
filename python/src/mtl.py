@@ -144,10 +144,10 @@ class MTL:
         )
 
     def get_phase_velocities(self):
-        return [
+        return np.array([
             1 / np.sqrt(np.diag(self.l[k].dot(self.c[1 + k])))
             for k in range(self.x.shape[0] - 1)
-        ]
+        ])
 
     def get_max_timestep(self):
         return self.dx / np.max(self.get_phase_velocities())
