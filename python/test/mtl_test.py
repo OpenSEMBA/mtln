@@ -5,11 +5,13 @@ import sympy as sp
 from scipy.constants import epsilon_0, mu_0, speed_of_light
 
 import src.mtl as mtl
+from src.networkExtraction import *
 
 import src.waveforms as wf
 
 import skrf as rf
 from skrf.media import DistributedCircuit
+from skrf.media import Coaxial
 
 EXPERIMENTAL_DATA = 'python/testData/cable_panel/experimental_measurements/'
 
@@ -378,16 +380,16 @@ def test_pcb_paul_9_3_2():
     # plt.show()
 
 
-def test_dispersive_R():
+def test_dispersive_connector_R_time():
     
     length = 500e-3
     Zs, Zl = 50.0, 50.0
 
     line = mtl.MTL_losses(l=0.25e-6, c=100e-12, g=0.0, r=0.0, length=length, nx = 20,Zs=Zs, Zl=Zl)
 
-    R = 100
-    L = 1e-6
-    C = 1e-8
+    R = 200
+    L = 0.0
+    C = 0.0
     # poles = np.array([-1/(R*C)])    
     # residues = np.array([1/(C*line.dx)])    
     poles = np.array([])    
@@ -395,14 +397,14 @@ def test_dispersive_R():
     D = R/line.dx # R pul
     E = L/line.dx # L pul
 
-    line.add_dispersive_connector(position = 250e-3, 
-                                conductor=0,
-                                d=D,
-                                e=E,
-                                poles=poles, 
-                                residues=residues)
+    # line.add_dispersive_connector(position = 250e-3, 
+    #                             conductor=0,
+    #                             d=D,
+    #                             e=E,
+    #                             poles=poles, 
+    #                             residues=residues)
     
-    # line.add_resistance_at_point(position = 250e-3, conductor = 0, resistance = R)
+    line.add_resistance_at_point(position = 250e-3, conductor = 0, resistance = R)
     finalTime = 1000.0e-9
 
     def magnitude(t): return wf.trapezoidal_wave(
@@ -420,20 +422,19 @@ def test_dispersive_R():
     plt.loglog(1e9*port_probe_1.i0.t[:], (v_probe_L.val[:,0]-v_probe_R.val[:,0])/port_probe_1.i0.val[:,0], label ='delta V /I')
     plt.ylabel(r'$Z (t)\,[\Omega]$')
     plt.xlabel(r'$t\,[ns]$')
-    plt.xlim(0, finalTime*1e9)
+    plt.xlim(10, finalTime*1e9)
     plt.grid('both')
     plt.legend()
     plt.show()
 
-    plt.loglog(1e9*port_probe_1.i0.t[:], (v_probe_L.val[:,0]-v_probe_R.val[:,0]))
-    plt.ylabel(r'$V\,[mV]$')
-    plt.xlabel(r'$t\,[ns]$')
-    plt.xlim(0, finalTime*1e9)
-    plt.grid('both')
+    # plt.loglog(1e9*port_probe_1.i0.t[:], (v_probe_L.val[:,0]-v_probe_R.val[:,0]))
+    # plt.ylabel(r'$V\,[mV]$')
+    # plt.xlabel(r'$t\,[ns]$')
+    # plt.xlim(0, finalTime*1e9)
+    # plt.grid('both')
 
     plt.show()
-
-def test_dispersive_connector_R_freq():
+def test_dispersive_connector_RCp_freq():
     
     length = 500e-3
     Zs, Zl = 50.0, 50.0
@@ -441,32 +442,87 @@ def test_dispersive_connector_R_freq():
     line = mtl.MTL_losses(l=0.25e-6, c=100e-12, g=0.0, r=0.0, length=length, nx = 20,Zs=Zs, Zl=Zl)
 
     R = 100
-    L = 0
+    C = 1.59e-9
     
-    # poles = np.array([])    
-    # residues = np.array([])    
-    # D = R/line.dx # R pul
-    # E = L/line.dx # L pul
-    # line.add_dispersive_connector(position = 250e-3, 
-    #                             conductor=0,
-    #                             d=D,
-    #                             e=E,
-    #                             poles=poles, 
-    #                             residues=residues)
+    poles = np.array([-1/(R*C)])    
+    residues = np.array([1/(C*line.dx)])    
+    D = 0
+    E = 0
+    line.add_dispersive_connector(position = 250e-3, 
+                                conductor=0,
+                                d=D,
+                                e=E,
+                                poles=poles, 
+                                residues=residues)
     
-    line.add_resistance_at_point(position = 250e-3, conductor = 0, resistance = R)
-    finalTime = 3000.0e-9
+    # line.add_resistance_at_point(position = 250e-3, conductor = 0, resistance = R)
+    fMin, fMax, finalTime = 5e4, 5e6, 60.0e-7
+    line.dt = 0.94*line.dt
+    line_ntw = extract_2p_network(
+        line, fMin=fMin, fMax=fMax, finalTime=finalTime)
+    
+    
+    coax = Coaxial(line_ntw.frequency, Dint=1e-4*2, Dout=0.02e-2*2)
 
-
-    line_ntw = line.extract_2p_network(fMin=1e5, fMax=1e9, finalTime=finalTime)
-    plt.figure()
-    line_ntw.plot_z_re(0,0,label='real 00')
-    line_ntw.plot_z_re(0,1,label='real 01')
-
-    plt.xscale('log')
+    shorted = line_ntw**coax.short()
+    shorted.plot_z_mag(0,0,label='mag')
+    plt.semilogx(line_ntw.f, np.abs(Z_RC_par(line_ntw.f, R, C)), label='mag th')
+    shorted.plot_z_deg(0,0,label='phase')
+    plt.semilogx(line_ntw.f, np.angle(Z_RC_par(line_ntw.f, R, C))*180/np.pi, label='phase th')
     plt.grid()
-    plt.legend()
-    plt.xlim(1e5, 1e9)
+    # plt.yscale('log')
+    plt.xscale('log')
+    plt.xlim(fMin, fMax)
+    plt.show()
+
+
+def Z_RC_par(f, R,C):
+    Zc = 1/(1j*2*np.pi*f*C)
+    return (1/R+1/Zc)**-1
+
+def Z_RC_par(f, R,C):
+    Zc = 1/(1j*2*np.pi*f*C)
+    return (1/R+1/Zc)**-1
+
+def test_dispersive_connector_RLs_freq():
+    
+    length = 500e-3
+    Zs, Zl = 50.0, 50.0
+
+    line = mtl.MTL_losses(l=0.25e-6, c=100e-12, g=0.0, r=0.0, length=length, nx = 20,Zs=Zs, Zl=Zl)
+
+    R = 100
+    L = 9.55e-6
+    
+    poles = np.array([])    
+    residues = np.array([])    
+    D = R/line.dx # R pul
+    E = L/line.dx # L pul
+    line.add_dispersive_connector(position = 250e-3, 
+                                conductor=0,
+                                d=D,
+                                e=E,
+                                poles=poles, 
+                                residues=residues)
+    
+    # line.add_resistance_at_point(position = 250e-3, conductor = 0, resistance = R)
+    fMin, fMax, finalTime = 1e4, 5e6, 8000.0e-9
+    line_ntw = extract_2p_network(
+        line, fMin=fMin, fMax=fMax, finalTime=finalTime)
+    
+    
+    coax = Coaxial(line_ntw.frequency, Dint=1e-4*2, Dout=0.02e-2*2)
+
+    shorted = line_ntw**coax.short()
+    shorted.plot_z_mag(0,0,label='mag')
+    plt.semilogx(line_ntw.f, np.abs(Z_RL_ser(line_ntw.f, R, L)), label='mag th')
+    shorted.plot_z_deg(0,0,label='deg')
+    plt.semilogx(line_ntw.f, np.angle(Z_RL_ser(line_ntw.f, R, L))*180/np.pi, label='phase th')
+
+    plt.grid()
+    plt.yscale('log')
+    plt.xscale('log')
+    plt.xlim(fMin, fMax)
     plt.show()
 
     
