@@ -468,22 +468,24 @@ def test_dispersive_connector_R_time():
     line = mtl.MTL_losses(l=0.25e-6, c=100e-12, g=0.0, r=0.0, length=length, nx = 20,Zs=Zs, Zl=Zl)
 
     R = 100
-    L = 0
+    L = 1e-6
+    C = 1e-8
+    # poles = np.array([-1/(R*C)])    
+    # residues = np.array([1/(C*line.dx)])    
+    poles = np.array([])    
+    residues = np.array([])    
+    D = R/line.dx # R pul
+    E = L/line.dx # L pul
 
-    # poles = np.array([])    
-    # residues = np.array([])    
-    # D = R/line.dx # R pul
-    # E = L/line.dx # L pul
-
-    # line.add_dispersive_connector(position = 250e-3, 
-    #                             conductor=0,
-    #                             d=D,
-    #                             e=E,
-    #                             poles=poles, 
-    #                             residues=residues)
+    line.add_dispersive_connector(position = 250e-3, 
+                                conductor=0,
+                                d=D,
+                                e=E,
+                                poles=poles, 
+                                residues=residues)
     
-    line.add_resistance_at_point(position = 250e-3, conductor = 0, resistance = R)
-    finalTime = 3000.0e-9
+    # line.add_resistance_at_point(position = 250e-3, conductor = 0, resistance = R)
+    finalTime = 1000.0e-9
 
     def magnitude(t): return wf.trapezoidal_wave(
         t, A=1, rise_time=1e-9, fall_time=1e-9, f0=1e5, D=0.5)
@@ -497,12 +499,20 @@ def test_dispersive_connector_R_time():
 
     line.run_until(finalTime)
 
-    plt.plot(1e9*port_probe_1.i0.t, (v_probe_L.val[:,0]-v_probe_R.val[:,0])/port_probe_1.i0.val[:,0], label ='delta V /I')
+    plt.loglog(1e9*port_probe_1.i0.t[:], (v_probe_L.val[:,0]-v_probe_R.val[:,0])/port_probe_1.i0.val[:,0], label ='delta V /I')
     plt.ylabel(r'$Z (t)\,[\Omega]$')
     plt.xlabel(r'$t\,[ns]$')
-    plt.xlim(10, finalTime*1e9)
+    plt.xlim(0, finalTime*1e9)
     plt.grid('both')
     plt.legend()
+    plt.show()
+
+    plt.loglog(1e9*port_probe_1.i0.t[:], (v_probe_L.val[:,0]-v_probe_R.val[:,0]))
+    plt.ylabel(r'$V\,[mV]$')
+    plt.xlabel(r'$t\,[ns]$')
+    plt.xlim(0, finalTime*1e9)
+    plt.grid('both')
+
     plt.show()
 
 def test_dispersive_connector_R_freq():
@@ -526,7 +536,7 @@ def test_dispersive_connector_R_freq():
     #                             poles=poles, 
     #                             residues=residues)
     
-    # line.add_resistance_at_point(position = 250e-3, conductor = 0, resistance = R)
+    line.add_resistance_at_point(position = 250e-3, conductor = 0, resistance = R)
     finalTime = 3000.0e-9
 
 
