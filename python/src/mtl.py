@@ -310,8 +310,8 @@ class MTL_losses(MTL):
         types = [float, np.float64]
 
         if type(g) in types and type(r) in types:
-            self.r = np.empty(shape=(self.x.shape[0] - 1, 1, 1))
-            self.g = np.empty(shape=(self.x.shape[0], 1, 1))
+            self.r = np.empty(shape=(self.x.shape[0] - 1, self.number_of_conductors, self.number_of_conductors))
+            self.g = np.empty(shape=(self.x.shape[0], self.number_of_conductors, self.number_of_conductors))
             self.g[:] = g
             self.r[:] = r
         elif type(g) == np.ndarray and type(r) == np.ndarray:
@@ -394,14 +394,15 @@ class MTL_losses(MTL):
         #     self.v_term[kz] = np.linalg.inv(
         #         (dx / self.dt) * self.c[kz] + (dx / 2) * self.g[kz]
         #     ).dot((dx / self.dt) * self.c[kz] - (dx / 2) * self.g[kz])
-        #     self.i_term[kz] = np.linalg.inv(
-        #         (dx / self.dt) * self.l[kz] + (dx / 2) * self.r[kz]
-        #     ).dot((dx / self.dt) * self.l[kz] - (dx / 2) * self.r[kz])
+            # self.i_term[kz] = np.linalg.inv(
+            #     (dx / self.dt) * self.l[kz] + (dx / 2) * self.r[kz]
+            # ).dot((dx / self.dt) * self.l[kz] - (dx / 2) * self.r[kz])
 
         # kz = self.x.shape[0] - 1
         # self.v_term[kz] = np.linalg.inv(
         #     (dx / self.dt) * self.c[kz] + (dx / 2) * self.g[kz]
         # ).dot((dx / self.dt) * self.c[kz] - (dx / 2) * self.g[kz])
+
 
         # self.i_diff = np.linalg.inv((dx / self.dt) * self.c + (dx / 2) * self.g)
         # self.v_diff = np.linalg.inv((dx / self.dt) * self.l + (dx / 2) * self.r)
@@ -443,40 +444,41 @@ class MTL_losses(MTL):
         )
 
     def __update_lr_terms(self):
-        # for kz in range(self.x.shape[0] - 1):
-        #     F1 = (
-        #         (self.dx / self.dt) * self.l[kz]
-        #         + (self.dx / 2) * self.d[kz]
-        #         + (self.dx / self.dt) * self.e[kz]
-        #         + (self.dx / 2) * self.r[kz]
-        #         + self.dx * self.q1sum[kz]
-        #     )
-        #     F2 = (
-        #         (self.dx / self.dt) * self.l[kz]
-        #         - (self.dx / 2) * self.d[kz]
-        #         + (self.dx / self.dt) * self.e[kz]
-        #         - (self.dx / 2) * self.r[kz]
-        #         - self.dx * self.q2sum[kz]
-        #     )
-        #     self.i_term[kz] = np.linalg.inv(F1).dot(F2)
-        #     self.v_diff[kz] = np.linalg.inv(F1)
-        F1 = (
-            (self.dx / self.dt) * self.l
-            + (self.dx / 2) * self.d
-            + (self.dx / self.dt) * self.e
-            + (self.dx / 2) * self.r
-            + self.dx * self.q1sum
-        )
-        F2 = (
-            (self.dx / self.dt) * self.l
-            - (self.dx / 2) * self.d
-            + (self.dx / self.dt) * self.e
-            - (self.dx / 2) * self.r
-            - self.dx * self.q2sum
-        )
+        for kz in range(self.x.shape[0] - 1):
+            F1 = (
+                (self.dx / self.dt) * self.l[kz]
+                + (self.dx / 2) * self.d[kz]
+                + (self.dx / self.dt) * self.e[kz]
+                + (self.dx / 2) * self.r[kz]
+                + self.dx * self.q1sum[kz]
+            )
+            F2 = (
+                (self.dx / self.dt) * self.l[kz]
+                - (self.dx / 2) * self.d[kz]
+                + (self.dx / self.dt) * self.e[kz]
+                - (self.dx / 2) * self.r[kz]
+                - self.dx * self.q2sum[kz]
+            )
+            self.i_term[kz] = np.linalg.inv(F1).dot(F2)
+            self.v_diff[kz] = np.linalg.inv(F1)
+            
+        # F1 = (
+        #     (self.dx / self.dt) * self.l
+        #     + (self.dx / 2) * self.d
+        #     + (self.dx / self.dt) * self.e
+        #     + (self.dx / 2) * self.r
+        #     + self.dx * self.q1sum
+        # )
+        # F2 = (
+        #     (self.dx / self.dt) * self.l
+        #     - (self.dx / 2) * self.d
+        #     + (self.dx / self.dt) * self.e
+        #     - (self.dx / 2) * self.r
+        #     - self.dx * self.q2sum
+        # )
         
-        self.i_term = np.einsum('...ij,...ji->...ij' , np.linalg.inv(F1), F2)
-        self.v_diff = np.linalg.inv(F1)
+        # self.i_term = np.einsum('...ij,...ji->...ij' , np.linalg.inv(F1), F2)
+        # self.v_diff = np.linalg.inv(F1)
 
         # 
 
@@ -488,17 +490,17 @@ class MTL_losses(MTL):
         # self.v_diff = np.linalg.inv((self.dx / self.dt) * self.l + (self.dx / 2) * self.r)
 
     def __update_cg_terms(self):
-        F1 = (self.dx / self.dt) * self.c + (self.dx / 2) * self.g
-        F2 = (self.dx / self.dt) * self.c - (self.dx / 2) * self.g
-        self.v_term = np.einsum('...ij,...ji->...ij' , np.linalg.inv(F1), F2)
-        self.i_diff = np.linalg.inv(F1)
+        # F1 = (self.dx / self.dt) * self.c + (self.dx / 2) * self.g
+        # F2 = (self.dx / self.dt) * self.c - (self.dx / 2) * self.g
+        # self.v_term = np.einsum('...ij,...ji->...ij' , np.linalg.inv(F1), F2)
+        # self.i_diff = np.linalg.inv(F1)
 
-        # for kz in range(self.x.shape[0] - 1):
-        #     self.v_term[kz] = np.linalg.inv(
-        #         (self.dx / self.dt) * self.c[kz] + (self.dx / 2) * self.g[kz]
-        #     ).dot((self.dx / self.dt) * self.c[kz] - (self.dx / 2) * self.g[kz])
+        for kz in range(self.x.shape[0]):
+            self.v_term[kz] = np.linalg.inv(
+                (self.dx / self.dt) * self.c[kz] + (self.dx / 2) * self.g[kz]
+            ).dot((self.dx / self.dt) * self.c[kz] - (self.dx / 2) * self.g[kz])
 
-        # self.i_diff = np.linalg.inv((self.dx / self.dt) * self.c + (self.dx / 2) * self.g)
+        self.i_diff = np.linalg.inv((self.dx / self.dt) * self.c + (self.dx / 2) * self.g)
 
 
 

@@ -326,12 +326,12 @@ def test_ribbon_cable_1ns_paul_9_3_lossless_lossy():
 
     line.run_until(finalTime)
 
-    # plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
-    # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
-    # plt.xlabel(r'$t\,[ns]$')
-    # plt.xticks(range(0, 200, 50))
-    # plt.grid('both')
-    # plt.show()
+    plt.plot(1e9*v_probe.t, 1e3*v_probe.val[:,0])
+    plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+    plt.xlabel(r'$t\,[ns]$')
+    plt.xticks(range(0, 200, 50))
+    plt.grid('both')
+    plt.show()
 
     times = [12.5, 25, 40, 55]
     voltages = [120, 95, 55, 32]
@@ -475,7 +475,57 @@ def test_dispersive_connector_RCp_freq():
     plt.xlim(fMin, fMax)
     plt.show()
 
+def test_dispersive_connector_complex_pole_freq():
+    
+    length = 500e-3
+    Zs, Zl = 50.0, 50.0
 
+    line = mtl.MTL_losses(l=0.25e-6, c=100e-12, g=0.0, r=0.0, length=length, nx = 20,Zs=Zs, Zl=Zl)
+
+    poles    = np.array([-0.5e7+5e6j,-0.5e7-5e6j])    
+    residues = np.array([1e8+5e7j,    1e8-5e7j])    
+    D = 0
+    E = 0
+    line.add_dispersive_connector(position = 250e-3, 
+                                conductor=0,
+                                d=D,
+                                e=E,
+                                poles=poles, 
+                                residues=residues/line.dx)
+    
+    # line.add_resistance_at_point(position = 250e-3, conductor = 0, resistance = R)
+    fMin, fMax, finalTime = 5e4, 5e6, 60.0e-7
+    line.dt = 0.94*line.dt
+    line_ntw = extract_2p_network(
+        line, fMin=fMin, fMax=fMax, finalTime=finalTime)
+    
+    # f = np.logspace(5,7,100)
+    # plt.semilogx(f, np.abs(Z_VF(f,D,E,residues, poles)), label='abs')
+    # plt.semilogx(f, np.angle(Z_VF(f,D,E,residues, poles))*180/np.pi, label='phase')
+    # plt.legend()
+
+    coax = Coaxial(line_ntw.frequency, Dint=1e-4*2, Dout=0.02e-2*2)
+
+    shorted = line_ntw**coax.short()
+    shorted.plot_z_mag(0,0,label='mag')
+    plt.semilogx(line_ntw.f, np.abs(Z_VF(line_ntw.f,D,E,residues, poles)), '--', label='mag th')
+    shorted.plot_z_deg(0,0,label='phase')
+    plt.semilogx(line_ntw.f, np.angle(Z_VF(line_ntw.f,D,E,residues, poles))*180/np.pi, '--', label='phase th')
+    plt.grid()
+    plt.legend()
+    # plt.yscale('log')
+
+    plt.xscale('log')
+    plt.xlim(fMin, fMax)
+    plt.show()
+
+def Z_VF(f, d,e,res,pol):
+    s = 1j*2*np.pi*f
+    Z = d + s*e
+    for r,p in zip(res, pol):
+        Z += r/(s-p)
+    return Z
+        
 def Z_RC_par(f, R,C):
     Zc = 1/(1j*2*np.pi*f*C)
     return (1/R+1/Zc)**-1
