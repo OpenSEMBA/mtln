@@ -326,12 +326,12 @@ def test_ribbon_cable_1ns_paul_9_3_lossless_lossy():
 
     line.run_until(finalTime)
 
-    plt.plot(1e9*v_probe.t, 1e3*v_probe.val[:,0])
-    plt.ylabel(r'$V_1 (0, t)\,[mV]$')
-    plt.xlabel(r'$t\,[ns]$')
-    plt.xticks(range(0, 200, 50))
-    plt.grid('both')
-    plt.show()
+    # plt.plot(1e9*v_probe.t, 1e3*v_probe.val[:,0])
+    # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+    # plt.xlabel(r'$t\,[ns]$')
+    # plt.xticks(range(0, 200, 50))
+    # plt.grid('both')
+    # plt.show()
 
     times = [12.5, 25, 40, 55]
     voltages = [120, 95, 55, 32]
@@ -533,6 +533,9 @@ def Z_RC_par(f, R,C):
 def Z_RC_par(f, R,C):
     Zc = 1/(1j*2*np.pi*f*C)
     return (1/R+1/Zc)**-1
+
+def Z_RL_ser(f, R,L):
+    return R+1j*2*np.pi*f*L
 
 def test_dispersive_connector_RLs_freq():
     
