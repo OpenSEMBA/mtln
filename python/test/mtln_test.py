@@ -46,20 +46,29 @@ def test_ribbon_cable_20ns_paul_9_3():
      _             _
     | |     0     | |
     | 0-----------2 |
-    | |           | |
+    | |     1     | |
     | 1-----------3 |
-    |_|     1     |_|
-    T1             T2
+    |_|           |_|
+    term_1(0)     term_2(1)
     
     """
+    lines = mtln.MTLN()
+    lines.add_bundle(0, mtln.MTLN(l=l, c=c, length=2.0, nx=2))
 
-    line_nw = mtln.MTLN(l=l, c=c, length=2.0, nx=2)
-    term_1 = mtln.Network([0,1])
-    term_2 = mtln.Network([2,3])
-    term_1.add_connection(0, [line_nw,0])
-    term_1.add_connection(1, [line_nw,1])
-    term_2.add_connection(2, [line_nw,0])
-    term_2.add_connection(3, [line_nw,1])
+    term_1 = mtln.Network(nw_number = 0, nodes = [0,1])
+    term_1.add_connection(nw_node = 0, bundle = 0, conductor = 0, side ="L")
+    term_1.add_connection(nw_node = 1, bundle = 0, conductor = 1, side ="L")
+    term_1.add_state()
+    lines.add_network(term_1)
+    
+    term_2 = mtln.Network(nw_number = 1 ,nodes = [2,3])
+    term_2.add_connection(nw_node = 2, bundle = 0, conductor = 0, side ="R")
+    term_2.add_connection(nw_node = 3, bundle = 0, conductor = 1, side ="R")
+    term_2.add_state()
+    lines.add_network(term_2)
+
+
+    lines.run_until(finalTime)
 
     # From Paul's book:
     # "The crosstalk waveform rises to a peak of around 110 mV [...]"
