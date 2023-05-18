@@ -1,0 +1,61 @@
+{
+    "format": "v4.0.0",
+    "type": "cylindrical",
+    "cable_type_number": 1,
+    "total_number_of_conductors": 1,
+    "number_of_external_conductors": 1,
+    "total_number_of domains": 1,
+    "number_of_internal_conductors": 0,
+    "number_of_internal_domains": 0,
+    "number_of_cable_parameters": 3,
+    "cable_parameters": [1.0e-4, 1.0e-4, 0.0],
+    "number_of_frequency_dependent_dielectric_models": 1,
+    "dielectric_filters": [
+        {
+            "number": 1,
+            "w normalisation constant": 1.0,
+            "a coefficients": [ 1.0 ],
+            "b coefficients": [ 1.0 ]
+        }
+    ],
+    "conductor_impedance_models": [
+        {
+            "conductor_impedance_model_type": 1,
+            "conductor_radius": 1e-4,
+            "conductivity": 0.0,
+            "resistance_multiplication_factor": 1.0,
+            "external_to_domain_conductor_currrent_transformation_matrix_MI":
+            [
+                [1.0, 0.0],
+                [1.0, 1.0]
+            ],
+            "external_to_domain_conductor_currrent_transformation_matrix_MV":
+            [
+                [1.0,-1.0],
+                [0.0, 1.0]
+            ],
+            "local_reference_conductor_for_internal_domains": 0,
+            "number_of_conductros_in_each_domain": 2,
+            "external_conductor_information_and_dielectric_model": {
+                "conductor_type": 1,
+                "conductor_radius": 1e-4,
+                "conductor_width": 0.0,
+                "conductor_width2": 0.0,
+                "conductor_height": 0.0,
+                "conductor_ox_oy": [0.0, 0.0],
+                "dielectric_radius": 1e-4,
+                "dielectric_width": 0.0,
+                "dielectric_height": 0.0,
+                "dielectric_ox_oy": [0.0, 0.0],
+                "w_normalisation_constant": 1.0,
+                "a_coefficients": [ 1.0 ],
+                "b_coefficients": [ 1.0 ]
+            }
+        }
+    ],
+    "conductor_labels": [
+        {"cable_name": "bare_wire"},
+        {"type": "cylindrical"},
+        {"conductor 1": "wire"}
+    ]
+}
