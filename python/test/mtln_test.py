@@ -44,10 +44,10 @@ def test_ribbon_cable_20ns_paul_9_3():
 
     """
      _             _
-    | |     0     | |
-    | 0-----------2 |
     | |     1     | |
     | 1-----------3 |
+    | |     0     | |
+    | 0-----------2 |
     |_|           |_|
     term_1(0)     term_2(1)
     
@@ -55,17 +55,28 @@ def test_ribbon_cable_20ns_paul_9_3():
     lines = mtln.MTLN()
     lines.add_bundle(0, mtln.MTLN(l=l, c=c, length=2.0, nx=2))
 
-    term_1 = mtln.Network(nw_number = 0, nodes = [0,1])
-    term_1.add_connection(nw_node = 0, bundle = 0, conductor = 0, side ="L")
-    term_1.add_connection(nw_node = 1, bundle = 0, conductor = 1, side ="L")
-    term_1.add_state()
-    lines.add_network(term_1)
+    terminal_1 = mtln.Network(nw_number = 0, nodes = [0,1])
+    terminal_1.add_nodes_in_bundle(bundle_number = 0, 
+                                   bundle_c = lines.bundles[0].c, 
+                                   connections= [{"node" : 0, "conductor" : 0},{"node" : 1, "conductor" : 1}], 
+                                   side= "S")
     
-    term_2 = mtln.Network(nw_number = 1 ,nodes = [2,3])
-    term_2.add_connection(nw_node = 2, bundle = 0, conductor = 0, side ="R")
-    term_2.add_connection(nw_node = 3, bundle = 0, conductor = 1, side ="R")
-    term_2.add_state()
-    lines.add_network(term_2)
+    # terminal_1.add_node(nw_node = 0, bundle = 0, conductor = 0, side ="S")
+    # terminal_1.add_node(nw_node = 1, bundle = 0, conductor = 1, side ="S")
+    terminal_1.connect_to_ground(0, 50)
+    terminal_1.connect_to_ground(1, 50, magnitude)
+    lines.add_network(terminal_1)
+    
+    terminal_2 = mtln.Network(nw_number = 1 ,nodes = [2,3])
+    terminal_2.add_nodes_in_bundle(bundle_number = 0, 
+                                   bundle_c = lines.bundles[0].c, 
+                                   connections= [{"node" : 2, "conductor" : 0},{"node" : 3, "conductor" : 1}], 
+                                   side= "L")
+    # terminal_2.add_node(nw_node = 2, bundle = 0, conductor = 0, side ="L")
+    # terminal_2.add_node(nw_node = 3, bundle = 0, conductor = 1, side ="L")
+    terminal_2.connect_to_ground(2, 50)
+    terminal_2.connect_to_ground(3, 50)
+    lines.add_network(terminal_2)
 
 
     lines.run_until(finalTime)
