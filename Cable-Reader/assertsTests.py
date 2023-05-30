@@ -1,5 +1,5 @@
 from testreader import Reader
-path="/home/developer/Desktop/pythonProject/mtln/Cable-Reader/testData/inputs/"
+path="/home/repository/testData/inputs/"
 reader=Reader(path)
 reader.setFolder("")
 file="bare_wire.cable"
