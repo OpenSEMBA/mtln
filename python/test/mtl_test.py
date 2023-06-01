@@ -149,6 +149,8 @@ def test_ribbon_cable_20ns_paul_9_3():
         t, A=1, rise_time=20e-9, fall_time=20e-9, f0=1e6, D=0.5)
     line.add_voltage_source(position=0.0, conductor=1, magnitude=magnitude)
     v_probe = line.add_probe(position=0.0, type='voltage')
+    v_probe1 = line.add_probe(position=1.0, type='voltage')
+    i_probe1 = line.add_probe(position=1.0, type='current')
 
     line.run_until(finalTime)
 
@@ -156,12 +158,12 @@ def test_ribbon_cable_20ns_paul_9_3():
     # "The crosstalk waveform rises to a peak of around 110 mV [...]"
     assert (np.isclose(np.max(v_probe.val[:, 0]), 113e-3, atol=1e-3))
 
-    # plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
-    # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
-    # plt.xlabel(r'$t\,[ns]$')
-    # plt.xticks(range(0, 200, 50))
-    # plt.grid('both')
-    # plt.show()
+    plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
+    plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+    plt.xlabel(r'$t\,[ns]$')
+    plt.xticks(range(0, 200, 50))
+    plt.grid('both')
+    plt.show()
 
 
 def test_ribbon_cable_1ns_paul_9_3():
