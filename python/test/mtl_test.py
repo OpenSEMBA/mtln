@@ -198,12 +198,12 @@ def test_ribbon_cable_1ns_paul_9_3():
         index = np.argmin(np.abs(v_probe.t - t*1e-9))
         assert np.all(np.isclose(v_probe.val[index, 0], v*1e-3, atol=10e-3))
 
-    # plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
-    # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
-    # plt.xlabel(r'$t\,[ns]$')
-    # plt.xticks(range(0, 200, 50))
-    # plt.grid('both')
-    # plt.show()
+    plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
+    plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+    plt.xlabel(r'$t\,[ns]$')
+    plt.xticks(range(0, 200, 50))
+    plt.grid('both')
+    plt.show()
 
 
 def test_lumped_dispersive():

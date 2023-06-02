@@ -25,6 +25,7 @@ class Network:
         self.nw_i = np.zeros([0])
         self.P1 = np.zeros([self.number_of_nodes, self.number_of_nodes])
         self.Ps = np.zeros([self.number_of_nodes, self.number_of_nodes])
+        self.Pshort = np.zeros([self.number_of_nodes, self.number_of_nodes])
         self.v_sources = np.empty(shape=(self.number_of_nodes), dtype=object)
         self.v_sources.fill(lambda n: 0)
 
@@ -74,21 +75,24 @@ class Network:
             self.P1[index1, index2] = 1/R
             self.P1[index2, index1] = -1/R
             self.P1[index2, index2] = 1/R
-        if (Vt != 0):
-            self.Ps[index1, index1] = 1/R 
-            self.Ps[index1, index2] = 1/R
-            self.Ps[index2, index1] = 1/R
-            self.Ps[index2, index2] = 1/R
-            
-            self.v_sources[index1]  = Vt
-            self.v_sources[index2]  = Vt
-
+            if (Vt != 0):
+                self.Ps[index1, index1] = 1/R 
+                self.Ps[index1, index2] = 1/R
+                self.Ps[index2, index1] = 1/R
+                self.Ps[index2, index2] = 1/R
+                
+                self.v_sources[index1]  = Vt
+                self.v_sources[index2]  = Vt
+        else:
+            self.P1[index1, index2] = 1
+            self.P1[index2, index1] = -1
       
     def step(self, time, dt):
         sources_now = np.vectorize(FunctionType.__call__, otypes=["float64"])(self.v_sources, time)
         sources_prev = np.vectorize(FunctionType.__call__, otypes=["float64"])(self.v_sources, time - dt)
-        self.nw_v = self.terminal_term_1.dot(self.nw_v) + self.terminal_term_2.dot(self.Ps.dot(sources_now + sources_prev) - 2*self.nw_i[:])
+        self.nw_v = self.terminal_term_1.dot(self.nw_v) + self.terminal_term_2.dot(self.Ps.dot(sources_now + sources_prev) - 2*self.nw_i[:]) #+ self.Pshort.dot(self.nw_v)
         
+        # self.nw_i = self.P1.dot(self.nw_v) - self.Ps.dot(sources_now)
 
 class MTLN:
     """
@@ -150,8 +154,10 @@ class MTLN:
             for node in nw.connections.values():
                 if (node["side"] == "S"):
                     self.bundles[node["bundle_number"]].v[node["conductor"],0] = nw.nw_v[node["index"]]
+                    # self.bundles[node["bundle_number"]].i[node["conductor"],0] = -nw.nw_i[node["index"]]
                 if (node["side"] == "L"):
                     self.bundles[node["bundle_number"]].v[node["conductor"],-1] = -nw.nw_v[node["index"]]
+                    # self.bundles[node["bundle_number"]].i[node["conductor"],-1] = -nw.nw_i[node["index"]]
 
     
     def update_bundles_voltage(self):
@@ -169,6 +175,12 @@ class MTLN:
                             (bundle.e_T_now[:, 1:] - bundle.e_T_now[:, :-1])-\
                             (bundle.dx / 2) * (bundle.e_L_now[:, :] + bundle.e_L_prev[:, :])
                             ).T).T
+                             
+            # bundle.i[:, 1:-1] = np.einsum('...ij,...j->...i',bundle.i_term[1:-1,:,:],bundle.i.T[1:-1,:]).T-\
+            #                  np.einsum('...ij,...j->...i',bundle.v_diff[1:-1,:,:],(bundle.v[:, 2:-1] - bundle.v[:, 1:-2]+\
+            #                 (bundle.e_T_now[:, 2:-1] - bundle.e_T_now[:, 1:-2])-\
+            #                 (bundle.dx / 2) * (bundle.e_L_now[:, 1:-1] + bundle.e_L_prev[:, 1:-1])
+            #                 ).T).T
 
 
     def step(self):
