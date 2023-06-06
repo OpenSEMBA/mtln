@@ -74,8 +74,8 @@ class Network:
             #signos!?
             self.P1[index1, index1] = -1/R 
             self.P1[index1, index2] = 1/R
-            self.P1[index2, index1] = -1/R
-            self.P1[index2, index2] = 1/R
+            self.P1[index2, index1] = 1/R
+            self.P1[index2, index2] = -1/R
             if (Vt != 0):
                 self.Ps[index1, index1] = 1/R 
                 self.Ps[index1, index2] = 1/R
@@ -88,10 +88,10 @@ class Network:
     def short_nodes(self, node1: int, node2: int):
         index1 = self.connections[node1]["index"]
         index2 = self.connections[node2]["index"]
-        self.P1[index1, index1] =  1e10
+        self.P1[index1, index1] =  -1e10
         self.P1[index1, index2] =  1e10
         self.P1[index2, index1] =  1e10
-        self.P1[index2, index2] =  1e10
+        self.P1[index2, index2] =  -1e10
       
     def step(self, time, dt):
         sources_now = np.vectorize(FunctionType.__call__, otypes=["float64"])(self.v_sources, time)
