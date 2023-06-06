@@ -160,8 +160,8 @@ def test_ribbon_cable_1ns_paul_interconnection_network():
                                    bundle = bundle_1, 
                                    connections= bundle_1_connections, 
                                    side= "S")
-    iconn.connect_nodes(2,4)
-    iconn.connect_nodes(3,5)
+    iconn.short_nodes(4,2)
+    iconn.short_nodes(5,3)
 
     #network definition
     terminal_3 = mtln.Network(nw_number = 2 ,nodes = [6,7])
@@ -182,11 +182,11 @@ def test_ribbon_cable_1ns_paul_interconnection_network():
 
     mtl_nw.run_until(finalTime)
 
-    # times = [12.5, 25, 40, 55]
-    # voltages = [120, 95, 55, 32]
-    # for (t, v) in zip(times, voltages):
-    #     index = np.argmin(np.abs(v_probe.t - t*1e-9))
-    #     assert np.all(np.isclose(v_probe.val[index, 0], v*1e-3, atol=10e-3))
+    times = [12.5, 25, 40, 55]
+    voltages = [120, 95, 55, 32]
+    for (t, v) in zip(times, voltages):
+        index = np.argmin(np.abs(v_probe.t - t*1e-9))
+        assert np.all(np.isclose(v_probe.val[index, 0], v*1e-3, atol=10e-3))
 
     plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
     plt.ylabel(r'$V_1 (0, t)\,[mV]$')
