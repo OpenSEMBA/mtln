@@ -20,7 +20,6 @@ class Network:
         self.nw_number = nw_number
         self.nodes = nodes
         self.connections = {}
-        self.bundle_connections = {}
         self.nw_v = np.zeros([0])
         self.nw_i = np.zeros([0])
         self.P1 = np.zeros([self.number_of_nodes, self.number_of_nodes])
@@ -52,8 +51,6 @@ class Network:
         self.nw_i = np.append(self.nw_i,0.0)
 
         self.connections[nw_node] = {"bundle_number" : bundle_number, "conductor" : conductor, "side" : side, "index": index}
-        self.bundle_connections[bundle_number, side] = {"conductor" : conductor, "node_number": nw_node}
-
       
     def connect_to_ground(self, node: int, R = 0, Vt = 0, side = ""):
         assert(node in self.connections.keys())
