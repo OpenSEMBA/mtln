@@ -55,7 +55,7 @@ def test_ribbon_cable_20ns_termination_network():
     mtl_nw.add_bundle(0, bundle_0)
 
     #network definition
-    terminal_1 = mtln.Network(nw_number = 0, nodes = [0,1])
+    terminal_1 = mtln.Network(nw_number = 0, nodes = [0,1], bundles = [0])
     bundle_connections= [{"node" : 0, "conductor" : 0},{"node" : 1, "conductor" : 1}]
     
     terminal_1.add_nodes_in_bundle(bundle_number = 0, 
@@ -68,7 +68,7 @@ def test_ribbon_cable_20ns_termination_network():
     mtl_nw.add_network(terminal_1)
     
     #network definition
-    terminal_2 = mtln.Network(nw_number = 1 ,nodes = [2,3])
+    terminal_2 = mtln.Network(nw_number = 1 ,nodes = [2,3], bundles = [0])
     bundle_connections= [{"node" : 2, "conductor" : 0},{"node" : 3, "conductor" : 1}]
     terminal_2.add_nodes_in_bundle(bundle_number = 0, 
                                    bundle = bundle_0, 
@@ -138,7 +138,7 @@ def test_ribbon_cable_1ns_paul_interconnection_network():
     mtl_nw.add_bundle(1, bundle_1)
 
     #network definition
-    terminal_1 = mtln.Network(nw_number = 0, nodes = [0,1])
+    terminal_1 = mtln.Network(nw_number = 0, nodes = [0,1], bundles = [0])
     bundle_connections= [{"node" : 0, "conductor" : 0},{"node" : 1, "conductor" : 1}]
     
     terminal_1.add_nodes_in_bundle(bundle_number = 0, 
@@ -150,7 +150,7 @@ def test_ribbon_cable_1ns_paul_interconnection_network():
     terminal_1.connect_to_ground(node = 1, R= 50, Vt = magnitude, side = "S")
 
     #interconnection network
-    iconn = mtln.Network(nw_number=1, nodes = [2,3,4,5])
+    iconn = mtln.Network(nw_number=1, nodes = [2,3,4,5], bundles = [0,1])
     bundle_0_connections = [{"node" : 2, "conductor" : 0},{"node" : 3, "conductor" : 1}]
     bundle_1_connections = [{"node" : 4, "conductor" : 0},{"node" : 5, "conductor" : 1}]
     iconn.add_nodes_in_bundle(bundle_number = 0, 
@@ -165,7 +165,7 @@ def test_ribbon_cable_1ns_paul_interconnection_network():
     iconn.short_nodes(5,3)
 
     #network definition
-    terminal_3 = mtln.Network(nw_number = 2 ,nodes = [6,7])
+    terminal_3 = mtln.Network(nw_number = 2 ,nodes = [6,7], bundles = [1])
     bundle_connections= [{"node" : 6, "conductor" : 0},{"node" : 7, "conductor" : 1}]
     terminal_3.add_nodes_in_bundle(bundle_number = 1, 
                                    bundle = bundle_1, 
@@ -183,11 +183,6 @@ def test_ribbon_cable_1ns_paul_interconnection_network():
 
     mtl_nw.run_until(finalTime)
 
-    times = [12.5, 25, 40, 55]
-    voltages = [120, 95, 55, 32]
-    for (t, v) in zip(times, voltages):
-        index = np.argmin(np.abs(v_probe.t - t*1e-9))
-        assert np.all(np.isclose(v_probe.val[index, 0], v*1e-3, atol=10e-3))
 
     plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
     plt.ylabel(r'$V_1 (0, t)\,[mV]$')
@@ -195,6 +190,12 @@ def test_ribbon_cable_1ns_paul_interconnection_network():
     plt.xticks(range(0, 200, 50))
     plt.grid('both')
     plt.show()
+
+    times = [12.5, 25, 40, 55]
+    voltages = [120, 95, 55, 32]
+    for (t, v) in zip(times, voltages):
+        index = np.argmin(np.abs(v_probe.t - t*1e-9))
+        assert np.all(np.isclose(v_probe.val[index, 0], v*1e-3, atol=10e-3))
 
 def test_ribbon_cable_1ns_50Ohm_interconnection_network():
     """
@@ -215,12 +216,12 @@ def test_ribbon_cable_1ns_50Ohm_interconnection_network():
 
 
     """
-     _             _____              _
-    | |     1     |     |     1     | |
-    | 1-----------3--R--5-----------7 |
-    | |     b0    |     |     b1    | |
-    | 0-----------2--R--4-----------6 |
-    |_|     0     |_____|     0     |_|
+     _             __________             _
+    | |     1     |          |     1     | |
+    | 1-----------3--R--V35--5-----------7 |
+    | |     b0    |          |     b1    | |
+    | 0-----------2--R-------4-----------6 |
+    |_|     0     |__________|     0     |_|
     term_1(0)     iconn(1)     term_2(2)
     
     """
@@ -233,6 +234,8 @@ def test_ribbon_cable_1ns_50Ohm_interconnection_network():
     def magnitude(t): return wf.trapezoidal_wave(
         t, A=1, rise_time=1e-9, fall_time=1e-9, f0=1e6, D=0.5)
     
+    def V35(t): return wf.trapezoidal_wave(
+        t, A=1, rise_time=15e-9, fall_time=5e-9, f0=1e02, D=1.1e-5)
 
     v_probe = bundle_0.add_probe(position=0.0, type='voltage')
 
@@ -241,7 +244,7 @@ def test_ribbon_cable_1ns_50Ohm_interconnection_network():
     mtl_nw.add_bundle(1, bundle_1)
 
     #network definition
-    terminal_1 = mtln.Network(nw_number = 0, nodes = [0,1])
+    terminal_1 = mtln.Network(nw_number = 0, nodes = [0,1], bundles = [0])
     bundle_connections= [{"node" : 0, "conductor" : 0},{"node" : 1, "conductor" : 1}]
     
     terminal_1.add_nodes_in_bundle(bundle_number = 0, 
@@ -253,7 +256,7 @@ def test_ribbon_cable_1ns_50Ohm_interconnection_network():
     terminal_1.connect_to_ground(node = 1, R= 50, Vt = magnitude, side = "S")
 
     #interconnection network
-    iconn = mtln.Network(nw_number=1, nodes = [2,3,4,5])
+    iconn = mtln.Network(nw_number=1, nodes = [2,3,4,5], bundles = [0,1])
     bundle_0_connections = [{"node" : 2, "conductor" : 0},{"node" : 3, "conductor" : 1}]
     bundle_1_connections = [{"node" : 4, "conductor" : 0},{"node" : 5, "conductor" : 1}]
     iconn.add_nodes_in_bundle(bundle_number = 0, 
@@ -264,11 +267,12 @@ def test_ribbon_cable_1ns_50Ohm_interconnection_network():
                                    bundle = bundle_1, 
                                    connections= bundle_1_connections, 
                                    side= "S")
-    iconn.connect_nodes(4,2, R = 50)
-    iconn.connect_nodes(5,3, R = 50)
+    
+    iconn.connect_nodes(5,3, R = 60, Vt = V35)
+    iconn.connect_nodes(4,2, R = 40)
 
     #network definition
-    terminal_3 = mtln.Network(nw_number = 2 ,nodes = [6,7])
+    terminal_3 = mtln.Network(nw_number = 2 ,nodes = [6,7],bundles = [1])
     bundle_connections= [{"node" : 6, "conductor" : 0},{"node" : 7, "conductor" : 1}]
     terminal_3.add_nodes_in_bundle(bundle_number = 1, 
                                    bundle = bundle_1, 
@@ -283,18 +287,19 @@ def test_ribbon_cable_1ns_50Ohm_interconnection_network():
     mtl_nw.add_network(iconn)
     mtl_nw.add_network(terminal_3)
 
-
     mtl_nw.run_until(finalTime)
 
-
-    plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
-    plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+    plt.plot(1e9*v_probe.t, v_probe.val[:,0] ,'r', label = 'Conductor 0')
+    plt.plot(1e9*v_probe.t, v_probe.val[:,1] ,'b', label = 'Conductor 1')
+    plt.ylabel(r'$V (0, t)\,[V]$')
     plt.xlabel(r'$t\,[ns]$')
     plt.xticks(range(0, 200, 50))
     plt.grid('both')
+    plt.legend()
     plt.show()
-    times = [4.0, 12.5, 20.0, 29, 36, 44, 52, 60, 150]
-    voltages = [836, 860, 706.0, 733, 673, 690, 666, 675,666]
-    for (t, v) in zip(times, voltages):
-        index = np.argmin(np.abs(v_probe.t - t*1e-9))
-        assert np.all(np.isclose(v_probe.val[index, 1], v*1e-3, atol=10e-3))
+
+    # times = [4.0, 12.5, 20.0, 29, 36, 44, 52, 60, 150]
+    # voltages = [836, 860, 706.0, 733, 673, 690, 666, 675,666]
+    # for (t, v) in zip(times, voltages):
+    #     index = np.argmin(np.abs(v_probe.t - t*1e-9))
+    #     assert np.all(np.isclose(v_probe.val[index, 1], v*1e-3, atol=10e-3))

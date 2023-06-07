@@ -15,16 +15,16 @@ class Network:
     """
     Networks can be joining tubes (junctions) or ending tubes (terminations)
     """
-    def __init__(self, nw_number, nodes: list[int]):
+    def __init__(self, nw_number, nodes: list[int], bundles: list[int]):
         self.number_of_nodes = len(nodes)
         self.nw_number = nw_number
         self.nodes = nodes
+        self.bundles = bundles
         self.connections = {}
         self.nw_v = np.zeros([0])
         self.nw_i = np.zeros([0])
         self.P1 = np.zeros([self.number_of_nodes, self.number_of_nodes])
         self.Ps = np.zeros([self.number_of_nodes, self.number_of_nodes])
-        self.Pshort = np.zeros([self.number_of_nodes, self.number_of_nodes])
         self.v_sources = np.empty(shape=(self.number_of_nodes), dtype=object)
         self.v_sources.fill(lambda n: 0)
 
@@ -32,7 +32,7 @@ class Network:
         
     def add_nodes_in_bundle(self, bundle_number: int, bundle: mtl, connections: dict, side: str):
         assert (side == "S" or side == "L")
-        
+        assert (bundle_number in self.bundles)
         if (side == "S"):
             self.c = linalg.block_diag(self.c, bundle.c[0])
         elif (side == "L"):
@@ -75,9 +75,9 @@ class Network:
             self.P1[index2, index2] = -1/R
             if (Vt != 0):
                 self.Ps[index1, index1] = 1/R 
-                self.Ps[index1, index2] = 1/R
-                self.Ps[index2, index1] = 1/R
-                self.Ps[index2, index2] = 1/R
+                # self.Ps[index1, index2] = 1/R
+                # self.Ps[index2, index1] = 1/R
+                self.Ps[index2, index2] = -1/R
                 
                 self.v_sources[index1]  = Vt
                 self.v_sources[index2]  = Vt
@@ -86,14 +86,14 @@ class Network:
         index1 = self.connections[node1]["index"]
         index2 = self.connections[node2]["index"]
         self.P1[index1, index1] =  -1e10
-        self.P1[index1, index2] =  1e10
-        self.P1[index2, index1] =  1e10
+        self.P1[index1, index2] =   1e10
+        self.P1[index2, index1] =   1e10
         self.P1[index2, index2] =  -1e10
       
     def step(self, time, dt):
         sources_now = np.vectorize(FunctionType.__call__, otypes=["float64"])(self.v_sources, time)
         sources_prev = np.vectorize(FunctionType.__call__, otypes=["float64"])(self.v_sources, time - dt)
-        self.nw_v = self.terminal_term_1.dot(self.nw_v) + self.terminal_term_2.dot(self.Ps.dot(sources_now + sources_prev) - 2*self.nw_i[:]) #+ self.Pshort.dot(self.nw_v)
+        self.nw_v = self.terminal_term_1.dot(self.nw_v) + self.terminal_term_2.dot(self.Ps.dot(sources_now + sources_prev) - 2*self.nw_i[:])
        
 
 class MTLN:
