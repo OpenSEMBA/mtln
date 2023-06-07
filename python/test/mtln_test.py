@@ -176,6 +176,7 @@ def test_ribbon_cable_1ns_paul_interconnection_network():
     terminal_3.connect_to_ground(6, 50, side = "L")
     terminal_3.connect_to_ground(7, 50, side = "L")
 
+    #add networks
     mtl_nw.add_network(terminal_1)
     mtl_nw.add_network(iconn)
     mtl_nw.add_network(terminal_3)
@@ -197,6 +198,34 @@ def test_ribbon_cable_1ns_paul_interconnection_network():
         index = np.argmin(np.abs(v_probe.t - t*1e-9))
         assert np.all(np.isclose(v_probe.val[index, 0], v*1e-3, atol=10e-3))
 
+    #skrf
+    freq = [1,2,3] #f?
+    media = DistributedCircuit(freq, C=c, L=l)
+    ribbon_0 = media.line(1.0, 'm',
+                         name='line', embed=True, z0=[91.96,254.93])
+    ribbon_1 = media.line(1.0, 'm',
+                         name='line', embed=True, z0=[91.96,254.93])
+    
+    port1 = rf.Circuit.Port(frequency=freq, name='port1', z0=50)
+    port2 = rf.Circuit.Port(frequency=freq, name='port2', z0=50)
+    cnL = [
+        [(port1, 0), (ribbon_0, 0)],
+        [(port2, 0), (ribbon_0, 1)]
+    ]
+    LRibbon = rf.Circuit(cnL)
+
+    power = [1, 0]  # 1 Watt at port1 and 0 at port2
+    phase = [0, 0]  # 0 radians
+    V_at_ports = LRibbon.voltages_external(power, phase)
+    I_at_ports = LRibbon.currents_external(power, phase)
+    cnR = [
+        [(ribbon_1, 0), (port1, 0)],
+        [(ribbon_1, 0), (port2, 1)]
+    ]
+    RibbonR = rf.Circuit(cnR)
+    tl = LRibbon ** RibbonR
+
+    
 def test_ribbon_cable_1ns_50Ohm_interconnection_network():
     """
     Similar to MTL described in Ch. 9.3.1 "Ribbon Cables" of Paul Clayton
