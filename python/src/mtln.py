@@ -74,10 +74,10 @@ class Network:
             self.P1[index2, index1] = 1/R
             self.P1[index2, index2] = -1/R
             if (Vt != 0):
-                self.Ps[index1, index1] = 1/R 
+                self.Ps[index1, index1] = -1/R 
                 # self.Ps[index1, index2] = 1/R
                 # self.Ps[index2, index1] = 1/R
-                self.Ps[index2, index2] = -1/R
+                self.Ps[index2, index2] = 1/R
                 
                 self.v_sources[index1]  = Vt
                 self.v_sources[index2]  = Vt

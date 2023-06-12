@@ -264,7 +264,7 @@ def test_ribbon_cable_1ns_50Ohm_interconnection_network():
         t, A=1, rise_time=1e-9, fall_time=1e-9, f0=1e6, D=0.5)
     
     def V35(t): return wf.trapezoidal_wave(
-        t, A=1, rise_time=15e-9, fall_time=5e-9, f0=1e02, D=1.1e-5)
+        t, A=1, rise_time=15e-9, fall_time=5e-9, f0=1e02, D=9.5e-6)
 
     v_probe = bundle_0.add_probe(position=0.0, type='voltage')
 
@@ -297,8 +297,8 @@ def test_ribbon_cable_1ns_50Ohm_interconnection_network():
                                    connections= bundle_1_connections, 
                                    side= "S")
     
-    iconn.connect_nodes(5,3, R = 60, Vt = V35)
-    iconn.connect_nodes(4,2, R = 40)
+    iconn.connect_nodes(5,3, R = 10) #, Vt = V35
+    iconn.connect_nodes(4,2, R = 25)
 
     #network definition
     terminal_3 = mtln.Network(nw_number = 2 ,nodes = [6,7],bundles = [1])
@@ -318,8 +318,13 @@ def test_ribbon_cable_1ns_50Ohm_interconnection_network():
 
     mtl_nw.run_until(finalTime)
 
+    t0, V0 = np.genfromtxt('python/testData/ngspice/V1.txt', delimiter=',', usecols=(0,1), unpack = True)
+    t1, V1 = np.genfromtxt('python/testData/ngspice/V2.txt', delimiter=',', usecols=(0,1), unpack = True)
+
     plt.plot(1e9*v_probe.t, v_probe.val[:,0] ,'r', label = 'Conductor 0')
     plt.plot(1e9*v_probe.t, v_probe.val[:,1] ,'b', label = 'Conductor 1')
+    plt.plot(1e9*t0, V0 ,'g--', label = 'Conductor 0 - NgSpice')
+    plt.plot(1e9*t1, V1 ,'k--', label = 'Conductor 1 - NgSpice')
     plt.ylabel(r'$V (0, t)\,[V]$')
     plt.xlabel(r'$t\,[ns]$')
     plt.xticks(range(0, 200, 50))
@@ -327,8 +332,596 @@ def test_ribbon_cable_1ns_50Ohm_interconnection_network():
     plt.legend()
     plt.show()
 
+
     # times = [4.0, 12.5, 20.0, 29, 36, 44, 52, 60, 150]
     # voltages = [836, 860, 706.0, 733, 673, 690, 666, 675,666]
     # for (t, v) in zip(times, voltages):
     #     index = np.argmin(np.abs(v_probe.t - t*1e-9))
     #     assert np.all(np.isclose(v_probe.val[index, 1], v*1e-3, atol=10e-3))
+    
+def test_1_conductor_network_Z50():
+
+
+    def magnitude(t): return wf.trapezoidal_wave(
+        t, A=1, rise_time=20e-9, fall_time=20e-9, f0=1e6, D=0.5)
+
+    """
+     _             _
+    | |           | |
+    | |  0: Z=50  | |
+    | 0-----------2 |
+    |_|           |_|
+    term_1(0)     term_2(1)
+    
+    """
+    mtl_nw = mtln.MTLN()
+    bundle_0 = mtl.MTL(l=0.25e-6, c=100e-12, length=1.0, nx=50)
+    v_probe = bundle_0.add_probe(position=0.0, type='voltage')
+
+    mtl_nw.add_bundle(0, bundle_0)
+
+    #network definition
+    terminal_1 = mtln.Network(nw_number = 0, nodes = [0], bundles = [0])
+    bundle_connections= [{"node" : 0, "conductor" : 0}]
+    
+    terminal_1.add_nodes_in_bundle(bundle_number = 0, 
+                                   bundle = bundle_0,
+                                   connections = bundle_connections, 
+                                   side= "S")
+    #network connections
+    terminal_1.connect_to_ground(node = 0, R= 50, Vt = magnitude, side = "S")
+    mtl_nw.add_network(terminal_1)
+    
+    #network definition
+    terminal_2 = mtln.Network(nw_number = 1 ,nodes = [1,], bundles = [0])
+    bundle_connections= [{"node" : 1, "conductor" : 0}]
+    terminal_2.add_nodes_in_bundle(bundle_number = 0, 
+                                   bundle = bundle_0, 
+                                   connections= bundle_connections, 
+                                   side= "L")
+
+    #network connections
+    terminal_2.connect_to_ground(1, 50, side = "L")
+    mtl_nw.add_network(terminal_2)
+
+    mtl_nw.run_until(200e-9)
+
+    t, V0 = np.genfromtxt('python/testData/qucs/MTLN_1_conductor_network_Z50.csv', delimiter=';', names = True, usecols=(0,1), unpack = True)
+
+    plt.plot(1e9*v_probe.t, 1e3*v_probe.val, label = "MTLN")
+    plt.plot(1e9*t, 1e3*V0,'--', label = "QUCS")
+    plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+    plt.xlabel(r'$t\,[ns]$')
+    plt.xticks(range(0, 200, 50))
+    plt.grid('both')
+    plt.legend()
+    plt.show()
+
+def test_1_conductor_network_Z5():
+
+
+    def magnitude(t): return wf.trapezoidal_wave(
+        t, A=1, rise_time=20e-9, fall_time=20e-9, f0=1e6, D=0.5)
+
+    """
+     _             _
+    | |           | |
+    | |  0: Z=5   | |
+    | 0-----------2 |
+    |_|           |_|
+    term_1(0)     term_2(1)
+    
+    """
+    mtl_nw = mtln.MTLN()
+    bundle_0 = mtl.MTL(l=0.25e-8, c=100e-12, length=1.0, nx=50)
+    v_probe = bundle_0.add_probe(position=0.0, type='voltage')
+
+    mtl_nw.add_bundle(0, bundle_0)
+
+    #network definition
+    terminal_1 = mtln.Network(nw_number = 0, nodes = [0], bundles = [0])
+    bundle_connections= [{"node" : 0, "conductor" : 0}]
+    
+    terminal_1.add_nodes_in_bundle(bundle_number = 0, 
+                                   bundle = bundle_0,
+                                   connections = bundle_connections, 
+                                   side= "S")
+    #network connections
+    terminal_1.connect_to_ground(node = 0, R= 50, Vt = magnitude, side = "S")
+    mtl_nw.add_network(terminal_1)
+    
+    #network definition
+    terminal_2 = mtln.Network(nw_number = 1 ,nodes = [1,], bundles = [0])
+    bundle_connections= [{"node" : 1, "conductor" : 0}]
+    terminal_2.add_nodes_in_bundle(bundle_number = 0, 
+                                   bundle = bundle_0, 
+                                   connections= bundle_connections, 
+                                   side= "L")
+
+    #network connections
+    terminal_2.connect_to_ground(1, 50, side = "L")
+    mtl_nw.add_network(terminal_2)
+
+    mtl_nw.run_until(200e-9)
+
+    t, V0 = np.genfromtxt('python/testData/qucs/MTLN_1_conductor_network_Z5.csv', delimiter=';', names = True, usecols=(0,1), unpack = True)
+
+    plt.plot(1e9*v_probe.t, 1e3*v_probe.val, label = "MTLN")
+    plt.plot(1e9*t, 1e3*V0,'--', label = "QUCS")
+    plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+    plt.xlabel(r'$t\,[ns]$')
+    plt.xticks(range(0, 200, 50))
+    plt.grid('both')
+    plt.legend()
+    plt.show()
+
+def test_1_conductor_network_Z100():
+
+
+    def magnitude(t): return wf.trapezoidal_wave(
+        t, A=1, rise_time=20e-9, fall_time=20e-9, f0=1e6, D=0.5)
+
+    """
+     _             _
+    | |           | |
+    | |  0: Z=5   | |
+    | 0-----------2 |
+    |_|           |_|
+    term_1(0)     term_2(1)
+    
+    """
+    mtl_nw = mtln.MTLN()
+    bundle_0 = mtl.MTL(l=1e-6, c=100e-12, length=1.0, nx=50)
+    v_probe = bundle_0.add_probe(position=0.0, type='voltage')
+
+    mtl_nw.add_bundle(0, bundle_0)
+
+    #network definition
+    terminal_1 = mtln.Network(nw_number = 0, nodes = [0], bundles = [0])
+    bundle_connections= [{"node" : 0, "conductor" : 0}]
+    
+    terminal_1.add_nodes_in_bundle(bundle_number = 0, 
+                                   bundle = bundle_0,
+                                   connections = bundle_connections, 
+                                   side= "S")
+    #network connections
+    terminal_1.connect_to_ground(node = 0, R= 50, Vt = magnitude, side = "S")
+    mtl_nw.add_network(terminal_1)
+    
+    #network definition
+    terminal_2 = mtln.Network(nw_number = 1 ,nodes = [1,], bundles = [0])
+    bundle_connections= [{"node" : 1, "conductor" : 0}]
+    terminal_2.add_nodes_in_bundle(bundle_number = 0, 
+                                   bundle = bundle_0, 
+                                   connections= bundle_connections, 
+                                   side= "L")
+
+    #network connections
+    terminal_2.connect_to_ground(1, 50, side = "L")
+    mtl_nw.add_network(terminal_2)
+
+    mtl_nw.run_until(200e-9)
+
+    t, V0 = np.genfromtxt('python/testData/qucs/MTLN_1_conductor_network_Z100.csv', delimiter=';', names = True, usecols=(0,1), unpack = True)
+
+    plt.plot(1e9*v_probe.t, 1e3*v_probe.val, label = "MTLN")
+    plt.plot(1e9*t, 1e3*V0,'--', label = "QUCS")
+    plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+    plt.xlabel(r'$t\,[ns]$')
+    plt.xticks(range(0, 200, 50))
+    plt.grid('both')
+    plt.legend()
+    plt.show()
+
+def test_1_conductor_adapted_network_R():
+    """
+     _             _             _
+    | |     b0    | |     b1    | |
+    | 0-----------1-2-----------3 |
+    |_|     0     |_|     0     |_|
+    term_1(0)     iconn(1)     term_2(2)
+    
+    """
+    for R in [25,50,100,150]:
+
+        bundle_0 = mtl.MTL(l=0.25e-6, c=100e-12, length=1.0, nx=50)
+        bundle_1 = mtl.MTL(l=0.25e-6, c=100e-12, length=1.0, nx=50)
+        finalTime = 200e-9
+
+        def magnitude(t): return wf.trapezoidal_wave(
+            t, A=1, rise_time=1e-9, fall_time=1e-9, f0=1e6, D=0.5)
+        
+
+        v_probe = bundle_0.add_probe(position=0.0, type='voltage')
+
+        mtl_nw = mtln.MTLN()
+        mtl_nw.add_bundle(0, bundle_0)
+        mtl_nw.add_bundle(1, bundle_1)
+
+        #network definition
+        terminal_1 = mtln.Network(nw_number = 0, nodes = [0], bundles = [0])
+        bundle_connections= [{"node" : 0, "conductor" : 0}]
+        
+        terminal_1.add_nodes_in_bundle(bundle_number = 0, 
+                                    bundle = bundle_0,
+                                    connections = bundle_connections, 
+                                    side= "S")
+        #network connections
+        terminal_1.connect_to_ground(node = 0, R= 50, Vt = magnitude, side = "S")
+
+        #interconnection network
+        iconn = mtln.Network(nw_number=1, nodes = [1,2], bundles = [0,1])
+        bundle_0_connections = [{"node" : 1, "conductor" : 0}]
+        bundle_1_connections = [{"node" : 2, "conductor" : 0}]
+        iconn.add_nodes_in_bundle(bundle_number = 0, 
+                                    bundle = bundle_0, 
+                                    connections= bundle_0_connections, 
+                                    side= "L")
+        iconn.add_nodes_in_bundle(bundle_number = 1, 
+                                    bundle = bundle_1, 
+                                    connections= bundle_1_connections, 
+                                    side= "S")
+        # iconn.short_nodes(2,1)
+        iconn.connect_nodes(2,1, R = R)
+
+        #network definition
+        terminal_3 = mtln.Network(nw_number = 2 ,nodes = [3], bundles = [1])
+        bundle_connections= [{"node" : 3, "conductor" : 0}]
+        terminal_3.add_nodes_in_bundle(bundle_number = 1, 
+                                    bundle = bundle_1, 
+                                    connections= bundle_connections, 
+                                    side= "L")
+
+        #network connections
+        terminal_3.connect_to_ground(3, 50, side = "L")
+
+        #add networks
+        mtl_nw.add_network(terminal_1)
+        mtl_nw.add_network(iconn)
+        mtl_nw.add_network(terminal_3)
+
+
+        mtl_nw.run_until(finalTime)
+
+        t, V0 = np.genfromtxt('python/testData/qucs/MTLN_1_conductor_network_R'+str(R)+'.csv', delimiter=';', names = True, usecols=(0,1), unpack = True)
+
+        plt.plot(1e9*v_probe.t, 1e3*v_probe.val, label = "MTLN")
+        plt.plot(1e9*t, 1e3*V0,'--', label = "QUCS")
+        plt.title("Two 1-cond.lines, R = "+str(R))
+        plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+        plt.xlabel(r'$t\,[ns]$')
+        plt.xticks(range(0, 200, 50))
+        plt.grid('both')
+        plt.legend()
+        plt.savefig("MTLN_1_conductor_network_R"+str(R)+".png")
+        plt.clf()
+
+def test_1_conductor_not_adapted_network_R():
+    """
+     _             ____             _
+    | |     b0    |    |     b1    | |
+    | 0-----------1-R--2-----------3 |
+    |_|     0     |____|     0     |_|
+    term_1(0)     iconn(1)     term_2(2)
+    
+    """
+    for R in [25,50,100,150]:
+
+        bundle_0 = mtl.MTL(l=0.25e-6*1.125, c=100e-12/2, length=1.0, nx=50)
+        bundle_1 = mtl.MTL(l=0.25e-6*2,     c=100e-12/2, length=1.0, nx=50)
+        finalTime = 200e-9
+
+        def magnitude(t): return wf.trapezoidal_wave(
+            t, A=1, rise_time=1e-9, fall_time=1e-9, f0=1e6, D=0.5)
+        
+
+        v_probe = bundle_0.add_probe(position=0.0, type='voltage')
+
+        mtl_nw = mtln.MTLN()
+        mtl_nw.add_bundle(0, bundle_0)
+        mtl_nw.add_bundle(1, bundle_1)
+
+        #network definition
+        terminal_1 = mtln.Network(nw_number = 0, nodes = [0], bundles = [0])
+        bundle_connections= [{"node" : 0, "conductor" : 0}]
+        
+        terminal_1.add_nodes_in_bundle(bundle_number = 0, 
+                                    bundle = bundle_0,
+                                    connections = bundle_connections, 
+                                    side= "S")
+        #network connections
+        terminal_1.connect_to_ground(node = 0, R= 50, Vt = magnitude, side = "S")
+
+        #interconnection network
+        iconn = mtln.Network(nw_number=1, nodes = [1,2], bundles = [0,1])
+        bundle_0_connections = [{"node" : 1, "conductor" : 0}]
+        bundle_1_connections = [{"node" : 2, "conductor" : 0}]
+        iconn.add_nodes_in_bundle(bundle_number = 0, 
+                                    bundle = bundle_0, 
+                                    connections= bundle_0_connections, 
+                                    side= "L")
+        iconn.add_nodes_in_bundle(bundle_number = 1, 
+                                    bundle = bundle_1, 
+                                    connections= bundle_1_connections, 
+                                    side= "S")
+        # iconn.short_nodes(2,1)
+        iconn.connect_nodes(2,1, R = R)
+
+        #network definition
+        terminal_3 = mtln.Network(nw_number = 2 ,nodes = [3], bundles = [1])
+        bundle_connections= [{"node" : 3, "conductor" : 0}]
+        terminal_3.add_nodes_in_bundle(bundle_number = 1, 
+                                    bundle = bundle_1, 
+                                    connections= bundle_connections, 
+                                    side= "L")
+
+        #network connections
+        terminal_3.connect_to_ground(3, 50, side = "L")
+
+        #add networks
+        mtl_nw.add_network(terminal_1)
+        mtl_nw.add_network(iconn)
+        mtl_nw.add_network(terminal_3)
+
+
+        mtl_nw.run_until(finalTime)
+
+        t, V0 = np.genfromtxt('python/testData/qucs/MTLN_1_conductor_not_adapted_network_R'+str(R)+'.csv', delimiter=';', names = True, usecols=(0,1), unpack = True)
+
+        plt.plot(1e9*v_probe.t, 1e3*v_probe.val, label = "MTLN")
+        plt.plot(1e9*t, 1e3*V0,'--', label = "QUCS")
+        plt.title("Two 1-cond.lines, R = "+str(R))
+        plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+        plt.xlabel(r'$t\,[ns]$')
+        plt.xticks(range(0, 200, 50))
+        plt.grid('both')
+        plt.legend()
+        plt.savefig("MTLN_1_conductor_not_adapted_network_R"+str(R)+".png")
+        plt.clf()
+        
+def test_1_conductor_network_RV():
+    """
+     _             _ ____             _
+    | |     b0    |      |     b1    | |
+    | 0-----------1-R--V-2-----------3 |
+    |_|     0     |______|     0     |_|
+    term_1(0)     iconn(1)     term_2(2)
+    
+    """
+    for R in [25,50,100,150]:
+
+        bundle_0 = mtl.MTL(l=0.25e-6, c=100e-12, length=1.0, nx=50)
+        bundle_1 = mtl.MTL(l=0.25e-6, c=100e-12, length=1.0, nx=50)
+        finalTime = 200e-9
+
+        def magnitude(t): return wf.trapezoidal_wave(
+            t, A=1, rise_time=1e-9, fall_time=1e-9, f0=1e6, D=0.5)
+        
+
+        v_probe = bundle_0.add_probe(position=0.0, type='voltage')
+
+        mtl_nw = mtln.MTLN()
+        mtl_nw.add_bundle(0, bundle_0)
+        mtl_nw.add_bundle(1, bundle_1)
+
+        #network definition
+        terminal_1 = mtln.Network(nw_number = 0, nodes = [0], bundles = [0])
+        bundle_connections= [{"node" : 0, "conductor" : 0}]
+        
+        terminal_1.add_nodes_in_bundle(bundle_number = 0, 
+                                    bundle = bundle_0,
+                                    connections = bundle_connections, 
+                                    side= "S")
+        #network connections
+        terminal_1.connect_to_ground(node = 0, R= 50, Vt = magnitude, side = "S")
+
+        #interconnection network
+        iconn = mtln.Network(nw_number=1, nodes = [1,2], bundles = [0,1])
+        bundle_0_connections = [{"node" : 1, "conductor" : 0}]
+        bundle_1_connections = [{"node" : 2, "conductor" : 0}]
+        iconn.add_nodes_in_bundle(bundle_number = 0, 
+                                    bundle = bundle_0, 
+                                    connections= bundle_0_connections, 
+                                    side= "L")
+        iconn.add_nodes_in_bundle(bundle_number = 1, 
+                                    bundle = bundle_1, 
+                                    connections= bundle_1_connections, 
+                                    side= "S")
+        iconn.connect_nodes(2,1, R = R, Vt = magnitude)
+
+        #network definition
+        terminal_3 = mtln.Network(nw_number = 2 ,nodes = [3], bundles = [1])
+        bundle_connections= [{"node" : 3, "conductor" : 0}]
+        terminal_3.add_nodes_in_bundle(bundle_number = 1, 
+                                    bundle = bundle_1, 
+                                    connections= bundle_connections, 
+                                    side= "L")
+
+        #network connections
+        terminal_3.connect_to_ground(3, 50, side = "L")
+
+        #add networks
+        mtl_nw.add_network(terminal_1)
+        mtl_nw.add_network(iconn)
+        mtl_nw.add_network(terminal_3)
+
+
+        mtl_nw.run_until(finalTime)
+
+        t, V0 = np.genfromtxt('python/testData/qucs/MTLN_1_conductor_network_R'+str(R)+'_V.csv', delimiter=';', names = True, usecols=(0,1), unpack = True)
+
+        plt.plot(1e9*v_probe.t, 1e3*v_probe.val, label = "MTLN")
+        plt.plot(1e9*t, 1e3*V0,'--', label = "QUCS")
+        plt.title("Two 1-cond.lines, R = "+str(R))
+        plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+        plt.xlabel(r'$t\,[ns]$')
+        plt.xticks(range(0, 200, 50))
+        plt.grid('both')
+        plt.legend()
+        plt.show()
+
+def test_1_conductor_not_adapted_network_RV():
+    """
+     _             _ ____             _
+    | |     b0    |      |     b1    | |
+    | 0-----------1-R--V-2-----------3 |
+    |_|     0     |______|     0     |_|
+    term_1(0)     iconn(1)     term_2(2)
+    
+    """
+    for R in [25,50,100,150]:
+
+        bundle_0 = mtl.MTL(l=0.25e-6*1.125, c=100e-12/2, length=1.0, nx=50)
+        bundle_1 = mtl.MTL(l=0.25e-6*2, c=100e-12/2, length=1.0, nx=50)
+        finalTime = 200e-9
+
+        def magnitude(t): return wf.trapezoidal_wave(
+            t, A=1, rise_time=1e-9, fall_time=1e-9, f0=1e6, D=0.5)
+        def V35(t): return wf.trapezoidal_wave(
+            t, A=1, rise_time=15e-9, fall_time=5e-9, f0=1e02, D=9.5e-6)
+
+
+        v_probe = bundle_0.add_probe(position=0.0, type='voltage')
+
+        mtl_nw = mtln.MTLN()
+        mtl_nw.add_bundle(0, bundle_0)
+        mtl_nw.add_bundle(1, bundle_1)
+
+        #network definition
+        terminal_1 = mtln.Network(nw_number = 0, nodes = [0], bundles = [0])
+        bundle_connections= [{"node" : 0, "conductor" : 0}]
+        
+        terminal_1.add_nodes_in_bundle(bundle_number = 0, 
+                                    bundle = bundle_0,
+                                    connections = bundle_connections, 
+                                    side= "S")
+        #network connections
+        terminal_1.connect_to_ground(node = 0, R= 50, Vt = magnitude, side = "S")
+
+        #interconnection network
+        iconn = mtln.Network(nw_number=1, nodes = [1,2], bundles = [0,1])
+        bundle_0_connections = [{"node" : 1, "conductor" : 0}]
+        bundle_1_connections = [{"node" : 2, "conductor" : 0}]
+        iconn.add_nodes_in_bundle(bundle_number = 0, 
+                                    bundle = bundle_0, 
+                                    connections= bundle_0_connections, 
+                                    side= "L")
+        iconn.add_nodes_in_bundle(bundle_number = 1, 
+                                    bundle = bundle_1, 
+                                    connections= bundle_1_connections, 
+                                    side= "S")
+        iconn.connect_nodes(2,1, R = R, Vt = V35)
+
+        #network definition
+        terminal_3 = mtln.Network(nw_number = 2 ,nodes = [3], bundles = [1])
+        bundle_connections= [{"node" : 3, "conductor" : 0}]
+        terminal_3.add_nodes_in_bundle(bundle_number = 1, 
+                                    bundle = bundle_1, 
+                                    connections= bundle_connections, 
+                                    side= "L")
+
+        #network connections
+        terminal_3.connect_to_ground(3, 50, side = "L")
+
+        #add networks
+        mtl_nw.add_network(terminal_1)
+        mtl_nw.add_network(iconn)
+        mtl_nw.add_network(terminal_3)
+
+
+        mtl_nw.run_until(finalTime)
+
+        t, V0 = np.genfromtxt('python/testData/qucs/MTLN_1_conductor_not_adapted_network_R'+str(R)+'_V35.csv', delimiter=';', names = True, usecols=(0,1), unpack = True)
+        plt.plot(1e9*v_probe.t, 1e3*v_probe.val, label = "MTLN")
+        plt.plot(1e9*t, 1e3*V0,'--', label = "QUCS")
+        plt.title("Two 1-cond.lines, R = "+str(R))
+        plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+        plt.xlabel(r'$t\,[ns]$')
+        plt.xticks(range(0, 200, 50))
+        plt.grid('both')
+        plt.legend()
+        plt.savefig("MTLN_1_conductor_not_adapted_network_R"+str(R)+"_V35.png")
+        plt.clf()
+        
+def test_1_conductor_network_RV():
+    """
+     _             _ ____             _
+    | |     b0    |      |     b1    | |
+    | 0-----------1-R--V-2-----------3 |
+    |_|     0     |______|     0     |_|
+    term_1(0)     iconn(1)     term_2(2)
+    
+    """
+    for R in [25,50,100,150]:
+
+        bundle_0 = mtl.MTL(l=0.25e-6, c=100e-12, length=1.0, nx=50)
+        bundle_1 = mtl.MTL(l=0.25e-6, c=100e-12, length=1.0, nx=50)
+        finalTime = 200e-9
+
+        def magnitude(t): return wf.trapezoidal_wave(
+            t, A=1, rise_time=1e-9, fall_time=1e-9, f0=1e6, D=0.5)
+        def V35(t): return wf.trapezoidal_wave(
+            t, A=1, rise_time=15e-9, fall_time=5e-9, f0=1e02, D=9.5e-6)
+
+
+        v_probe = bundle_0.add_probe(position=0.0, type='voltage')
+
+        mtl_nw = mtln.MTLN()
+        mtl_nw.add_bundle(0, bundle_0)
+        mtl_nw.add_bundle(1, bundle_1)
+
+        #network definition
+        terminal_1 = mtln.Network(nw_number = 0, nodes = [0], bundles = [0])
+        bundle_connections= [{"node" : 0, "conductor" : 0}]
+        
+        terminal_1.add_nodes_in_bundle(bundle_number = 0, 
+                                    bundle = bundle_0,
+                                    connections = bundle_connections, 
+                                    side= "S")
+        #network connections
+        terminal_1.connect_to_ground(node = 0, R= 50, Vt = magnitude, side = "S")
+
+        #interconnection network
+        iconn = mtln.Network(nw_number=1, nodes = [1,2], bundles = [0,1])
+        bundle_0_connections = [{"node" : 1, "conductor" : 0}]
+        bundle_1_connections = [{"node" : 2, "conductor" : 0}]
+        iconn.add_nodes_in_bundle(bundle_number = 0, 
+                                    bundle = bundle_0, 
+                                    connections= bundle_0_connections, 
+                                    side= "L")
+        iconn.add_nodes_in_bundle(bundle_number = 1, 
+                                    bundle = bundle_1, 
+                                    connections= bundle_1_connections, 
+                                    side= "S")
+        iconn.connect_nodes(2,1, R = R, Vt = V35)
+
+        #network definition
+        terminal_3 = mtln.Network(nw_number = 2 ,nodes = [3], bundles = [1])
+        bundle_connections= [{"node" : 3, "conductor" : 0}]
+        terminal_3.add_nodes_in_bundle(bundle_number = 1, 
+                                    bundle = bundle_1, 
+                                    connections= bundle_connections, 
+                                    side= "L")
+
+        #network connections
+        terminal_3.connect_to_ground(3, 50, side = "L")
+
+        #add networks
+        mtl_nw.add_network(terminal_1)
+        mtl_nw.add_network(iconn)
+        mtl_nw.add_network(terminal_3)
+
+
+        mtl_nw.run_until(finalTime)
+
+        t, V0 = np.genfromtxt('python/testData/qucs/MTLN_1_conductor_network_R'+str(R)+'_V35.csv', delimiter=';', names = True, usecols=(0,1), unpack = True)
+        plt.plot(1e9*v_probe.t, 1e3*v_probe.val, label = "MTLN")
+        plt.plot(1e9*t, 1e3*V0,'--', label = "QUCS")
+        plt.title("Two 1-cond.lines, R = "+str(R))
+        plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+        plt.xlabel(r'$t\,[ns]$')
+        plt.xticks(range(0, 200, 50))
+        plt.grid('both')
+        plt.legend()
+        plt.savefig("MTLN_1_conductor_network_R"+str(R)+"_V35.png")
+        plt.clf()
