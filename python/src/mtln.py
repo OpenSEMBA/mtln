@@ -55,7 +55,6 @@ class Network:
     def connect_to_ground(self, node: int, R = 0, Vt = 0, side = ""):
         assert(node in self.connections.keys())
         index = self.connections[node]["index"]
-           
         if (R != 0):
             self.P1[index, index] = -1/R
         if (Vt != 0):
@@ -67,17 +66,15 @@ class Network:
         assert(R != 0)
         index1 = self.connections[node1]["index"]
         index2 = self.connections[node2]["index"]
+        assert(self.P1[index1, index1] == 0)
         if (R != 0):
-            #signos!?
             self.P1[index1, index1] = -1/R 
             self.P1[index1, index2] = 1/R
             self.P1[index2, index1] = 1/R
             self.P1[index2, index2] = -1/R
             if (Vt != 0):
-                self.Ps[index1, index1] = -1/R 
-                # self.Ps[index1, index2] = 1/R
-                # self.Ps[index2, index1] = 1/R
-                self.Ps[index2, index2] = 1/R
+                self.Ps[index1, index1] =  1/R 
+                self.Ps[index2, index2] = -1/R
                 
                 self.v_sources[index1]  = Vt
                 self.v_sources[index2]  = Vt
@@ -148,7 +145,7 @@ class MTLN:
                 if (node["side"] == "S"):
                     nw.nw_i[node["index"]] =  self.bundles[node["bundle_number"]].i[node["conductor"],0]
                 if (node["side"] == "L"):
-                    nw.nw_i[node["index"]] =  self.bundles[node["bundle_number"]].i[node["conductor"],-1]
+                    nw.nw_i[node["index"]] =  -self.bundles[node["bundle_number"]].i[node["conductor"],-1]
 
     def update_networks_voltage(self):
         for nw  in self.networks.values():
@@ -157,7 +154,7 @@ class MTLN:
                 if (node["side"] == "S"):
                     self.bundles[node["bundle_number"]].v[node["conductor"],0] = nw.nw_v[node["index"]]
                 if (node["side"] == "L"):
-                    self.bundles[node["bundle_number"]].v[node["conductor"],-1] = -nw.nw_v[node["index"]]
+                    self.bundles[node["bundle_number"]].v[node["conductor"],-1] = nw.nw_v[node["index"]]
 
     
     def update_bundles_voltage(self):
