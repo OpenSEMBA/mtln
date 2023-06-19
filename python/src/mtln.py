@@ -52,7 +52,7 @@ class Network:
 
         self.connections[nw_node] = {"bundle_number" : bundle_number, "conductor" : conductor, "side" : side, "index": index}
       
-    def connect_to_ground(self, node: int, R = 0, Vt = 0, side = ""):
+    def connect_to_ground(self, node: int, R = 0, Vt = 0):
         assert(node in self.connections.keys())
         index = self.connections[node]["index"]
         if (R != 0):
