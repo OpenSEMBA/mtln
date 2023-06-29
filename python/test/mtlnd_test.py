@@ -10,6 +10,7 @@ from scipy.constants import epsilon_0, mu_0, speed_of_light
 import scipy.linalg as linalg
 
 import src.mtlnd as mtld
+import src.mtln as mtln
 import src.mtl as mtl
 
 from src.networkExtraction import *
@@ -92,3 +93,116 @@ def test_bigtree():
             
     print(l)
        
+def test_init():
+
+    #level 0    
+    line0 = mtl.MTL(l=0.25e-6, c=100e-12, length=400.0, nx = 4, Zs=150)
+    
+    l = np.zeros([2, 2])
+    l[0] = [0.7485*1e-6, 0.5077*1e-6]
+    l[1] = [0.5077*1e-6, 1.0154*1e-6]
+    c = np.zeros([2, 2])
+    c[0] = [37.432*1e-12, -18.716*1e-12]
+    c[1] = [-18.716*1e-12, 24.982*1e-12]
+
+    #level 1
+    line1 = mtl.MTL(l=l, c=c, length=400.0, nx = 4, Zs=150)
+    #level 2;0
+    line2_0 = mtl.MTL(l=0.25e-6, c=100e-12, length=400.0, nx = 4, Zs=150)
+    #level 2;1
+    line2_1 = mtl.MTL(l=0.25e-6, c=100e-12, length=400.0, nx = 4, Zs=150)
+    
+    bundle = mtld.MTLND(line0,0)
+    bundle.add_mtl(line1, 1)
+    bundle.add_mtl(line2_0, 2)
+    bundle.add_mtl(line2_1, 2)
+    
+    assert(bundle.number_of_conductors() == 5)
+    assert(bundle.get_conductors_in_levels()[0] == 1)
+    assert(bundle.get_conductors_in_levels()[1] == 2)
+    assert(bundle.get_conductors_in_levels()[2] == 2)
+    
+    Z01 = np.zeros([1,2])
+    Z01[0] = [0.2, 0.2]
+    Z12 = np.zeros([2,2])
+    Z12[0] = [0.3, 0.0]
+    Z12[1] = [0.0, 0.3]
+    
+    bundle.build_transfer_impedance_matrix()
+    bundle.add_transfer_impedance(0,1,Z01)
+    bundle.add_transfer_impedance(1,2,Z12)
+
+    assert(bundle.Zt.shape == (5,5))
+    assert(d == 0 for d in np.diag(bundle.Zt))
+
+def test_ribbon_cable_20ns_termination_network():
+    """
+    Described in Ch. 9.3.1 "Ribbon Cables" of Paul Clayton
+    Analysis of Multiconductor Transmission Lines. 2007. 
+    """
+    """
+    Solved with: 
+    * mtl approach 
+    * mltn approach: tube + 2 termination networks
+    * mltn + domains: bundle (with just one level) + 2 termination networks (with one level)
+    """
+    l = np.zeros([2, 2])
+    l[0] = [0.7485*1e-6, 0.5077*1e-6]
+    l[1] = [0.5077*1e-6, 1.0154*1e-6]
+    c = np.zeros([2, 2])
+    c[0] = [37.432*1e-12, -18.716*1e-12]
+    c[1] = [-18.716*1e-12, 24.982*1e-12]
+
+    Zs, Zl = np.zeros([1, 2]), np.zeros([1, 2])
+    Zs[:] = [50, 50]
+    Zl[:] = [50, 50]
+
+    finalTime = 200e-9
+
+    def magnitude(t): return wf.trapezoidal_wave(
+        t, A=1, rise_time=20e-9, fall_time=20e-9, f0=1e6, D=0.5)
+
+
+    """
+     _             _
+    | |     1     | |
+    | 1-----------3 |
+    | |     0     | |
+    | 0-----------2 |
+    |_|           |_|
+    term_1(0)     term_2(1)
+    
+    """
+
+    line_0 = mtl.MTL(l=l, c=c, length=400.0, nx = 4, Zs=150)
+    system = mtld.MTLND(line_0,0)
+    system.build_transfer_impedance_matrix()
+
+    #network definition
+    terminal_1 = mtln.Network(nw_number = 0, nodes = [0,1], bundles = [0])
+    bundle_connections= [{"node" : 0, "conductor" : 0},{"node" : 1, "conductor" : 1}]
+    
+    terminal_1.add_nodes_in_bundle(bundle_number = 0, 
+                                   bundle = line_0,
+                                   connections = bundle_connections, 
+                                   side= "S")
+    #network connections
+    terminal_1.connect_to_ground(node = 0, R  = 50)
+    terminal_1.connect_to_ground(node = 1, R= 50, Vt = magnitude)
+    system.add_network(terminal_1, level = 0)
+
+    #network definition
+    terminal_2 = mtln.Network(nw_number = 1 ,nodes = [2,3], bundles = [0])
+    bundle_connections= [{"node" : 2, "conductor" : 0},{"node" : 3, "conductor" : 1}]
+    terminal_2.add_nodes_in_bundle(bundle_number = 0, 
+                                   bundle = line_0, 
+                                   connections= bundle_connections, 
+                                   side= "L")
+
+    #network connections
+    terminal_2.connect_to_ground(2, 50)
+    terminal_2.connect_to_ground(3, 50)
+    system.add_network(terminal_2, level = 0)
+
+    system.run_until(finalTime)
+
