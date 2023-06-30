@@ -9,7 +9,7 @@ import sympy as sp
 from scipy.constants import epsilon_0, mu_0, speed_of_light
 import scipy.linalg as linalg
 
-import src.mtlnd as mtld
+# import src.mtlnd as mtld
 import src.mtln as mtln
 import src.mtl as mtl
 
@@ -21,19 +21,19 @@ import skrf as rf
 from skrf.media import DistributedCircuit
 from skrf.media import Coaxial
 
-def test_coaxial_wire():
-    """ 
-    coaxial wire over reference plane
-    Transfer impedance Z01 relates level 0 (outside the coaxial)
-    with level 1 (inside the coaxial)
-    Level 0 has a 1x1 L
-    Level 1 has a 2x2 L
-    """
-    subdom = mtld()
-    subdom.add_level()
+# def test_coaxial_wire():
+#     """ 
+#     coaxial wire over reference plane
+#     Transfer impedance Z01 relates level 0 (outside the coaxial)
+#     with level 1 (inside the coaxial)
+#     Level 0 has a 1x1 L
+#     Level 1 has a 2x2 L
+#     """
+#     subdom = mmtld()
+#     subdom.add_level()
     
-    finalTime = 200e-9
-    subdom.run_until(finalTime)
+#     finalTime = 200e-9
+#     subdom.run_until(finalTime)
 
 def get_tree_number_of_conductors(tree):
     number_of_conductors = 1
@@ -112,7 +112,7 @@ def test_init():
     #level 2;1
     line2_1 = mtl.MTL(l=0.25e-6, c=100e-12, length=400.0, nx = 4, Zs=150)
     
-    bundle = mtld.MTLND(line0,0)
+    bundle = mtl.MTLD(line0,0)
     bundle.add_mtl(line1, 1)
     bundle.add_mtl(line2_0, 2)
     bundle.add_mtl(line2_1, 2)
@@ -175,7 +175,7 @@ def test_ribbon_cable_20ns_termination_network():
     """
 
     line_0 = mtl.MTL(l=l, c=c, length=400.0, nx = 4, Zs=150)
-    system = mtld.MTLND(line_0,0)
+    system = mtl.MTLD(line_0,0)
     system.build_transfer_impedance_matrix()
 
     #network definition

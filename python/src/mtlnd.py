@@ -21,20 +21,24 @@ class MTLND:
         assert(level_number == 0)
         assert(type(line) == mtl.MTL)
 
+        self.dx = 0
+        self.dt = 1e10
+        self.time = 0.0
+
         self.levels = {0:{"mtl" :[line], "conductors":line.l.shape[1]}}
         self.conductors_in_level = {}
         self.nz = line.x.shape[0]
         # self.conductors_in_level[level_number] = line.l.shape[1]
         self.transfer_impedance = {}
         
-        self.networks = {}
+    #     self.networks = {}
 
-    def add_network(self, nw: mtln.Network, level: int):
-        if (nw.nw_number in self.networks.keys()):
-            assert (level not in self.networks[nw.nw_number].keys())
-            self.networks[nw.nw_number][level] = nw
-        else:
-            self.networks[nw.nw_number] = {level : nw}
+    # def add_network(self, nw: mtln.Network, level: int):
+    #     if (nw.nw_number in self.networks.keys()):
+    #         assert (level not in self.networks[nw.nw_number].keys())
+    #         self.networks[nw.nw_number][level] = nw
+    #     else:
+    #         self.networks[nw.nw_number] = {level : nw}
         
             
     def add_mtl(self, line, level_number):
@@ -94,27 +98,4 @@ class MTLND:
         self.Zt[i1:i2,o1:o2] = np.transpose(zt)
 
 
-    #unmodified
-    def run_until(self, finalTime):
-        
-        self.compute_v_terms()
-        
-        t = self.get_time_range(finalTime)
-        for bundle in self.bundles.values():
-            for p in bundle.probes:
-                p.resize_frames(len(t), bundle.number_of_conductors)
-
-        for _ in t:
-            self.step()
-
-    """
-    Step has to evolve:
-    * each bundle using the coupled equation (with possibility of ext.field)
-    * each network, which can evolve level by level: loop over levels, 
-    update them, keep track of which node belogns to which conductor in which level
-    * assign voltages/currents between terminals and bundles as in mltn
-    * anything else
-    """
-    def step():
-        pass    
     

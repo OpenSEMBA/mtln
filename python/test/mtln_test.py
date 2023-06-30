@@ -6,7 +6,7 @@ from scipy.constants import epsilon_0, mu_0, speed_of_light
 
 import src.mtl as mtl
 import src.mtln as mtln
-
+import src.networks as nw
 
 import src.waveforms as wf
 
@@ -55,7 +55,7 @@ def test_ribbon_cable_20ns_termination_network():
     mtl_nw.add_bundle(0, bundle_0)
 
     #network definition
-    terminal_1 = mtln.Network(nw_number = 0, nodes = [0,1], bundles = [0])
+    terminal_1 = nw.Network(nw_number = 0, nodes = [0,1], bundles = [0])
     bundle_connections= [{"node" : 0, "conductor" : 0},{"node" : 1, "conductor" : 1}]
     
     terminal_1.add_nodes_in_bundle(bundle_number = 0, 
@@ -68,7 +68,7 @@ def test_ribbon_cable_20ns_termination_network():
     mtl_nw.add_network(terminal_1)
     
     #network definition
-    terminal_2 = mtln.Network(nw_number = 1 ,nodes = [2,3], bundles = [0])
+    terminal_2 = nw.Network(nw_number = 1 ,nodes = [2,3], bundles = [0])
     bundle_connections= [{"node" : 2, "conductor" : 0},{"node" : 3, "conductor" : 1}]
     terminal_2.add_nodes_in_bundle(bundle_number = 0, 
                                    bundle = bundle_0, 
@@ -138,7 +138,7 @@ def test_ribbon_cable_1ns_paul_interconnection_network():
     mtl_nw.add_bundle(1, bundle_1)
 
     #network definition
-    terminal_1 = mtln.Network(nw_number = 0, nodes = [0,1], bundles = [0])
+    terminal_1 = nw.Network(nw_number = 0, nodes = [0,1], bundles = [0])
     bundle_connections= [{"node" : 0, "conductor" : 0},{"node" : 1, "conductor" : 1}]
     
     terminal_1.add_nodes_in_bundle(bundle_number = 0, 
@@ -150,7 +150,7 @@ def test_ribbon_cable_1ns_paul_interconnection_network():
     terminal_1.connect_to_ground(node = 1, R= 50, Vt = magnitude)
 
     #interconnection network
-    iconn = mtln.Network(nw_number=1, nodes = [2,3,4,5], bundles = [0,1])
+    iconn = nw.Network(nw_number=1, nodes = [2,3,4,5], bundles = [0,1])
     bundle_0_connections = [{"node" : 2, "conductor" : 0},{"node" : 3, "conductor" : 1}]
     bundle_1_connections = [{"node" : 4, "conductor" : 0},{"node" : 5, "conductor" : 1}]
     iconn.add_nodes_in_bundle(bundle_number = 0, 
@@ -165,7 +165,7 @@ def test_ribbon_cable_1ns_paul_interconnection_network():
     iconn.short_nodes(5,3)
 
     #network definition
-    terminal_3 = mtln.Network(nw_number = 2 ,nodes = [6,7], bundles = [1])
+    terminal_3 = nw.Network(nw_number = 2 ,nodes = [6,7], bundles = [1])
     bundle_connections= [{"node" : 6, "conductor" : 0},{"node" : 7, "conductor" : 1}]
     terminal_3.add_nodes_in_bundle(bundle_number = 1, 
                                    bundle = bundle_1, 
@@ -245,7 +245,7 @@ def test_ribbon_cable_1ns_R_interconnection_network():
     mtl_nw.add_bundle(1, bundle_1)
 
     #network definition
-    terminal_1 = mtln.Network(nw_number = 0, nodes = [0,1], bundles = [0])
+    terminal_1 = nw.Network(nw_number = 0, nodes = [0,1], bundles = [0])
     bundle_connections= [{"node" : 0, "conductor" : 0},{"node" : 1, "conductor" : 1}]
     
     terminal_1.add_nodes_in_bundle(bundle_number = 0, 
@@ -257,7 +257,7 @@ def test_ribbon_cable_1ns_R_interconnection_network():
     terminal_1.connect_to_ground(node = 1, R= 50, Vt = magnitude)
 
     #interconnection network
-    iconn = mtln.Network(nw_number=1, nodes = [2,3,4,5], bundles = [0,1])
+    iconn = nw.Network(nw_number=1, nodes = [2,3,4,5], bundles = [0,1])
     bundle_0_connections = [{"node" : 2, "conductor" : 0},{"node" : 3, "conductor" : 1}]
     bundle_1_connections = [{"node" : 4, "conductor" : 0},{"node" : 5, "conductor" : 1}]
     iconn.add_nodes_in_bundle(bundle_number = 0, 
@@ -273,7 +273,7 @@ def test_ribbon_cable_1ns_R_interconnection_network():
     iconn.connect_nodes(4,2, R = 25)
 
     #network definition
-    terminal_3 = mtln.Network(nw_number = 2 ,nodes = [6,7],bundles = [1])
+    terminal_3 = nw.Network(nw_number = 2 ,nodes = [6,7],bundles = [1])
     bundle_connections= [{"node" : 6, "conductor" : 0},{"node" : 7, "conductor" : 1}]
     terminal_3.add_nodes_in_bundle(bundle_number = 1, 
                                    bundle = bundle_1, 
@@ -296,8 +296,8 @@ def test_ribbon_cable_1ns_R_interconnection_network():
     V0_resampled = np.interp(v_probe.t, t0, V0)
     V1_resampled = np.interp(v_probe.t, t1, V1)
 
-    np.allclose(V0_resampled, v_probe.val[:,0], rtol=0.01)
-    np.allclose(V1_resampled, v_probe.val[:,1], rtol=0.01)
+    assert(np.allclose(V0_resampled[:-1], v_probe.val[1:,0], atol = 0.01, rtol=0.05))
+    assert(np.allclose(V1_resampled[:-1], v_probe.val[1:,1], atol = 0.01, rtol=0.05))
     
     plt.plot(1e9*v_probe.t, v_probe.val[:,0] ,'r', label = 'Conductor 0')
     plt.plot(1e9*v_probe.t, v_probe.val[:,1] ,'b', label = 'Conductor 1')
@@ -358,7 +358,7 @@ def test_ribbon_cable_1ns_RV_interconnection_network():
     mtl_nw.add_bundle(1, bundle_1)
 
     #network definition
-    terminal_1 = mtln.Network(nw_number = 0, nodes = [0,1], bundles = [0])
+    terminal_1 = nw.Network(nw_number = 0, nodes = [0,1], bundles = [0])
     bundle_connections= [{"node" : 0, "conductor" : 0},{"node" : 1, "conductor" : 1}]
     
     terminal_1.add_nodes_in_bundle(bundle_number = 0, 
@@ -370,7 +370,7 @@ def test_ribbon_cable_1ns_RV_interconnection_network():
     terminal_1.connect_to_ground(node = 1, R= 50, Vt = magnitude)
 
     #interconnection network
-    iconn = mtln.Network(nw_number=1, nodes = [2,3,4,5], bundles = [0,1])
+    iconn = nw.Network(nw_number=1, nodes = [2,3,4,5], bundles = [0,1])
     bundle_0_connections = [{"node" : 2, "conductor" : 0},{"node" : 3, "conductor" : 1}]
     bundle_1_connections = [{"node" : 4, "conductor" : 0},{"node" : 5, "conductor" : 1}]
     iconn.add_nodes_in_bundle(bundle_number = 0, 
@@ -386,7 +386,7 @@ def test_ribbon_cable_1ns_RV_interconnection_network():
     iconn.connect_nodes(4,2, R = 25)
 
     #network definition
-    terminal_3 = mtln.Network(nw_number = 2 ,nodes = [6,7],bundles = [1])
+    terminal_3 = nw.Network(nw_number = 2 ,nodes = [6,7],bundles = [1])
     bundle_connections= [{"node" : 6, "conductor" : 0},{"node" : 7, "conductor" : 1}]
     terminal_3.add_nodes_in_bundle(bundle_number = 1, 
                                    bundle = bundle_1, 
@@ -409,8 +409,8 @@ def test_ribbon_cable_1ns_RV_interconnection_network():
     V0_resampled = np.interp(v_probe.t, t0, V0)
     V1_resampled = np.interp(v_probe.t, t1, V1)
 
-    np.allclose(V0_resampled, v_probe.val[:,0], rtol=0.01)
-    np.allclose(V1_resampled, v_probe.val[:,1], rtol=0.01)
+    assert(np.allclose(V0_resampled[:-1], v_probe.val[1:,0], atol = 0.01, rtol=0.05))
+    assert(np.allclose(V1_resampled[:-1], v_probe.val[1:,1], atol = 0.01, rtol=0.05))
 
     plt.plot(1e9*v_probe.t, v_probe.val[:,0] ,'r', label = 'Conductor 0')
     plt.plot(1e9*v_probe.t, v_probe.val[:,1] ,'b', label = 'Conductor 1')
@@ -488,7 +488,7 @@ def test_ribbon_cable_1ns_RV_T_network():
     mtl_nw.add_bundle(2, bundle_2)
 
     #TERMINAL 1
-    terminal_1 = mtln.Network(nw_number = 0, nodes = [0,1], bundles = [0])
+    terminal_1 = nw.Network(nw_number = 0, nodes = [0,1], bundles = [0])
     bundle_connections= [{"node" : 0, "conductor" : 0},{"node" : 1, "conductor" : 1}]
     
     terminal_1.add_nodes_in_bundle(bundle_number = 0, 
@@ -499,7 +499,7 @@ def test_ribbon_cable_1ns_RV_T_network():
     terminal_1.connect_to_ground(node = 1, R = R0, Vt = magnitude)
 
     #ICONN
-    iconn = mtln.Network(nw_number=1, nodes = [2,3,4,5,8,9], bundles = [0,1,2])
+    iconn = nw.Network(nw_number=1, nodes = [2,3,4,5,8,9], bundles = [0,1,2])
     bundle_0_connections = [{"node" : 2, "conductor" : 0},{"node" : 3, "conductor" : 1}]
     bundle_1_connections = [{"node" : 4, "conductor" : 0},{"node" : 5, "conductor" : 1}]
     bundle_2_connections = [{"node" : 8, "conductor" : 0},{"node" : 9, "conductor" : 1}]
@@ -521,7 +521,7 @@ def test_ribbon_cable_1ns_RV_T_network():
     iconn.connect_nodes(8,2, R = R2)
 
     #TERMINAL 3
-    terminal_3 = mtln.Network(nw_number = 2 ,nodes = [6,7],bundles = [1])
+    terminal_3 = nw.Network(nw_number = 2 ,nodes = [6,7],bundles = [1])
     bundle_connections= [{"node" : 6, "conductor" : 0},{"node" : 7, "conductor" : 1}]
     terminal_3.add_nodes_in_bundle(bundle_number = 1, 
                                    bundle = bundle_1, 
@@ -532,7 +532,7 @@ def test_ribbon_cable_1ns_RV_T_network():
     terminal_3.connect_to_ground(7, R = R0)
 
     #TERMINAL 4
-    terminal_4 = mtln.Network(nw_number = 3 ,nodes = [10,11],bundles = [2])
+    terminal_4 = nw.Network(nw_number = 3 ,nodes = [10,11],bundles = [2])
     bundle_connections= [{"node" : 10, "conductor" : 0},{"node" : 11, "conductor" : 1}]
     terminal_4.add_nodes_in_bundle(bundle_number = 2, 
                                    bundle = bundle_2, 
@@ -555,8 +555,10 @@ def test_ribbon_cable_1ns_RV_T_network():
     V0_resampled = np.interp(v_probe.t, t0, V0)
     V1_resampled = np.interp(v_probe.t, t1, V1)
 
-    np.allclose(V0_resampled, v_probe.val[:,0], rtol=0.01)
-    np.allclose(V1_resampled, v_probe.val[:,1], rtol=0.01)
+    # assert(np.allclose(V0_sp_resampled[:-1], v_probe.val[1:,0], rtol=0.01))
+
+    assert(np.allclose(V0_resampled[:-1], v_probe.val[1:,0], atol = 0.01, rtol=0.05))
+    assert(np.allclose(V1_resampled[:-1], v_probe.val[1:,1], atol = 0.01, rtol=0.05))
 
     plt.plot(1e9*v_probe.t, v_probe.val[:,0] ,'r', label = 'Conductor 0')
     plt.plot(1e9*v_probe.t, v_probe.val[:,1] ,'b', label = 'Conductor 1')
@@ -592,7 +594,7 @@ def test_1_conductor_network_Z50():
     mtl_nw.add_bundle(0, bundle_0)
 
     #network definition
-    terminal_1 = mtln.Network(nw_number = 0, nodes = [0], bundles = [0])
+    terminal_1 = nw.Network(nw_number = 0, nodes = [0], bundles = [0])
     bundle_connections= [{"node" : 0, "conductor" : 0}]
     
     terminal_1.add_nodes_in_bundle(bundle_number = 0, 
@@ -604,7 +606,7 @@ def test_1_conductor_network_Z50():
     mtl_nw.add_network(terminal_1)
     
     #network definition
-    terminal_2 = mtln.Network(nw_number = 1 ,nodes = [1,], bundles = [0])
+    terminal_2 = nw.Network(nw_number = 1 ,nodes = [1,], bundles = [0])
     bundle_connections= [{"node" : 1, "conductor" : 0}]
     terminal_2.add_nodes_in_bundle(bundle_number = 0, 
                                    bundle = bundle_0, 
@@ -652,7 +654,7 @@ def test_1_conductor_network_Z5():
     mtl_nw.add_bundle(0, bundle_0)
 
     #network definition
-    terminal_1 = mtln.Network(nw_number = 0, nodes = [0], bundles = [0])
+    terminal_1 = nw.Network(nw_number = 0, nodes = [0], bundles = [0])
     bundle_connections= [{"node" : 0, "conductor" : 0}]
     
     terminal_1.add_nodes_in_bundle(bundle_number = 0, 
@@ -664,7 +666,7 @@ def test_1_conductor_network_Z5():
     mtl_nw.add_network(terminal_1)
     
     #network definition
-    terminal_2 = mtln.Network(nw_number = 1 ,nodes = [1,], bundles = [0])
+    terminal_2 = nw.Network(nw_number = 1 ,nodes = [1,], bundles = [0])
     bundle_connections= [{"node" : 1, "conductor" : 0}]
     terminal_2.add_nodes_in_bundle(bundle_number = 0, 
                                    bundle = bundle_0, 
@@ -712,7 +714,7 @@ def test_1_conductor_network_Z100():
     mtl_nw.add_bundle(0, bundle_0)
 
     #network definition
-    terminal_1 = mtln.Network(nw_number = 0, nodes = [0], bundles = [0])
+    terminal_1 = nw.Network(nw_number = 0, nodes = [0], bundles = [0])
     bundle_connections= [{"node" : 0, "conductor" : 0}]
     
     terminal_1.add_nodes_in_bundle(bundle_number = 0, 
@@ -724,7 +726,7 @@ def test_1_conductor_network_Z100():
     mtl_nw.add_network(terminal_1)
     
     #network definition
-    terminal_2 = mtln.Network(nw_number = 1 ,nodes = [1,], bundles = [0])
+    terminal_2 = nw.Network(nw_number = 1 ,nodes = [1,], bundles = [0])
     bundle_connections= [{"node" : 1, "conductor" : 0}]
     terminal_2.add_nodes_in_bundle(bundle_number = 0, 
                                    bundle = bundle_0, 
@@ -776,7 +778,7 @@ def test_1_conductor_adapted_network_R():
         mtl_nw.add_bundle(1, bundle_1)
 
         #network definition
-        terminal_1 = mtln.Network(nw_number = 0, nodes = [0], bundles = [0])
+        terminal_1 = nw.Network(nw_number = 0, nodes = [0], bundles = [0])
         bundle_connections= [{"node" : 0, "conductor" : 0}]
         
         terminal_1.add_nodes_in_bundle(bundle_number = 0, 
@@ -787,7 +789,7 @@ def test_1_conductor_adapted_network_R():
         terminal_1.connect_to_ground(node = 0, R= 50, Vt = magnitude)
 
         #interconnection network
-        iconn = mtln.Network(nw_number=1, nodes = [1,2], bundles = [0,1])
+        iconn = nw.Network(nw_number=1, nodes = [1,2], bundles = [0,1])
         bundle_0_connections = [{"node" : 1, "conductor" : 0}]
         bundle_1_connections = [{"node" : 2, "conductor" : 0}]
         iconn.add_nodes_in_bundle(bundle_number = 0, 
@@ -802,7 +804,7 @@ def test_1_conductor_adapted_network_R():
         iconn.connect_nodes(2,1, R = R)
 
         #network definition
-        terminal_3 = mtln.Network(nw_number = 2 ,nodes = [3], bundles = [1])
+        terminal_3 = nw.Network(nw_number = 2 ,nodes = [3], bundles = [1])
         bundle_connections= [{"node" : 3, "conductor" : 0}]
         terminal_3.add_nodes_in_bundle(bundle_number = 1, 
                                     bundle = bundle_1, 
@@ -863,7 +865,7 @@ def test_1_conductor_not_adapted_network_R():
         mtl_nw.add_bundle(1, bundle_1)
 
         #network definition
-        terminal_1 = mtln.Network(nw_number = 0, nodes = [0], bundles = [0])
+        terminal_1 = nw.Network(nw_number = 0, nodes = [0], bundles = [0])
         bundle_connections= [{"node" : 0, "conductor" : 0}]
         
         terminal_1.add_nodes_in_bundle(bundle_number = 0, 
@@ -874,7 +876,7 @@ def test_1_conductor_not_adapted_network_R():
         terminal_1.connect_to_ground(node = 0, R= 50, Vt = magnitude)
 
         #interconnection network
-        iconn = mtln.Network(nw_number=1, nodes = [1,2], bundles = [0,1])
+        iconn = nw.Network(nw_number=1, nodes = [1,2], bundles = [0,1])
         bundle_0_connections = [{"node" : 1, "conductor" : 0}]
         bundle_1_connections = [{"node" : 2, "conductor" : 0}]
         iconn.add_nodes_in_bundle(bundle_number = 0, 
@@ -889,7 +891,7 @@ def test_1_conductor_not_adapted_network_R():
         iconn.connect_nodes(2,1, R = R)
 
         #network definition
-        terminal_3 = mtln.Network(nw_number = 2 ,nodes = [3], bundles = [1])
+        terminal_3 = nw.Network(nw_number = 2 ,nodes = [3], bundles = [1])
         bundle_connections= [{"node" : 3, "conductor" : 0}]
         terminal_3.add_nodes_in_bundle(bundle_number = 1, 
                                     bundle = bundle_1, 
@@ -951,7 +953,7 @@ def test_1_conductor_network_RV():
         mtl_nw.add_bundle(1, bundle_1)
 
         #network definition
-        terminal_1 = mtln.Network(nw_number = 0, nodes = [0], bundles = [0])
+        terminal_1 = nw.Network(nw_number = 0, nodes = [0], bundles = [0])
         bundle_connections= [{"node" : 0, "conductor" : 0}]
         
         terminal_1.add_nodes_in_bundle(bundle_number = 0, 
@@ -962,7 +964,7 @@ def test_1_conductor_network_RV():
         terminal_1.connect_to_ground(node = 0, R= 50, Vt = magnitude)
 
         #interconnection network
-        iconn = mtln.Network(nw_number=1, nodes = [1,2], bundles = [0,1])
+        iconn = nw.Network(nw_number=1, nodes = [1,2], bundles = [0,1])
         bundle_0_connections = [{"node" : 1, "conductor" : 0}]
         bundle_1_connections = [{"node" : 2, "conductor" : 0}]
         iconn.add_nodes_in_bundle(bundle_number = 0, 
@@ -976,7 +978,7 @@ def test_1_conductor_network_RV():
         iconn.connect_nodes(2,1, R = R, Vt = magnitude)
 
         #network definition
-        terminal_3 = mtln.Network(nw_number = 2 ,nodes = [3], bundles = [1])
+        terminal_3 = nw.Network(nw_number = 2 ,nodes = [3], bundles = [1])
         bundle_connections= [{"node" : 3, "conductor" : 0}]
         terminal_3.add_nodes_in_bundle(bundle_number = 1, 
                                     bundle = bundle_1, 
@@ -1040,7 +1042,7 @@ def test_1_conductor_not_adapted_network_RV():
         mtl_nw.add_bundle(1, bundle_1)
 
         #network definition
-        terminal_1 = mtln.Network(nw_number = 0, nodes = [0], bundles = [0])
+        terminal_1 = nw.Network(nw_number = 0, nodes = [0], bundles = [0])
         bundle_connections= [{"node" : 0, "conductor" : 0}]
         
         terminal_1.add_nodes_in_bundle(bundle_number = 0, 
@@ -1051,7 +1053,7 @@ def test_1_conductor_not_adapted_network_RV():
         terminal_1.connect_to_ground(node = 0, R= 50, Vt = magnitude)
 
         #interconnection network
-        iconn = mtln.Network(nw_number=1, nodes = [1,2], bundles = [0,1])
+        iconn = nw.Network(nw_number=1, nodes = [1,2], bundles = [0,1])
         bundle_0_connections = [{"node" : 1, "conductor" : 0}]
         bundle_1_connections = [{"node" : 2, "conductor" : 0}]
         iconn.add_nodes_in_bundle(bundle_number = 0, 
@@ -1065,7 +1067,7 @@ def test_1_conductor_not_adapted_network_RV():
         iconn.connect_nodes(2,1, R = R, Vt = V35)
 
         #network definition
-        terminal_3 = mtln.Network(nw_number = 2 ,nodes = [3], bundles = [1])
+        terminal_3 = nw.Network(nw_number = 2 ,nodes = [3], bundles = [1])
         bundle_connections= [{"node" : 3, "conductor" : 0}]
         terminal_3.add_nodes_in_bundle(bundle_number = 1, 
                                     bundle = bundle_1, 
