@@ -9,9 +9,11 @@ from types import FunctionType
 from types import LambdaType
 
 from collections import OrderedDict
-from typing import Dict, Array
+from typing import Dict
+# from typing_extensions import TypeVarTuple
 
 from .probes import *
+from .transfer_impedance import *
 
 class Field:
     def __init__(self, incident_x, incident_z):
@@ -186,6 +188,32 @@ class MTL:
         self.e_T_prev = np.vectorize(FunctionType.__call__, otypes=["float64"])(
             self.e_T, self.time - self.dt
         )
+
+    def update_sources(self, time, dt):
+        self.v_sources_now = np.vectorize(FunctionType.__call__, otypes=["float64"])(
+            self.v_sources, time
+        )
+        self.v_sources_prev = np.vectorize(FunctionType.__call__, otypes=["float64"])(
+            self.v_sources, time - dt
+        )
+
+        self.e_L_now = np.vectorize(FunctionType.__call__, otypes=["float64"])(
+            self.e_L, time + dt / 2
+        )
+        self.e_L_prev = np.vectorize(FunctionType.__call__, otypes=["float64"])(
+            self.e_L, time - dt / 2
+        )
+        self.e_T_now = np.vectorize(FunctionType.__call__, otypes=["float64"])(
+            self.e_T, time
+        )
+        self.e_T_prev = np.vectorize(FunctionType.__call__, otypes=["float64"])(
+            self.e_T, time - dt
+        )
+
+    def update_lr_terms(self):
+        return
+    def update_cg_terms(self):
+        return
 
     def advance_voltage(self):
         self.v[:, 1:-1] = np.einsum('...ij,...j->...i',self.v_term[1:-1,:,:],self.v.T[1:-1,:]).T-\
@@ -397,8 +425,8 @@ class MTL_losses(MTL):
 
         dx = self.dx
 
-        self.__update_lr_terms()
-        self.__update_cg_terms()
+        self.update_lr_terms()
+        self.update_cg_terms()
 
         self.left_port_term_1 = np.matmul(
             np.linalg.inv(
@@ -434,7 +462,7 @@ class MTL_losses(MTL):
             + np.eye(self.number_of_conductors)
         )
 
-    def __update_lr_terms(self):
+    def update_lr_terms(self):
         
         F1 = (
             (self.dx / self.dt) * self.l
@@ -454,7 +482,7 @@ class MTL_losses(MTL):
         self.i_term = np.einsum('...ij,...jk->...ik' , IF1, F2)
         self.v_diff = IF1
 
-    def __update_cg_terms(self):
+    def update_cg_terms(self):
         F1 = (self.dx / self.dt) * self.c + (self.dx / 2) * self.g
         F2 = (self.dx / self.dt) * self.c - (self.dx / 2) * self.g
         IF1 = np.linalg.inv(F1)
@@ -473,7 +501,7 @@ class MTL_losses(MTL):
             self.r[index1:index2+1][conductor][conductor] = resistance/(self.x[index2]-self.x[index1])
         else:
             self.r[index1:index2+1][conductor][conductor] = resistance/self.dx
-        self.__update_lr_terms()
+        self.update_lr_terms()
 
     def add_conductance_at_point(self, position, conductor, conductance):
         self.add_conductance_in_region(position, position, conductor, conductance)
@@ -486,7 +514,7 @@ class MTL_losses(MTL):
             self.g[index1:index2+1][conductor][conductor] = conductance/(self.x[index2]-self.x[index1])
         else:
             self.g[index1:index2+1][conductor][conductor] = conductance/self.dx
-        self.__update_cg_terms()
+        self.update_cg_terms()
 
 
 
@@ -525,7 +553,7 @@ class MTL_losses(MTL):
         self.q1sum = self.v_sum(self.q1)
         self.q2sum = self.v_sum(self.q2)
 
-        self.__update_lr_terms()
+        self.update_lr_terms()
 
     def __update_q3_phi_term(self):
         for kz in range(0, self.i.shape[1]):
@@ -592,28 +620,31 @@ class MTLD:
     """
     Lossless Multiconductor Transmission Line Network with subdomains
     """
+    # Shape = TypeVarTuple("Shape")
+    def __init__(self, levels : Dict[int, np.ndarray]):
 
-    def __init__(self, levels : Dict[int, Array[MTL]], line, level_number):
-        assert(type(line) == MTL)
-
+        assert(len(levels[0]) == 1)
+        self.nz = levels[0][0].x.shape[0]
+        self.x = levels[0][0].x
         # self.dx = 0
         self.dt = 1e10
+        self.time = 0.0
         # self.time = 0.0
-        self.nz = 0
+        self.levels = levels
         #with levels as input, the v and I arrays can be built
-        #check that all nz is the same for all
+        #check that nz is the same for all
         self.number_of_conductors = 0
-
-        self.l = np.ndarray(shape=(self.nz-1, 0, 0))
-        self.c = np.ndarray(shape=(self.nz, 0, 0))
+        self.probes = []
+        
+        L = (self.nz-1)*[np.ndarray(shape=(0, 0))]
+        C = (self.nz)*[np.ndarray(shape=(0, 0))]
 
         for level, mtls in levels.items():
             conductors = 0
             for line in mtls:
-                if (self.nz == 0):
-                    self.nz = line.x.shape[0]
-                else:
-                    assert(self.nz == line.x.shape[0])
+                assert(type(line) == MTL or type(line) == MTL_losses)
+                assert(np.array_equal(self.x,line.x))
+                # assert(self.nz == line.x.shape[0])
             
                 conductors += line.l.shape[1]
                 self.number_of_conductors += conductors
@@ -621,86 +652,143 @@ class MTLD:
                 if (line.dt < self.dt):
                     self.dt = line.dt
                 #pul non-hom l c matrices
-                for k in range(self.nz):
-                    self.l[k] = linalg.block_diag(self.l[k], line.l[k])
-                    self.c[k] = linalg.block_diag(self.c[k], line.c[k])
-                self.c[self.nz] = linalg.block_diag(self.c[self.nz], line.c[self.nz])
+                for k in range(self.nz-1):
+                    L[k] = linalg.block_diag(L[k], line.l[k])
+                    C[k] = linalg.block_diag(C[k], line.c[k])
+                C[self.nz-1] = linalg.block_diag(C[self.nz-1], line.c[self.nz-1])
             
-            self.levels[level] = {"mtl" :mtls, "conductors":conductors}
+            # self.levels[level] = {"mtl" :mtls, "conductors":conductors}
             
+        self.l = np.ndarray(shape=(self.nz-1, self.number_of_conductors, self.number_of_conductors))
+        self.c = np.ndarray(shape=(self.nz, self.number_of_conductors, self.number_of_conductors))
+        self.l[0:self.nz-1] = L[0:self.nz-1]
+        self.c[0:self.nz] = C[0:self.nz]
+
+        self.dx = self.x[1] - self.x[0]
+
         self.v = np.zeros([self.number_of_conductors, self.nz])
         self.i = np.zeros([self.number_of_conductors, self.nz-1])
 
-        
-        self.conductors_in_level = {}
-        # self.conductors_in_level[level_number] = line.l.shape[1]
-        self.transfer_impedance = {}
-    #     self.networks = {}
+        self.e_L = np.empty(
+            shape=(self.number_of_conductors, self.nz - 1), dtype=object
+        )
+        self.e_T = np.empty(
+            shape=(self.number_of_conductors, self.nz), dtype=object
+        )
+        self.e_L.fill(lambda n: 0)
+        self.e_T.fill(lambda n: 0)
 
-    # def add_network(self, nw: mtln.Network, level: int):
-    #     if (nw.nw_number in self.networks.keys()):
-    #         assert (level not in self.networks[nw.nw_number].keys())
-    #         self.networks[nw.nw_number][level] = nw
-    #     else:
-    #         self.networks[nw.nw_number] = {level : nw}
-        
-            
-    # def add_mtl(self, line, level_number):
-    #     assert (self.nz == line.x.shape[0])
-        
-    #     if (level_number in self.levels.keys()):
-    #         self.levels[level_number]["mtl"].append(line)
-    #         self.levels[level_number]["conductors"] += line.l.shape[1]
-    #     else:
-    #         self.levels[level_number] = {"mtl" :[line], "conductors":line.l.shape[1]}
+        self.Zt = TransferImpedance(self.number_of_conductors, self.i.shape[1])
 
-    def number_of_conductors(self):
-        nc = 0
-        for _, level in self.levels.items():
-            nc += level["conductors"]
-        return nc
-    
-    # def build_pul_matrices(self):
-    #     nc = self.number_of_conductors
-    #     i = 0
-    #     out_in_levels = OrderedDict((self.levels.items())).items()
-    #     for k, v in out_in_levels:
-    #         for line in v:
-    #             n_cond = line.l.shape[1]
-    #             for k in range(self.nz):
-    #                 self.L[k,i:i+n_cond,i:i+n_cond] = line.mtl.l[k,:,:]
-    #                 self.C[k,i:i+n_cond,i:i+n_cond] = line.mtl.c[k,:,:]
-    #             self.C[self.nz,i:i+n_cond,i:i+n_cond] = line.mtl.c[self.nz,:,:]
+    def add_probe(self, level : int, line :int, position : float, type = str):
+        # if (position > self.x[-1]) or (position < 0.0):
+        #     raise ValueError("Probe position is out of MTL length.")
 
-    #             i += n_cond
+        # probe = Probe(position, type, self.dt, self.x)
+        # self.probes.append(probe)
+        # return probe
+        probe = self.levels[level][line].add_probe(position, type) 
+        self.probes.append(probe)
+        return probe
 
-            
-    def get_conductors_in_levels(self):
-        return [value["conductors"] for value in self.levels.values()]
+    def update_lr_terms(self):
+        F1 = (
+            (self.dx / self.dt) * self.l
+            - (self.dx / 2) * self.Zt.d
+            - (self.dx / self.dt) * self.Zt.e
+            - self.dx * self.Zt.q1sum
+        )
+        F2 = (
+            (self.dx / self.dt) * self.l
+            + (self.dx / 2) * self.Zt.d
+            - (self.dx / self.dt) * self.Zt.e
+            + self.dx * self.Zt.q2sum
+        )
+        IF1 = np.linalg.inv(F1)
+        self.i_term = np.einsum('...ij,...jk->...ik' , IF1, F2)
+        self.v_diff = IF1
 
-    def build_transfer_impedance_matrix(self):
-        nc = self.number_of_conductors()
-        self.Zt = np.zeros([nc,nc])
+    def update_cg_terms(self):
+        F1 = (self.dx / self.dt) * self.c
+        F2 = (self.dx / self.dt) * self.c
+        # F1 = (self.dx / self.dt) * self.c + (self.dx / 2) * self.g
+        # F2 = (self.dx / self.dt) * self.c - (self.dx / 2) * self.g
+        IF1 = np.linalg.inv(F1)
+        self.v_term = np.einsum('...ij,...jk->...ik' , IF1, F2)
+        self.i_diff = IF1
 
-    #bi, uni, in-out        
-    #instead of Zt, poles, residues, cte, prop
-    def add_transfer_impedance(self, out_level, in_level, zt):
-        assert(np.abs(out_level - in_level) == 1)
-        n_out = self.levels[out_level]["conductors"]
-        n_in = self.levels[in_level]["conductors"]
-        assert(zt.shape == (n_out, n_in))
+    def update_sources(self):
+        # self.v_sources_now = np.vectorize(FunctionType.__call__, otypes=["float64"])(
+        #     self.v_sources, self.time
+        # )
+        # self.v_sources_prev = np.vectorize(FunctionType.__call__, otypes=["float64"])(
+        #     self.v_sources, self.time - self.dt
+        # )
+        self.e_L_now = np.vectorize(FunctionType.__call__, otypes=["float64"])(
+            self.e_L, self.time + self.dt / 2
+        )
+        self.e_L_prev = np.vectorize(FunctionType.__call__, otypes=["float64"])(
+            self.e_L, self.time - self.dt / 2
+        )
+        self.e_T_now = np.vectorize(FunctionType.__call__, otypes=["float64"])(
+            self.e_T, self.time
+        )
+        self.e_T_prev = np.vectorize(FunctionType.__call__, otypes=["float64"])(
+            self.e_T, self.time - self.dt
+        )
 
-        n_before_out = sum(self.get_conductors_in_levels()[0:out_level])
-        n_before_in =  sum(self.get_conductors_in_levels()[0:in_level])
-        o1 = n_before_out
-        o2 = n_before_out + n_out
-        i1 = n_before_in
-        i2 = n_before_in + n_in
+    def add_external_field(self, e_x, e_z, ref_distance, distances: np.ndarray):
+        field = Field(e_x, e_z)
+        ex = sp.Function("ex")
+        ez = sp.Function("ez")
+        x, z, t, v = sp.symbols("x z t v")
+        ex = field.e_x
+        ez = field.e_z
 
-        self.Zt[o1:o2,i1:i2] = zt
-        self.Zt[i1:i2,o1:o2] = np.transpose(zt)
+        vmax = np.max(self.get_phase_velocities())
 
-    #adapt
+        for n in range(self.levels[0][0].number_of_conductors):
+            et = ex(x, z, t).integrate(x, (x, ref_distance, distances[n]))
+            for nz in range(self.x.size - 1):
+                pos = self.x[nz]
+                self.e_L[n, nz] = sp.lambdify(
+                    t,
+                    ez(x, z, t)
+                    .subs(x, distances[n])
+                    .subs(v, vmax)
+                    .subs(z, pos - 0.5 * self.dx)
+                    - ez(x, z, t)
+                    .subs(x, ref_distance)
+                    .subs(v, vmax)
+                    .subs(z, pos - 0.5 * self.dx),
+                )
+                self.e_T[n, nz] = sp.lambdify(t, et.subs(z, pos))
+
+            nz = self.x.size - 1
+            pos = self.x[nz]
+            self.e_T[n, nz] = sp.lambdify(t, et.subs(z, pos))
+
+    def update_sources(self, time, dt):
+        # self.v_sources_now = np.vectorize(FunctionType.__call__, otypes=["float64"])(
+        #     self.v_sources, self.time
+        # )
+        # self.v_sources_prev = np.vectorize(FunctionType.__call__, otypes=["float64"])(
+        #     self.v_sources, self.time - self.dt
+        # )
+       
+        self.e_L_now = np.vectorize(FunctionType.__call__, otypes=["float64"])(
+            self.e_L, time + dt / 2
+        )
+        self.e_L_prev = np.vectorize(FunctionType.__call__, otypes=["float64"])(
+            self.e_L, time - dt / 2
+        )
+        self.e_T_now = np.vectorize(FunctionType.__call__, otypes=["float64"])(
+            self.e_T, time
+        )
+        self.e_T_prev = np.vectorize(FunctionType.__call__, otypes=["float64"])(
+            self.e_T, time - dt
+        )
+
     def advance_voltage(self):
         self.v[:, 1:-1] = np.einsum('...ij,...j->...i',self.v_term[1:-1,:,:],self.v.T[1:-1,:]).T-\
                           np.einsum('...ij,...j->...i',self.i_diff[1:-1,:,:],(self.i[:,1:]-self.i[:,:-1]).T).T-\
@@ -708,16 +796,16 @@ class MTLD:
       
         
     def advance_current(self):
-        self.__update_q3_phi_term()
+        self.Zt.update_q3_phi_term()
         i_prev = self.i
         self.i[:, :] = np.einsum('...ij,...j->...i',self.i_term[:,:,:],self.i.T[:,:]).T-\
                        np.einsum('...ij,...j->...i',self.v_diff[:,:,:],(self.v[:, 1:] - self.v[:, :-1]
                                             + (self.e_T_now[:, 1:] - self.e_T_now[:, :-1])
                                             - (self.dx / 2) * (self.e_L_now[:, :] + self.e_L_prev[:, :])).T).T-\
-                       np.einsum('...ij,...j->...i',self.v_diff[:,:,:],self.dx * self.q3_phi_term[:,:]).T
+                       np.einsum('...ij,...j->...i',self.v_diff[:,:,:],self.dx * self.Zt.q3_phi_term[:,:]).T
 
         
 
         i_now = self.i
-        self.__update_phi(i_prev, i_now)
+        self.Zt.update_phi(i_prev, i_now)
     

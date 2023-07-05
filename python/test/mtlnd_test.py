@@ -12,6 +12,7 @@ import scipy.linalg as linalg
 # import src.mtlnd as mtld
 import src.mtln as mtln
 import src.mtl as mtl
+import src.networks as nw
 
 from src.networkExtraction import *
 
@@ -173,36 +174,44 @@ def test_ribbon_cable_20ns_termination_network():
     term_1(0)     term_2(1)
     
     """
+    manager = mtln.MTLN()
 
-    line_0 = mtl.MTL(l=l, c=c, length=400.0, nx = 4, Zs=150)
-    system = mtl.MTLD(line_0,0)
-    system.build_transfer_impedance_matrix()
+    line = mtl.MTL(l=l, c=c, length=2.0, nx=2)
+    # v_probe = line.add_probe(position=0.0, type='voltage')
+    bundle = mtl.MTLD({0:[line]})
+    v_probe = bundle.add_probe(level = 0, line = 0, position=0.0, type='voltage')
+
+    manager.add_bundle(0,bundle)
 
     #network definition
-    terminal_1 = mtln.Network(nw_number = 0, nodes = [0,1], bundles = [0])
-    bundle_connections= [{"node" : 0, "conductor" : 0},{"node" : 1, "conductor" : 1}]
+    terminal_1_level_0 = nw.Network(nw_number = 0, nodes = [0,1], bundles = [0])
+    bundle_connections= [{"node" : 0, "conductor" : 0, "mtl": 0},{"node" : 1, "conductor" : 1, "mtl":0}]
     
-    terminal_1.add_nodes_in_bundle(bundle_number = 0, 
-                                   bundle = line_0,
+    terminal_1_level_0.add_nodes_in_bundle(bundle_number = 0, 
+                                   bundle = line,
                                    connections = bundle_connections, 
                                    side= "S")
     #network connections
-    terminal_1.connect_to_ground(node = 0, R  = 50)
-    terminal_1.connect_to_ground(node = 1, R= 50, Vt = magnitude)
-    system.add_network(terminal_1, level = 0)
+    terminal_1_level_0.connect_to_ground(node = 0, R  = 50)
+    terminal_1_level_0.connect_to_ground(node = 1, R= 50, Vt = magnitude)
+    
+    terminal_1 = nw.LNetwork({0:terminal_1_level_0}, nw_number = 0)
+    manager.add_network(terminal_1)
 
     #network definition
-    terminal_2 = mtln.Network(nw_number = 1 ,nodes = [2,3], bundles = [0])
-    bundle_connections= [{"node" : 2, "conductor" : 0},{"node" : 3, "conductor" : 1}]
-    terminal_2.add_nodes_in_bundle(bundle_number = 0, 
-                                   bundle = line_0, 
+    terminal_2_level_0 = nw.Network(nw_number = 1 ,nodes = [2,3], bundles = [0])
+    bundle_connections= [{"node" : 2, "conductor" : 0, "mtl":0},{"node" : 3, "conductor" : 1, "mtl":0}]
+    terminal_2_level_0.add_nodes_in_bundle(bundle_number = 0, 
+                                   bundle = line, 
                                    connections= bundle_connections, 
                                    side= "L")
 
     #network connections
-    terminal_2.connect_to_ground(2, 50)
-    terminal_2.connect_to_ground(3, 50)
-    system.add_network(terminal_2, level = 0)
+    terminal_2_level_0.connect_to_ground(2, 50)
+    terminal_2_level_0.connect_to_ground(3, 50)
+    terminal_2 = nw.LNetwork({0:terminal_2_level_0}, nw_number = 1)
+    manager.add_network(terminal_2)
 
-    system.run_until(finalTime)
+    manager.run_until(finalTime)
 
+    assert (np.isclose(np.max(v_probe.val[:, 0]), 113e-3, atol=1e-3))
