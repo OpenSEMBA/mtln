@@ -23,6 +23,7 @@ class Network:
         self.v_sources = np.empty(shape=(self.number_of_nodes), dtype=object)
         self.v_sources.fill(lambda n: 0)
 
+        self.dx = np.zeros([0])
         self.c = np.ndarray(shape=(0,0))
         
         self.e_T = np.empty(shape=(0), dtype=object)
@@ -40,9 +41,9 @@ class Network:
         self.c = linalg.block_diag(self.c, bundle.c[side_idx])
            
         for connection in connections:
-            self._add_node(connection, bundle_number, side_idx, bundle.e_T)
+            self._add_node(connection, bundle_number, side_idx, bundle)
         
-    def _add_node(self, connection: dict, bundle_number: int, side_idx: int, field):
+    def _add_node(self, connection: dict, bundle_number: int, side_idx: int, bundle):
         assert (connection["node"] in self.nodes)
         assert (connection["node"] >= 0)
         assert (connection["node"] not in self.connections.keys())
@@ -50,8 +51,8 @@ class Network:
         index = self.nw_v.shape[0]
         self.nw_v = np.append(self.nw_v,0.0)
         self.nw_i = np.append(self.nw_i,0.0)
-
-        self.e_T = np.append(self.e_T, field[connection["conductor"]][side_idx])
+        self.dx = np.append(self.dx, bundle.dx)
+        self.e_T = np.append(self.e_T, bundle.e_T[connection["conductor"]][side_idx])
 
         self.connections[connection["node"]] = {"bundle_number" : bundle_number, "conductor" : connection["conductor"], "side" : side_idx, "index": index}
         if "mtl" in connection.keys():
@@ -102,7 +103,7 @@ class Network:
     def advance_voltage(self):
         self.nw_v = self.terminal_term_1.dot(self.nw_v) +\
                     self.terminal_term_2.dot(self.Ps.dot(self.v_sources_now + self.v_sources_prev) - 2*self.nw_i-\
-                    self.terminal_term_3*(self.e_T_now - self.e_T_prev))
+                    self.terminal_term_3.dot(self.e_T_now - self.e_T_prev))
        
     def update_voltages(self, bundles):
         for node in self.connections.values():
@@ -122,7 +123,7 @@ class Network:
         inv = np.linalg.inv(dx * self.c / dt - self.P1)
         self.terminal_term_1 = inv.dot(dx * self.c / dt + self.P1)
         self.terminal_term_2 = inv
-        self.terminal_term_3 = dx/dt
+        self.terminal_term_3 = self.dx/dt
        
 class LNetwork:
     """
