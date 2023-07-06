@@ -179,7 +179,7 @@ def test_ribbon_cable_20ns_termination_network():
     line = mtl.MTL(l=l, c=c, length=2.0, nx=2)
     # v_probe = line.add_probe(position=0.0, type='voltage')
     bundle = mtl.MTLD({0:[line]})
-    v_probe = bundle.add_probe(level = 0, line = 0, position=0.0, type='voltage')
+    v_probe = bundle.add_probe(position=0.0, type='voltage')
 
     manager.add_bundle(0,bundle)
 
@@ -213,5 +213,80 @@ def test_ribbon_cable_20ns_termination_network():
     manager.add_network(terminal_2)
 
     manager.run_until(finalTime)
+    # plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
+    # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+    # plt.xlabel(r'$t\,[ns]$')
+    # plt.xticks(range(0, 200, 50))
+    # plt.grid('both')
+    # plt.show()
 
     assert (np.isclose(np.max(v_probe.val[:, 0]), 113e-3, atol=1e-3))
+    
+def test_wire_over_ground_incident_E_paul_11_3_6_10ns():
+    """
+    Described in Ch. 11.3.2 "Computed results" of Paul Clayton
+    Analysis of Multiconductor Transmission Lines. 2007. 
+    Computes the induced voltage at the left end of the line
+    when excited by an incident external field with rise time 10 ns
+    * solved with mtl that computes its own terminals
+    * solved with mtln as manager: bundle + 2 termination networks
+    
+    """
+
+    wire_radius = 0.254e-3
+    wire_h = 0.02
+    wire_separation = 2.*wire_h
+    l = (mu_0/(2*np.pi))*np.arccosh(wire_separation/wire_radius)
+    c = 2*np.pi*epsilon_0/np.arccosh(wire_separation/wire_radius)
+
+    nx, finalTime, rise_time, fall_time = 10, 40e-9, 10e-9, 10e-9
+
+    manager = mtln.MTLN()
+
+    line = mtl.MTL(l=l, c=c, length=1.0, nx=nx)
+    bundle = mtl.MTLD({0:[line]})
+    v_probe = bundle.add_probe(position=0.0, type='voltage')
+    
+    x, z, t = sp.symbols('x z t')
+    magnitude = wf.trapezoidal_wave_sp(
+        A=1, rise_time=rise_time, fall_time=fall_time, f0=1e6, D=0.5)
+
+    def e_x(x, z, t): return (x+z+t)*0
+    def e_z(x, z, t): return magnitude
+    
+    bundle.add_external_field(e_x, e_z, ref_distance=0.0,
+                            distances=np.array([wire_separation]))
+
+
+    manager.add_bundle(0,bundle)
+
+    #network definition
+    terminal_1_level_0 = nw.Network(nw_number = 0, nodes = [0], bundles = [0])
+    terminal_1_level_0.add_nodes_in_bundle(0, line, [{"node" : 0, "conductor" : 0}], "S")
+    terminal_1_level_0.connect_to_ground(node = 0, R  = 500)
+    terminal_1 = nw.LNetwork({0:terminal_1_level_0}, nw_number = 0)
+    manager.add_network(terminal_1)
+    #network definition
+    terminal_2_level_0 = nw.Network(nw_number = 1, nodes = [1], bundles = [0])
+    terminal_2_level_0.add_nodes_in_bundle(0, line, [{"node" : 1, "conductor" : 0}], "L")
+    terminal_2_level_0.connect_to_ground(node = 1, R  = 1000)
+    terminal_2 = nw.LNetwork({0:terminal_2_level_0}, nw_number = 1)
+    manager.add_network(terminal_2)
+
+
+    manager.run_until(finalTime)
+
+    times = [3.4, 6.8, 9.9, 16.7, 20, 23.3, 35]
+    voltages = [-8.2, -3.8, -4.8, -0.55, 0.52, -0.019, 6e-3]
+    for (t, v) in zip(times, voltages):
+        index = np.argmin(np.abs(v_probe.t - t*1e-9))
+        assert np.all(np.isclose(v_probe.val[index, 0], v*1e-3, atol=1.5e-3))
+
+    # plt.plot(1e9*v_probe.t, 1e3*v_probe.val, label='v probe')
+    # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+    # plt.xlabel(r'$t\,[ns]$')
+    # plt.xticks(range(0, int(finalTime*1e9), 5))
+    # plt.grid('both')
+    # plt.legend()
+    # plt.show()
+    

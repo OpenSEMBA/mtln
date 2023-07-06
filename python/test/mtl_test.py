@@ -718,7 +718,6 @@ def test_wire_over_ground_incident_E_paul_11_3_6_10ns():
         index = np.argmin(np.abs(v_probe.t - t*1e-9))
         assert np.all(np.isclose(v_probe.val[index, 0], v*1e-3, atol=1.5e-3))
 
-    # plt.plot(1e9*probe.v0.t, 1e3*probe.v0.val, label='port')
     # plt.plot(1e9*v_probe.t, 1e3*v_probe.val, label='v probe')
     # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
     # plt.xlabel(r'$t\,[ns]$')

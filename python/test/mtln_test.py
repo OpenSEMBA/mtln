@@ -85,12 +85,12 @@ def test_ribbon_cable_20ns_termination_network():
 
     # From Paul's book:
     # "The crosstalk waveform rises to a peak of around 110 mV [...]"
-    # plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
-    # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
-    # plt.xlabel(r'$t\,[ns]$')
-    # plt.xticks(range(0, 200, 50))
-    # plt.grid('both')
-    # plt.show()
+    plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
+    plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+    plt.xlabel(r'$t\,[ns]$')
+    plt.xticks(range(0, 200, 50))
+    plt.grid('both')
+    plt.show()
     assert (np.isclose(np.max(v_probe.val[:, 0]), 113e-3, atol=1e-3))
 
 def test_ribbon_cable_1ns_paul_interconnection_network():
@@ -549,8 +549,8 @@ def test_ribbon_cable_1ns_RV_T_network():
 
     mtl_nw.run_until(finalTime)
 
-    t0, V0 = np.genfromtxt('python/testData/ngspice/test_ribbon_cable_1ns_RV_T_network/V1.txt', delimiter=',', usecols=(0,1), unpack = True)
-    t1, V1 = np.genfromtxt('python/testData/ngspice/test_ribbon_cable_1ns_RV_T_network/V2.txt', delimiter=',', usecols=(0,1), unpack = True)
+    t0, V0 = np.genfromtxt('python/testData/ngspice/test_ribbon_cable_1ns_RV_T_network/V1.txt', usecols=(0,1), unpack = True)
+    t1, V1 = np.genfromtxt('python/testData/ngspice/test_ribbon_cable_1ns_RV_T_network/V2.txt', usecols=(0,1), unpack = True)
 
     V0_resampled = np.interp(v_probe.t, t0, V0)
     V1_resampled = np.interp(v_probe.t, t1, V1)

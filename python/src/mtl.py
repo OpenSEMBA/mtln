@@ -8,6 +8,8 @@ import scipy.linalg as linalg
 from types import FunctionType
 from types import LambdaType
 
+from multipledispatch import dispatch
+
 from collections import OrderedDict
 from typing import Dict
 # from typing_extensions import TypeVarTuple
@@ -168,6 +170,7 @@ class MTL:
         for p in self.probes:
             p.update(self.time, self.x, self.v, self.i)
 
+    @dispatch()
     def update_sources(self):
         self.v_sources_now = np.vectorize(FunctionType.__call__, otypes=["float64"])(
             self.v_sources, self.time
@@ -189,6 +192,7 @@ class MTL:
             self.e_T, self.time - self.dt
         )
 
+    @dispatch(float, float)
     def update_sources(self, time, dt):
         self.v_sources_now = np.vectorize(FunctionType.__call__, otypes=["float64"])(
             self.v_sources, time
@@ -620,16 +624,13 @@ class MTLD:
     """
     Lossless Multiconductor Transmission Line Network with subdomains
     """
-    # Shape = TypeVarTuple("Shape")
     def __init__(self, levels : Dict[int, np.ndarray]):
 
         assert(len(levels[0]) == 1)
         self.nz = levels[0][0].x.shape[0]
         self.x = levels[0][0].x
-        # self.dx = 0
         self.dt = 1e10
         self.time = 0.0
-        # self.time = 0.0
         self.levels = levels
         #with levels as input, the v and I arrays can be built
         #check that nz is the same for all
@@ -680,16 +681,16 @@ class MTLD:
 
         self.Zt = TransferImpedance(self.number_of_conductors, self.i.shape[1])
 
-    def add_probe(self, level : int, line :int, position : float, type = str):
-        # if (position > self.x[-1]) or (position < 0.0):
-        #     raise ValueError("Probe position is out of MTL length.")
+    def add_probe(self, position : float, type = str):
+        if (position > self.x[-1]) or (position < 0.0):
+            raise ValueError("Probe position is out of MTL length.")
 
-        # probe = Probe(position, type, self.dt, self.x)
-        # self.probes.append(probe)
-        # return probe
-        probe = self.levels[level][line].add_probe(position, type) 
+        probe = Probe(position, type, self.dt, self.x)
         self.probes.append(probe)
         return probe
+        # probe = self.levels[level][line].add_probe(position, type) 
+        # self.probes.append(probe)
+        # return probe
 
     def update_lr_terms(self):
         F1 = (
@@ -736,6 +737,12 @@ class MTLD:
         self.e_T_prev = np.vectorize(FunctionType.__call__, otypes=["float64"])(
             self.e_T, self.time - self.dt
         )
+
+    def get_phase_velocities(self):
+        return np.array([
+            1 / np.sqrt(np.diag(self.l[k].dot(self.c[1 + k])))
+            for k in range(self.x.shape[0] - 1)
+        ])
 
     def add_external_field(self, e_x, e_z, ref_distance, distances: np.ndarray):
         field = Field(e_x, e_z)
