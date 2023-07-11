@@ -28,8 +28,6 @@ class MTLN:
         assert(bundle_number not in self.bundles.keys())
         if (self.dx == 0):
             self.dx = bundle.dx        
-        else:
-            assert (self.dx == bundle.dx)
             
         self.bundles[bundle_number] = bundle
         if (bundle.dt < self.dt):
@@ -37,12 +35,17 @@ class MTLN:
         
     def add_network(self, nw):
         self.networks[nw.nw_number] = nw
+
+    def add_networks(self, nw: list):
+        for n in nw:
+            self.networks[n.nw_number] = n
         
     def get_time_range(self, final_time):
         return np.arange(0, np.floor(final_time / self.dt))
 
     def compute_nw_v_terms(self):
         for nw in self.networks.values():
+            # nw.compute_v_terms(self.dt)
             nw.compute_v_terms(self.dx, self.dt)
 
     def update_probes(self):

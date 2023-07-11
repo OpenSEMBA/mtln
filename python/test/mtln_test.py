@@ -21,16 +21,13 @@ def test_ribbon_cable_20ns_termination_network():
     """
     Solved with mtl approach and mltn approach: tube + 2 termination networks
     """
-    l = np.zeros([2, 2])
-    l[0] = [0.7485*1e-6, 0.5077*1e-6]
-    l[1] = [0.5077*1e-6, 1.0154*1e-6]
-    c = np.zeros([2, 2])
-    c[0] = [37.432*1e-12, -18.716*1e-12]
-    c[1] = [-18.716*1e-12, 24.982*1e-12]
+    l = np.zeros([2, 2])                 
+    l[0] = [0.7485*1e-6, 0.5077*1e-6]    
+    l[1] = [0.5077*1e-6, 1.0154*1e-6]    
+    c = np.zeros([2, 2])                 
+    c[0] = [37.432*1e-12, -18.716*1e-12]  
+    c[1] = [-18.716*1e-12, 24.982*1e-12]  
 
-    Zs, Zl = np.zeros([1, 2]), np.zeros([1, 2])
-    Zs[:] = [50, 50]
-    Zl[:] = [50, 50]
 
     finalTime = 200e-9
 
@@ -85,12 +82,12 @@ def test_ribbon_cable_20ns_termination_network():
 
     # From Paul's book:
     # "The crosstalk waveform rises to a peak of around 110 mV [...]"
-    plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
-    plt.ylabel(r'$V_1 (0, t)\,[mV]$')
-    plt.xlabel(r'$t\,[ns]$')
-    plt.xticks(range(0, 200, 50))
-    plt.grid('both')
-    plt.show()
+    # plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
+    # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+    # plt.xlabel(r'$t\,[ns]$')
+    # plt.xticks(range(0, 200, 50))
+    # plt.grid('both')
+    # plt.show()
     assert (np.isclose(np.max(v_probe.val[:, 0]), 113e-3, atol=1e-3))
 
 def test_ribbon_cable_1ns_paul_interconnection_network():
@@ -105,10 +102,6 @@ def test_ribbon_cable_1ns_paul_interconnection_network():
     c = np.zeros([2, 2])
     c[0] = [37.432*1e-12, -18.716*1e-12]
     c[1] = [-18.716*1e-12, 24.982*1e-12]
-
-    Zs, Zl = np.zeros([1, 2]), np.zeros([1, 2])
-    Zs[:] = [50, 50]
-    Zl[:] = [50, 50]
 
 
     """
@@ -299,16 +292,16 @@ def test_ribbon_cable_1ns_R_interconnection_network():
     assert(np.allclose(V0_resampled[:-1], v_probe.val[1:,0], atol = 0.01, rtol=0.05))
     assert(np.allclose(V1_resampled[:-1], v_probe.val[1:,1], atol = 0.01, rtol=0.05))
     
-    plt.plot(1e9*v_probe.t, v_probe.val[:,0] ,'r', label = 'Conductor 0')
-    plt.plot(1e9*v_probe.t, v_probe.val[:,1] ,'b', label = 'Conductor 1')
-    plt.plot(1e9*v_probe.t, V0_resampled ,'g--', label = 'Conductor 0 - NgSpice')
-    plt.plot(1e9*v_probe.t, V1_resampled ,'k--', label = 'Conductor 1 - NgSpice')
-    plt.ylabel(r'$V (0, t)\,[V]$')
-    plt.xlabel(r'$t\,[ns]$')
-    plt.xticks(range(0, 200, 50))
-    plt.grid('both')
-    plt.legend()
-    plt.savefig("python/testData/output/test_ribbon_cable_1ns_R_interconnection_network/test_ribbon_cable_1ns_R_interconnection_network.png")
+    # plt.plot(1e9*v_probe.t, v_probe.val[:,0] ,'r', label = 'Conductor 0')
+    # plt.plot(1e9*v_probe.t, v_probe.val[:,1] ,'b', label = 'Conductor 1')
+    # plt.plot(1e9*v_probe.t, V0_resampled ,'g--', label = 'Conductor 0 - NgSpice')
+    # plt.plot(1e9*v_probe.t, V1_resampled ,'k--', label = 'Conductor 1 - NgSpice')
+    # plt.ylabel(r'$V (0, t)\,[V]$')
+    # plt.xlabel(r'$t\,[ns]$')
+    # plt.xticks(range(0, 200, 50))
+    # plt.grid('both')
+    # plt.legend()
+    # plt.savefig("python/testData/output/test_ribbon_cable_1ns_R_interconnection_network/test_ribbon_cable_1ns_R_interconnection_network.png")
 
 def test_ribbon_cable_1ns_RV_interconnection_network():
     """
@@ -412,16 +405,16 @@ def test_ribbon_cable_1ns_RV_interconnection_network():
     assert(np.allclose(V0_resampled[:-1], v_probe.val[1:,0], atol = 0.01, rtol=0.05))
     assert(np.allclose(V1_resampled[:-1], v_probe.val[1:,1], atol = 0.01, rtol=0.05))
 
-    plt.plot(1e9*v_probe.t, v_probe.val[:,0] ,'r', label = 'Conductor 0')
-    plt.plot(1e9*v_probe.t, v_probe.val[:,1] ,'b', label = 'Conductor 1')
-    plt.plot(1e9*t0, V0 ,'g--', label = 'Conductor 0 - NgSpice')
-    plt.plot(1e9*t1, V1 ,'k--', label = 'Conductor 1 - NgSpice')
-    plt.ylabel(r'$V (0, t)\,[V]$')
-    plt.xlabel(r'$t\,[ns]$')
-    plt.xticks(range(0, 200, 50))
-    plt.grid('both')
-    plt.legend()
-    plt.savefig("python/testData/output/test_ribbon_cable_1ns_RV_interconnection_network/test_ribbon_cable_1ns_RV_interconnection_network.png")
+    # plt.plot(1e9*v_probe.t, v_probe.val[:,0] ,'r', label = 'Conductor 0')
+    # plt.plot(1e9*v_probe.t, v_probe.val[:,1] ,'b', label = 'Conductor 1')
+    # plt.plot(1e9*t0, V0 ,'g--', label = 'Conductor 0 - NgSpice')
+    # plt.plot(1e9*t1, V1 ,'k--', label = 'Conductor 1 - NgSpice')
+    # plt.ylabel(r'$V (0, t)\,[V]$')
+    # plt.xlabel(r'$t\,[ns]$')
+    # plt.xticks(range(0, 200, 50))
+    # plt.grid('both')
+    # plt.legend()
+    # plt.savefig("python/testData/output/test_ribbon_cable_1ns_RV_interconnection_network/test_ribbon_cable_1ns_RV_interconnection_network.png")
 
 def test_ribbon_cable_1ns_RV_T_network():
     """
@@ -560,16 +553,17 @@ def test_ribbon_cable_1ns_RV_T_network():
     assert(np.allclose(V0_resampled[:-1], v_probe.val[1:,0], atol = 0.01, rtol=0.05))
     assert(np.allclose(V1_resampled[:-1], v_probe.val[1:,1], atol = 0.01, rtol=0.05))
 
-    plt.plot(1e9*v_probe.t, v_probe.val[:,0] ,'r', label = 'Conductor 0')
-    plt.plot(1e9*v_probe.t, v_probe.val[:,1] ,'b', label = 'Conductor 1')
-    plt.plot(1e9*t0, V0 ,'g--', label = 'Conductor 0 - NgSpice')
-    plt.plot(1e9*t1, V1 ,'k--', label = 'Conductor 1 - NgSpice')
-    plt.ylabel(r'$V (0, t)\,[V]$')
-    plt.xlabel(r'$t\,[ns]$')
-    plt.xticks(range(0, 200, 50))
-    plt.grid('both')
-    plt.legend()
-    plt.savefig("python/testData/output/test_ribbon_cable_1ns_RV_T_network/test_ribbon_cable_1ns_RV_T_network.png")
+    # plt.plot(1e9*v_probe.t, v_probe.val[:,0] ,'r', label = 'Conductor 0')
+    # plt.plot(1e9*v_probe.t, v_probe.val[:,1] ,'b', label = 'Conductor 1')
+    # plt.plot(1e9*t0, V0 ,'g--', label = 'Conductor 0 - NgSpice')
+    # plt.plot(1e9*t1, V1 ,'k--', label = 'Conductor 1 - NgSpice')
+    # plt.ylabel(r'$V (0, t)\,[V]$')
+    # plt.xlabel(r'$t\,[ns]$')
+    # plt.xticks(range(0, 200, 50))
+    # plt.grid('both')
+    # plt.legend()
+    # # plt.show()
+    # plt.savefig("python/testData/output/test_ribbon_cable_1ns_RV_T_network/test_ribbon_cable_1ns_RV_T_network.png")
 
     
 def test_1_conductor_network_Z50():
@@ -827,17 +821,17 @@ def test_1_conductor_adapted_network_R():
         V0_sp_resampled = np.interp(v_probe.t, t_sp, V0_sp)
         assert(np.allclose(V0_sp_resampled[:-1], v_probe.val[1:,0], rtol=0.01))
 
-        plt.plot(1e9*v_probe.t, 1e3*v_probe.val, label = "MTLN")
-        plt.plot(1e9*t_sp, 1e3*V0_sp,'--', label = "NgSpice")
-        plt.title("Two 1-cond.lines, R = "+str(R))
-        plt.ylabel(r'$V_1 (0, t)\,[mV]$')
-        plt.xlabel(r'$t\,[ns]$')
-        plt.xticks(range(0, 200, 50))
-        plt.grid('both')
-        plt.legend()
-        # plt.show()
-        plt.savefig("python/testData/output/test_1_conductor_adapted_network_R/MTLN_1_conductor_network_R"+str(R)+".png")
-        plt.clf()
+        # plt.plot(1e9*v_probe.t, 1e3*v_probe.val, label = "MTLN")
+        # plt.plot(1e9*t_sp, 1e3*V0_sp,'--', label = "NgSpice")
+        # plt.title("Two 1-cond.lines, R = "+str(R))
+        # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+        # plt.xlabel(r'$t\,[ns]$')
+        # plt.xticks(range(0, 200, 50))
+        # plt.grid('both')
+        # plt.legend()
+        # # plt.show()
+        # plt.savefig("python/testData/output/test_1_conductor_adapted_network_R/MTLN_1_conductor_network_R"+str(R)+".png")
+        # plt.clf()
 
 def test_1_conductor_not_adapted_network_R():
     """
@@ -914,18 +908,18 @@ def test_1_conductor_not_adapted_network_R():
         V0_sp_resampled = np.interp(v_probe.t, t_sp, V0_sp)
         assert(np.allclose(V0_sp_resampled[:-1], v_probe.val[1:,0], rtol=0.01))
 
-        plt.plot(1e9*v_probe.t, 1e3*v_probe.val, label = "MTLN")
-        plt.plot(1e9*t_sp, 1e3*V0_sp,'--', label = "NgSpice TL")
-        # plt.plot(1e9*t_sp_m, 1e3*V0_sp_m,'-.', label = "NgSpice MTLN")
-        plt.title("Two 1-cond.lines, R = "+str(R))
-        plt.ylabel(r'$V_1 (0, t)\,[mV]$')
-        plt.xlabel(r'$t\,[ns]$')
-        plt.xticks(range(0, 200, 50))
-        plt.grid('both')
-        plt.legend()
-        # plt.show()
-        plt.savefig("python/testData/output/test_1_conductor_not_adapted_network_R/MTLN_1_conductor_not_adapted_network_R"+str(R)+".png")
-        plt.clf()
+        # plt.plot(1e9*v_probe.t, 1e3*v_probe.val, label = "MTLN")
+        # plt.plot(1e9*t_sp, 1e3*V0_sp,'--', label = "NgSpice TL")
+        # # plt.plot(1e9*t_sp_m, 1e3*V0_sp_m,'-.', label = "NgSpice MTLN")
+        # plt.title("Two 1-cond.lines, R = "+str(R))
+        # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+        # plt.xlabel(r'$t\,[ns]$')
+        # plt.xticks(range(0, 200, 50))
+        # plt.grid('both')
+        # plt.legend()
+        # # plt.show()
+        # plt.savefig("python/testData/output/test_1_conductor_not_adapted_network_R/MTLN_1_conductor_not_adapted_network_R"+str(R)+".png")
+        # plt.clf()
         
 def test_1_conductor_network_RV():
     """
@@ -1002,16 +996,16 @@ def test_1_conductor_network_RV():
         a = np.isclose(V0_sp_resampled[:-1], v_probe.val[1:,0], rtol=0.03)
         assert(np.all(np.isclose(V0_sp_resampled[:-1], v_probe.val[1:,0], rtol=0.05)))
 
-        plt.plot(1e9*v_probe.t, 1e3*v_probe.val, label = "MTLN")
-        plt.plot(1e9*t_sp, 1e3*V0_sp,'--', label = "NgSpice")
-        plt.title("Two 1-cond.lines, R = "+str(R))
-        plt.ylabel(r'$V_1 (0, t)\,[mV]$')
-        plt.xlabel(r'$t\,[ns]$')
-        plt.xticks(range(0, 200, 50))
-        plt.grid('both')
-        plt.legend()
-        plt.savefig("python/testData/output/test_1_conductor_network_RV/MTLN_1_conductor_network_RV"+str(R)+".png")
-        plt.clf()
+        # plt.plot(1e9*v_probe.t, 1e3*v_probe.val, label = "MTLN")
+        # plt.plot(1e9*t_sp, 1e3*V0_sp,'--', label = "NgSpice")
+        # plt.title("Two 1-cond.lines, R = "+str(R))
+        # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+        # plt.xlabel(r'$t\,[ns]$')
+        # plt.xticks(range(0, 200, 50))
+        # plt.grid('both')
+        # plt.legend()
+        # plt.savefig("python/testData/output/test_1_conductor_network_RV/MTLN_1_conductor_network_RV"+str(R)+".png")
+        # plt.clf()
         
 def test_1_conductor_not_adapted_network_RV():
     """
@@ -1091,14 +1085,56 @@ def test_1_conductor_not_adapted_network_RV():
         assert(np.allclose(V0_sp_resampled[:-1], v_probe.val[1:,0], rtol=0.02))
 
 
-        plt.plot(1e9*v_probe.t, 1e3*v_probe.val, label = "MTLN")
-        plt.plot(1e9*t_sp, 1e3*V0_sp,'--', label = "NgSpice")
-        plt.title("Two 1-cond.lines, R = "+str(R))
-        plt.ylabel(r'$V_1 (0, t)\,[mV]$')
-        plt.xlabel(r'$t\,[ns]$')
-        plt.xticks(range(0, 200, 50))
-        plt.grid('both')
-        plt.legend()
-        plt.savefig("python/testData/output/test_1_conductor_not_adapted_network_RV/MTLN_1_conductor_adapted_network_RV"+str(R)+"_V35.png")
-        plt.clf()
+        # plt.plot(1e9*v_probe.t, 1e3*v_probe.val, label = "MTLN")
+        # plt.plot(1e9*t_sp, 1e3*V0_sp,'--', label = "NgSpice")
+        # plt.title("Two 1-cond.lines, R = "+str(R))
+        # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+        # plt.xlabel(r'$t\,[ns]$')
+        # plt.xticks(range(0, 200, 50))
+        # plt.grid('both')
+        # plt.legend()
+        # plt.savefig("python/testData/output/test_1_conductor_not_adapted_network_RV/MTLN_1_conductor_adapted_network_RV"+str(R)+"_V35.png")
+        # plt.clf()
         
+def test_coaxial_line_paul_8_6_square():
+    """ 
+    Described in Ch. 8 of Paul Clayton, 
+    Analysis of Multiconductor Transmission Lines. 2004. 
+    """
+
+    line = mtl.MTL(l=0.25e-6, c=100e-12, length=400.0, Zs=150)
+    finalTime = 18e-6
+
+    def magnitude(t): return wf.square_pulse(t, 100, 6e-6)
+    line.add_voltage_source(position=0.0, conductor=0, magnitude=magnitude)
+    v_probe = line.add_probe(position=0.0, type='voltage')
+    i_probe = line.add_probe(position=400.0, type='current')
+
+    line.run_until(finalTime)
+
+    xticks = range(int(np.floor(min(1e6*i_probe.t))),
+                   int(np.ceil(max(1e6*i_probe.t))+1))
+
+    start_times = [0.1, 4.1, 6.1, 8.1, 10.1, 12.1, 14.1, 16.1]
+    end_times = [3.9, 5.9, 7.9, 9.9, 11.9, 13.9, 15.9, 18.9]
+    check_voltages = [25, -12.5, -37.5, -18.75, 18.75, 9.375, -9.375, -4.6875]
+    for (t_start, t_end, v) in zip(start_times, end_times, check_voltages):
+        start = np.argmin(np.abs(v_probe.t - t_start*1e-6))
+        end = np.argmin(np.abs(v_probe.t - t_end*1e-6))
+        assert np.all(np.isclose(v_probe.val[start:end], v))
+
+    plt.figure()
+    plt.plot(1e6*v_probe.t, v_probe.val)
+    plt.ylabel(r'$V (0, t)\,[V]$')
+    plt.xlabel(r'$t\,[\mu s]$')
+    plt.grid('both')
+
+    plt.figure()
+    plt.plot(1e6*i_probe.t, i_probe.val )
+    plt.ylabel(r'$I (L, t)\,[A]$')
+    plt.xlabel(r'$t\,[\mu s]$')
+    plt.xticks(xticks)
+    plt.grid('both')
+
+    plt.show()
+

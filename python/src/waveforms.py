@@ -38,3 +38,11 @@ def trapezoidal_wave(x, A, rise_time, fall_time, f0, D):
 
 def ramp_pulse(x, A, x0):
     return A*(x/x0)*(x <= x0)*(x >= 0) + A*(x >= x0)
+
+
+def double_exp_sp(C, a, b):
+    x, z, t = sp.symbols('x z t')
+    C_sp, a_sp, b_sp = sp.symbols('C_sp a_sp b_sp')
+    f = C_sp*(sp.exp(-a_sp*t)-sp.exp(-b_sp*t))
+    
+    return f.subs(C_sp, C).subs(a_sp, a).subs(b_sp,b)
