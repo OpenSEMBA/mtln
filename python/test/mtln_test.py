@@ -548,8 +548,6 @@ def test_ribbon_cable_1ns_RV_T_network():
     V0_resampled = np.interp(v_probe.t, t0, V0)
     V1_resampled = np.interp(v_probe.t, t1, V1)
 
-    # assert(np.allclose(V0_sp_resampled[:-1], v_probe.val[1:,0], rtol=0.01))
-
     assert(np.allclose(V0_resampled[:-1], v_probe.val[1:,0], atol = 0.01, rtol=0.05))
     assert(np.allclose(V1_resampled[:-1], v_probe.val[1:,1], atol = 0.01, rtol=0.05))
 
@@ -562,8 +560,8 @@ def test_ribbon_cable_1ns_RV_T_network():
     # plt.xticks(range(0, 200, 50))
     # plt.grid('both')
     # plt.legend()
-    # # plt.show()
-    # plt.savefig("python/testData/output/test_ribbon_cable_1ns_RV_T_network/test_ribbon_cable_1ns_RV_T_network.png")
+    # plt.show()
+#    # plt.savefig("python/testData/output/test_ribbon_cable_1ns_RV_T_network/test_ribbon_cable_1ns_RV_T_network.png")
 
     
 def test_1_conductor_network_Z50():

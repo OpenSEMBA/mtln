@@ -191,17 +191,16 @@ def test_example_3_old_style():
     g--- ---R---0|-----------|2---R---g 
     
     """
-    l = np.zeros([2, 2])
-    l[0] = [0.4946E-6, 0.0633E-6 ]
-    l[1] = [0.0633E-6,  0.4946E-6]
+    l = np.array([
+        [0.4946E-6, 0.0633E-6 ],
+        [0.0633E-6,  0.4946E-6]])
     
-    c = np.zeros([2, 2])
-    c[0] = [62.8E-12, -4.94E-12]
-    c[1] = [-4.94E-12, 62.8E-12]
+    c = np.array([
+        [62.8E-12, -4.94E-12],
+        [-4.94E-12, 62.8E-12]])
 
 
-    # def magnitude(t): return wf.ramp_pulse(t, 4.0, 1.5e-9)
-    def magnitude(t): return wf.ramp_pulse(t, 4.0, 1e-12)
+    def magnitude(t): return wf.ramp_pulse(t, 4.0, 1.5e-9)
     
 
     finalTime = 5e-9
@@ -212,7 +211,7 @@ def test_example_3_old_style():
     dx = v/(fMax*10)
     nx = int(0.3048/dx)
     
-    line = mtl.MTL(l=l, c=c, length=0.3048, nx=nx, Zs=[100,50], Zl=[1e-6,1e-6])
+    line = mtl.MTL(l=l, c=c, length=0.3048, nx=nx, Zs=[100,50], Zl=[102,102])
     line.add_voltage_source(position=0.0,conductor=1,magnitude=magnitude)
     
     v_probe_L = line.add_probe(position=0.0, type='voltage')
@@ -221,21 +220,21 @@ def test_example_3_old_style():
     i_probe_R = line.add_probe(position=0.3048, type='current')
     
 
-    line.dt = line.dt/100
+    # line.dt = 0.95*line.dt
     line.run_until(finalTime)
 
-    # plt.figure()
-    # plt.plot(1e9*v_probe_L.t, v_probe_R.val[:,1], label = 'End2 of C1')
-    # plt.ylabel(r'$V (t)\,[V]$')
-    # plt.xlabel(r'$t\,[ns]$')
-    # plt.xticks(range(0, 6, 1))
-    # plt.xlim(0,4)
-    # plt.grid('both')
-    # plt.legend()
+    plt.figure()
+    plt.plot(1e9*v_probe_L.t, v_probe_R.val[:,1], label = 'End2 of C1')
+    plt.ylabel(r'$V (t)\,[V]$')
+    plt.xlabel(r'$t\,[ns]$')
+    plt.xticks(range(0, 6, 1))
+    plt.xlim(0,4)
+    plt.grid('both')
+    plt.legend()
 
-    # plt.plot(1e9*v_probe_R.t, v_probe_L.val[:,0], label = 'End1 of C2')
-    plt.plot(1e9*v_probe_R.t, v_probe_L.val[:,1], label = 'End1 of C1')
-    plt.plot(1e9*v_probe_R.t, v_probe_R.val[:,1], label = 'End2 of C1')
+    plt.figure()
+    plt.plot(1e9*v_probe_R.t, v_probe_L.val[:,0], label = 'End1 of C2')
+    plt.plot(1e9*v_probe_R.t, v_probe_R.val[:,0], label = 'End2 of C2')
     plt.ylabel(r'$V (t)\,[V]$')
     plt.xlabel(r'$t\,[ns]$')
     plt.xticks(range(0, 6, 1))
@@ -290,8 +289,7 @@ def test_example_4():
     c3[1] = [-7.453e-11, 2.242e-10]
     l3 = np.zeros([2, 2])
     l3 = linalg.inv(c3)/v3**2
-    n = 1
-    line_3 = mtl.MTL(l=l3, c=c3, length=n*0.0245, nx=24)
+    line_3 = mtl.MTL(l=l3, c=c3, length=0.0245, nx=24)
     # assert(np.isclose(line_3.dx, 1.02e-3, 0.01))
 
     
