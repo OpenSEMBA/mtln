@@ -774,3 +774,149 @@ def test_wire_over_ground_incident_E_paul_11_3_6_1ns():
     # plt.grid('both')
     # plt.legend()
     # plt.show()
+
+def test_wire_over_ground_incident_E_transversal_paul_12_4_100ns():
+
+    """
+    Described in Ch. 12.4 "Computed results" of Paul Clayton
+    Analysis of Multiconductor Transmission Lines. 2007. 
+    """
+    l = np.zeros([2,2])
+    l[0] = [0.7485e-6, 0.2408e-6]
+    l[1] = [0.2408e-6, 0.7485e-6]
+
+    c = np.zeros([2,2])
+    c[0] = [24.982e-12, -6.266e-12]
+    c[1] = [-6.266e-12, 24.982e-12]
+
+    nx, finalTime, rise_time, fall_time = 5, 200e-9, 100e-9,100e-9
+
+    line = mtl.MTL(l=l, c=c, length=2.0, nx=nx, Zs=[500,500], Zl=[500,500])
+
+    x, z, t = sp.symbols('x z t')
+    magnitude = wf.trapezoidal_wave_sp(
+        A=1, rise_time=rise_time, fall_time=fall_time, f0=1e6, D=0.5)
+    # magnitude = wf.ramp_pulse_sp(A=1, x0=rise_time)
+    wire_separation = 2*0.00127
+
+    def e_z(x, z, t): return (x+z+t)*0
+    def e_x(x, z, t): return -magnitude
+    line.add_external_field(e_x, e_z, 
+                            ref_distance=0.0,
+                            distances=np.array([wire_separation,wire_separation]))
+
+    v_probe = line.add_probe(position=0.0, type='voltage')
+
+    # line.dt = finalTime/200
+    line.run_until(finalTime)
+
+    times = [20, 40, 60, 80, 100, 120, 140, 160, 180, 200]
+    voltages = []
+    for (t, v) in zip(times, voltages):
+        index = np.argmin(np.abs(v_probe.t - t*1e-9))
+        assert np.all(np.isclose(v_probe.val[index, 0], v*1e-6, atol=2.5e-3))
+
+    # plt.plot(1e9*probe.v0.t, 1e3*probe.v0.val, label='port')
+    plt.plot(1e9*v_probe.t, 1e6*v_probe.val, label='v probe')
+    plt.ylabel(r'$V_1 (0, t)\,[\mu V]$')
+    plt.xlabel(r'$t\,[ns]$')
+    # plt.xticks(range(0, int(finalTime*1e9), 5))
+    plt.grid('both')
+    plt.legend()
+    plt.show()
+def test_wire_over_ground_incident_E_transversal_paul_12_4_10ns():
+
+    """
+    Described in Ch. 12.4 "Computed results" of Paul Clayton
+    Analysis of Multiconductor Transmission Lines. 2007. 
+    """
+    l = np.zeros([2,2])
+    l[0] = [0.7485e-6, 0.2408e-6]
+    l[1] = [0.2408e-6, 0.7485e-6]
+
+    c = np.zeros([2,2])
+    c[0] = [24.982e-12, -6.266e-12]
+    c[1] = [-6.266e-12, 24.982e-12]
+
+    nx, finalTime, rise_time, fall_time = 5, 100e-9, 10e-9,10e-9
+
+    line = mtl.MTL(l=l, c=c, length=2.0, nx=nx, Zs=[500,500], Zl=[500,500])
+
+    x, z, t = sp.symbols('x z t')
+    magnitude = wf.trapezoidal_wave_sp(
+        A=1, rise_time=rise_time, fall_time=fall_time, f0=1e6, D=0.5)
+    # magnitude = wf.ramp_pulse_sp(A=1, x0=rise_time)
+    wire_separation = 2*0.00127
+
+    def e_z(x, z, t): return (x+z+t)*0
+    def e_x(x, z, t): return -magnitude
+    line.add_external_field(e_x, e_z, 
+                            ref_distance=0.0,
+                            distances=np.array([wire_separation,wire_separation]))
+
+    v_probe = line.add_probe(position=0.0, type='voltage')
+    # line.dt = line.dt*0.5
+    line.run_until(finalTime)
+
+    # times = [20, 40, 60, 80, 100, 120, 140, 160, 180, 200]
+    # voltages = []
+    # for (t, v) in zip(times, voltages):
+    #     index = np.argmin(np.abs(v_probe.t - t*1e-9))
+    #     assert np.all(np.isclose(v_probe.val[index, 0], v*1e-6, atol=2.5e-3))
+
+    # plt.plot(1e9*probe.v0.t, 1e3*probe.v0.val, label='port')
+    plt.plot(1e9*v_probe.t, 1e6*v_probe.val, label='v probe')
+    plt.ylabel(r'$V_1 (0, t)\,[\mu V]$')
+    plt.xlabel(r'$t\,[ns]$')
+    # plt.xticks(range(0, int(finalTime*1e9), 5))
+    plt.grid('both')
+    plt.legend()
+    plt.show()
+def test_wire_over_ground_incident_E_transversal_paul_12_4_1ns():
+
+    """
+    Described in Ch. 12.4 "Computed results" of Paul Clayton
+    Analysis of Multiconductor Transmission Lines. 2007. 
+    """
+    l = np.zeros([2,2])
+    l[0] = [0.7485e-6, 0.2408e-6]
+    l[1] = [0.2408e-6, 0.7485e-6]
+
+    c = np.zeros([2,2])
+    c[0] = [24.982e-12, -6.266e-12]
+    c[1] = [-6.266e-12, 24.982e-12]
+
+    nx, finalTime, rise_time, fall_time = 100, 200e-9, 1e-9,1e-9
+
+    line = mtl.MTL(l=l, c=c, length=2.0, nx=nx, Zs=[500,500], Zl=[500,500])
+
+    x, z, t = sp.symbols('x z t')
+    magnitude = wf.trapezoidal_wave_sp(
+        A=1, rise_time=rise_time, fall_time=fall_time, f0=1e6, D=0.5)
+    # magnitude = wf.ramp_pulse_sp(A=1, x0=rise_time)
+    wire_separation = 2*0.00127
+
+    def e_z(x, z, t): return (x+z+t)*0
+    def e_x(x, z, t): return -magnitude
+    line.add_external_field(e_x, e_z, 
+                            ref_distance=0.0,
+                            distances=np.array([wire_separation,wire_separation]))
+
+    v_probe = line.add_probe(position=0.0, type='voltage')
+
+    line.run_until(finalTime)
+
+    # times = [10, 25, 40, 55]
+    # voltages = [1]
+    # for (t, v) in zip(times, voltages):
+    #     index = np.argmin(np.abs(v_probe.t - t*1e-9))
+    #     assert np.all(np.isclose(v_probe.val[index, 0], v*1e-6, atol=2.5e-3))
+
+    # plt.plot(1e9*probe.v0.t, 1e3*probe.v0.val, label='port')
+    plt.plot(1e9*v_probe.t, 1e6*v_probe.val, label='v probe')
+    plt.ylabel(r'$V_1 (0, t)\,[\mu V]$')
+    plt.xlabel(r'$t\,[ns]$')
+    # plt.xticks(range(0, int(finalTime*1e9), 5))
+    plt.grid('both')
+    plt.legend()
+    plt.show()

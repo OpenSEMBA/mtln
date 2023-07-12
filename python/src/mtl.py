@@ -284,7 +284,9 @@ class MTL:
         vmax = np.max(self.get_phase_velocities())
 
         for n in range(self.number_of_conductors):
-            et = ex(x, z, t).integrate(x, (x, ref_distance, distances[n]))
+            et = sp.Integral(ex(x, z, t), (x, ref_distance, distances[n]))
+            # et = ex(x, z, t).integrate(x, (x, ref_distance, distances[n]))
+            
             for nz in range(self.x.size - 1):
                 pos = self.x[nz]
                 self.e_L[n, nz] = sp.lambdify(
@@ -298,11 +300,11 @@ class MTL:
                     .subs(v, vmax)
                     .subs(z, pos - 0.5 * self.dx),
                 )
-                self.e_T[n, nz] = sp.lambdify(t, et.subs(z, pos))
+                self.e_T[n, nz] = sp.lambdify(t, et.subs(z, pos).subs(v, vmax))
 
             nz = self.x.size - 1
             pos = self.x[nz]
-            self.e_T[n, nz] = sp.lambdify(t, et.subs(z, pos))
+            self.e_T[n, nz] = sp.lambdify(t, et.subs(z, pos).subs(v, vmax))
 
     def add_probe(self, position: float, type: str):
         if (position > self.x[-1]) or (position < 0.0):

@@ -4,6 +4,9 @@ import sympy as sp
 def gaussian(x, x0, s0):
     return np.exp( - (x-x0)**2 / (2*s0**2) )
 
+def gaussian_2(x, x0, s0):
+    return np.exp( - ((x-x0)/s0)**2 )
+
 def square_pulse(x, A, x0):
     return A*(x <= x0)*(x >= 0)
 
@@ -38,6 +41,13 @@ def trapezoidal_wave(x, A, rise_time, fall_time, f0, D):
 
 def ramp_pulse(x, A, x0):
     return A*(x/x0)*(x <= x0)*(x >= 0) + A*(x >= x0)
+
+def ramp_pulse_sp(A, x0):
+    x,z,t = sp.symbols('x z t')
+    A_sp, x0_sp, v = sp.symbols('A_sp x0_sp v')
+    f1 = sp.Piecewise((A_sp*(t/x0_sp), (t+x/v <= x0)), 
+                      (A_sp, (t+x/v >= x0_sp)))
+    return f1.subs(A_sp, A).subs(x0_sp, x0)    
 
 
 def double_exp_sp(C, a, b):

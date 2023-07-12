@@ -45,8 +45,7 @@ class MTLN:
 
     def compute_nw_v_terms(self):
         for nw in self.networks.values():
-            # nw.compute_v_terms(self.dt)
-            nw.compute_v_terms(self.dx, self.dt)
+            nw.compute_v_terms(self.dt)
 
     def update_probes(self):
         for bundle in self.bundles.values():

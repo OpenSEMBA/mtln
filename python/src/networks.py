@@ -23,7 +23,8 @@ class Network:
         self.v_sources = np.empty(shape=(self.number_of_nodes), dtype=object)
         self.v_sources.fill(lambda n: 0)
 
-        self.dx = np.zeros([0])
+        self.dx = np.ndarray(shape=(0,0))
+        # self.dx = np.zeros([0])
         self.c = np.ndarray(shape=(0,0))
         
         self.e_T = np.empty(shape=(0), dtype=object)
@@ -51,7 +52,7 @@ class Network:
         index = self.nw_v.shape[0]
         self.nw_v = np.append(self.nw_v,0.0)
         self.nw_i = np.append(self.nw_i,0.0)
-        self.dx = np.append(self.dx, bundle.dx)
+        self.dx = linalg.block_diag(self.dx, bundle.dx)
         self.e_T = np.append(self.e_T, bundle.e_T[connection["conductor"]][side_idx])
 
         self.connections[connection["node"]] = {"bundle_number" : bundle_number, "conductor" : connection["conductor"], "side" : side_idx, "index": index}
@@ -134,16 +135,11 @@ class Network:
         for node in self.connections.values():
             self.nw_i[node["index"]] =  self.i_factor(node)*bundles[node["bundle_number"]].i[node["conductor"],node["side"]]
 
-    # def compute_v_terms(self, dt):
-    #     inv = np.linalg.inv(self.dx.dot(self.c) / dt - self.P1)
-    #     self.terminal_term_1 = inv.dot(self.dx.dot(self.c) / dt + self.P1)
-    #     self.terminal_term_2 = inv
-    #     self.terminal_term_3 = -inv.dot(self.dx).dot(self.c)/dt
-    def compute_v_terms(self, dx, dt):
-        inv = np.linalg.inv(dx * self.c / dt - self.P1)
-        self.terminal_term_1 = inv.dot(dx * self.c / dt + self.P1)
+    def compute_v_terms(self, dt):
+        inv = np.linalg.inv(self.dx.dot(self.c) / dt - self.P1)
+        self.terminal_term_1 = inv.dot(self.dx.dot(self.c) / dt + self.P1)
         self.terminal_term_2 = inv
-        self.terminal_term_3 = -0.0*inv.dot(self.c)*dx/dt
+        self.terminal_term_3 = -inv.dot(self.dx).dot(self.c)/dt
        
 class LNetwork:
     """
@@ -169,10 +165,7 @@ class LNetwork:
         for nw in self.levels.values():
             nw.update_currents(bundles)
 
-    # def compute_v_terms(self, dt):
-    #     for nw in self.levels.values():
-    #         nw.compute_v_terms(dt)
-    def compute_v_terms(self, dx, dt):
+    def compute_v_terms(self, dt):
         for nw in self.levels.values():
-            nw.compute_v_terms(dx,dt)
+            nw.compute_v_terms(dt)
 

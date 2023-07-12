@@ -1101,19 +1101,30 @@ def test_coaxial_line_paul_8_6_square():
     Described in Ch. 8 of Paul Clayton, 
     Analysis of Multiconductor Transmission Lines. 2004. 
     """
-
-    line = mtl.MTL(l=0.25e-6, c=100e-12, length=400.0, Zs=150)
     finalTime = 18e-6
-
-    def magnitude(t): return wf.square_pulse(t, 100, 6e-6)
-    line.add_voltage_source(position=0.0, conductor=0, magnitude=magnitude)
+    
+    manager = mtln.MTLN()
+    line = mtl.MTL(l=0.25e-6, c=100e-12, length=400.0, nx=100)
     v_probe = line.add_probe(position=0.0, type='voltage')
     i_probe = line.add_probe(position=400.0, type='current')
+    manager.add_bundle(0, line)
+    
+    def magnitude(t): return wf.square_pulse(t, 100, 6e-6)
+    #source network definition
+    terminal_S = nw.Network(nw_number = 0, nodes = [0], bundles = [0])
+    connections= [{"node" : 0, "conductor" : 0}]
+    terminal_S.add_nodes_in_bundle(0, line, connections, "S")
+    terminal_S.connect_to_ground(node = 0, R= 150, Vt = magnitude)
+    #load network definition
+    terminal_L = nw.Network(nw_number = 1, nodes = [1], bundles = [0])
+    connections= [{"node" : 1, "conductor" : 0}]
+    terminal_L.add_nodes_in_bundle(0, line, connections, "L")
+    terminal_L.short_to_ground(node = 1)
 
-    line.run_until(finalTime)
+    manager.add_networks([terminal_S, terminal_L])
+    
+    manager.run_until(finalTime)
 
-    xticks = range(int(np.floor(min(1e6*i_probe.t))),
-                   int(np.ceil(max(1e6*i_probe.t))+1))
 
     start_times = [0.1, 4.1, 6.1, 8.1, 10.1, 12.1, 14.1, 16.1]
     end_times = [3.9, 5.9, 7.9, 9.9, 11.9, 13.9, 15.9, 18.9]
@@ -1123,18 +1134,553 @@ def test_coaxial_line_paul_8_6_square():
         end = np.argmin(np.abs(v_probe.t - t_end*1e-6))
         assert np.all(np.isclose(v_probe.val[start:end], v))
 
-    plt.figure()
-    plt.plot(1e6*v_probe.t, v_probe.val)
-    plt.ylabel(r'$V (0, t)\,[V]$')
-    plt.xlabel(r'$t\,[\mu s]$')
-    plt.grid('both')
+    # plt.figure()
+    # plt.plot(1e6*v_probe.t, v_probe.val)
+    # plt.ylabel(r'$V (0, t)\,[V]$')
+    # plt.xlabel(r'$t\,[\mu s]$')
+    # plt.grid('both')
 
-    plt.figure()
-    plt.plot(1e6*i_probe.t, i_probe.val )
-    plt.ylabel(r'$I (L, t)\,[A]$')
-    plt.xlabel(r'$t\,[\mu s]$')
-    plt.xticks(xticks)
-    plt.grid('both')
+    # xticks = range(int(np.floor(min(1e6*i_probe.t))),
+    #                int(np.ceil(max(1e6*i_probe.t))+1))
 
+    # plt.figure()
+    # plt.plot(1e6*i_probe.t, i_probe.val )
+    # plt.ylabel(r'$I (L, t)\,[A]$')
+    # plt.xlabel(r'$t\,[\mu s]$')
+    # plt.xticks(xticks)
+    # plt.grid('both')
+
+    # plt.show()
+
+def test_coaxial_line_paul_8_6_triangle():
+    """ 
+    Described in Ch. 8 of Paul Clayton, 
+    Analysis of Multiconductor Transmission Lines. 2004. 
+    """
+
+    finalTime = 18e-6
+    
+    manager = mtln.MTLN()
+    line = mtl.MTL(l=0.25e-6, c=100e-12, length=400.0, nx=100)
+    v_probe = line.add_probe(position=0.0, type='voltage')
+    i_probe = line.add_probe(position=400.0, type='current')
+    manager.add_bundle(0, line)
+    
+    def magnitude(t): return wf.triangle_pulse(t, 100, 6e-6)
+    #source network definition
+    terminal_S = nw.Network(nw_number = 0, nodes = [0], bundles = [0])
+    connections= [{"node" : 0, "conductor" : 0}]
+    terminal_S.add_nodes_in_bundle(0, line, connections, "S")
+    terminal_S.connect_to_ground(node = 0, R= 150, Vt = magnitude)
+    #load network definition
+    terminal_L = nw.Network(nw_number = 1, nodes = [1], bundles = [0])
+    connections= [{"node" : 1, "conductor" : 0}]
+    terminal_L.add_nodes_in_bundle(0, line, connections, "L")
+    terminal_L.short_to_ground(node = 1)
+
+    manager.add_networks([terminal_S, terminal_L])
+    
+    manager.run_until(finalTime)
+
+    times = [4.0, 5.9, 6.1, 8.0, 10.1, 12]
+    voltages = [16.67, 12.5, -12.5, -25, 6.25, 12.5]
+    for (t, v) in zip(times, voltages):
+        index = np.argmin(np.abs(v_probe.t - t*1e-6))
+        assert np.all(np.isclose(v_probe.val[index], v, atol=0.5))
+
+    # xticks = range(int(np.floor(min(1e6*v_probe.t))), int(np.ceil(max(1e6*v_probe.t))+1))
+
+    # plt.plot(1e6*v_probe.t, v_probe.val)
+    # plt.ylabel(r'$V (0, t)\,[V]$')
+    # plt.xlabel(r'$t\,[\mu s]$')
+    # plt.grid('both')
+    # plt.show()
+
+def test_ribbon_cable_20ns_paul_9_3():
+    """
+    Described in Ch. 9.3.1 "Ribbon Cables" of Paul Clayton
+    Analysis of Multiconductor Transmission Lines. 2007. 
+    """
+    l = np.zeros([2, 2])
+    l[0] = [0.7485*1e-6, 0.5077*1e-6]
+    l[1] = [0.5077*1e-6, 1.0154*1e-6]
+    c = np.zeros([2, 2])
+    c[0] = [37.432*1e-12, -18.716*1e-12]
+    c[1] = [-18.716*1e-12, 24.982*1e-12]
+
+    finalTime = 200e-9
+    
+    manager = mtln.MTLN()
+    line = mtl.MTL(l=l, c=c, length=2.0, nx=2)
+
+    def magnitude(t): return wf.trapezoidal_wave(
+        t, A=1, rise_time=20e-9, fall_time=20e-9, f0=1e6, D=0.5)
+    # line.add_voltage_source(position=0.0, conductor=1, magnitude=magnitude)
+    v_probe = line.add_probe(position=0.0, type='voltage')
+    v_probe1 = line.add_probe(position=1.0, type='voltage')
+    i_probe1 = line.add_probe(position=1.0, type='current')
+
+    manager.add_bundle(0, line)
+
+    #source network definition
+    terminal_S = nw.Network(nw_number = 0, nodes = [0,1], bundles = [0])
+    connections= [{"node" : 0, "conductor" : 0},{"node" : 1, "conductor" : 1}]
+    terminal_S.add_nodes_in_bundle(0, line, connections, "S")
+    terminal_S.connect_to_ground(node = 0, R= 50)
+    terminal_S.connect_to_ground(node = 1, R= 50, Vt = magnitude)
+    #load network definition
+    terminal_L = nw.Network(nw_number = 1, nodes = [2,3], bundles = [0])
+    connections= [{"node" : 2, "conductor" : 0},{"node" : 3, "conductor" : 1}]
+    terminal_L.add_nodes_in_bundle(0, line, connections, "L")
+    terminal_L.connect_to_ground(node = 2, R= 50)
+    terminal_L.connect_to_ground(node = 3, R= 50)
+
+    manager.add_networks([terminal_S, terminal_L])
+
+    manager.run_until(finalTime)
+
+    # From Paul's book:
+    # "The crosstalk waveform rises to a peak of around 110 mV [...]"
+    assert (np.isclose(np.max(v_probe.val[:, 0]), 113e-3, atol=1e-3))
+
+    # plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
+    # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+    # plt.xlabel(r'$t\,[ns]$')
+    # plt.xticks(range(0, 200, 50))
+    # plt.grid('both')
+    # plt.show()
+    
+def test_ribbon_cable_1ns_paul_9_3():
+    """
+    Described in Ch. 9.3.1 "Ribbon Cables" of Paul Clayton
+    Analysis of Multiconductor Transmission Lines. 2007. 
+    """
+    l = np.zeros([2, 2])
+    l[0] = [0.7485*1e-6, 0.5077*1e-6]
+    l[1] = [0.5077*1e-6, 1.0154*1e-6]
+    c = np.zeros([2, 2])
+    c[0] = [37.432*1e-12, -18.716*1e-12]
+    c[1] = [-18.716*1e-12, 24.982*1e-12]
+
+    finalTime = 200e-9
+    
+    manager = mtln.MTLN()
+    line = mtl.MTL(l=l, c=c, length=2.0, nx=100)
+
+    def magnitude(t): return wf.trapezoidal_wave(
+        t, A=1, rise_time=1e-9, fall_time=1e-9, f0=1e6, D=0.5)
+    # line.add_voltage_source(position=0.0, conductor=1, magnitude=magnitude)
+    v_probe = line.add_probe(position=0.0, type='voltage')
+    v_probe1 = line.add_probe(position=1.0, type='voltage')
+    i_probe1 = line.add_probe(position=1.0, type='current')
+
+    manager.add_bundle(0, line)
+
+    #source network definition
+    terminal_S = nw.Network(nw_number = 0, nodes = [0,1], bundles = [0])
+    connections= [{"node" : 0, "conductor" : 0},{"node" : 1, "conductor" : 1}]
+    terminal_S.add_nodes_in_bundle(0, line, connections, "S")
+    terminal_S.connect_to_ground(node = 0, R= 50)
+    terminal_S.connect_to_ground(node = 1, R= 50, Vt = magnitude)
+    #load network definition
+    terminal_L = nw.Network(nw_number = 1, nodes = [2,3], bundles = [0])
+    connections= [{"node" : 2, "conductor" : 0},{"node" : 3, "conductor" : 1}]
+    terminal_L.add_nodes_in_bundle(0, line, connections, "L")
+    terminal_L.connect_to_ground(node = 2, R= 50)
+    terminal_L.connect_to_ground(node = 3, R= 50)
+
+    manager.add_networks([terminal_S, terminal_L])
+
+    manager.run_until(finalTime)
+
+    # plt.plot(1e9*v_probe.t, 1e3*v_probe.val)
+    # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+    # plt.xlabel(r'$t\,[ns]$')
+    # plt.xticks(range(0, 200, 50))
+    # plt.grid('both')
+    # plt.show()
+
+    times = [12.5, 25, 40, 55]
+    voltages = [120, 95, 55, 32]
+    for (t, v) in zip(times, voltages):
+        index = np.argmin(np.abs(v_probe.t - t*1e-9))
+        assert np.all(np.isclose(v_probe.val[index, 0], v*1e-3, atol=10e-3))
+
+def test_wire_over_ground_incident_E_paul_11_3_6_50ns():
+    """
+    Described in Ch. 11.3.2 "Computed results" of Paul Clayton
+    Analysis of Multiconductor Transmission Lines. 2007. 
+    Computes the induced voltage at the left end of the line
+    when excited by an incident external field with rise time 50 ns
+    """
+
+    wire_radius = 0.254e-3
+    wire_h = 0.02
+    wire_separation = 2.*wire_h
+    l = (mu_0/(2*np.pi))*np.arccosh(wire_separation/wire_radius)
+    c = 2*np.pi*epsilon_0/np.arccosh(wire_separation/wire_radius)
+
+    nx, finalTime, rise_time, fall_time = 10, 100e-9, 50e-9, 50e-9
+
+    manager = mtln.MTLN()
+    line = mtl.MTL(l=l, c=c, length=1.0, nx=nx)
+
+    x, z, t = sp.symbols('x z t')
+    magnitude = wf.trapezoidal_wave_sp(
+        A=1, rise_time=rise_time, fall_time=fall_time, f0=1e6, D=0.5)
+
+    def e_x(x, z, t): return (x+z+t)*0
+    def e_z(x, z, t): return magnitude
+    line.add_external_field(e_x, e_z, ref_distance=0.0,
+                            distances=np.array([wire_separation]))
+
+    v_probe = line.add_probe(position=0.0, type='voltage')
+    manager.add_bundle(0, line)
+    
+    left = nw.Network(0, [0],[0])
+    conn = [{"node":0, "conductor":0}]
+    left.add_nodes_in_bundle(0, line, conn, "S")
+    left.connect_to_ground(node = 0, R= 500)
+
+    right = nw.Network(1, [1],[0])
+    conn = [{"node":1, "conductor":0}]
+    right.add_nodes_in_bundle(0, line, conn, "L")
+    right.connect_to_ground(node = 1, R= 1000)
+    
+    manager.add_networks([left, right])
+
+    manager.run_until(finalTime)
+
+    # plt.plot(1e9*v_probe.t, 1e3*v_probe.val, label='v probe')
+    # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+    # plt.xlabel(r'$t\,[ns]$')
+    # plt.xticks(range(0, int(finalTime*1e9), 5))
+    # plt.grid('both')
+    # plt.legend()
+    # plt.show()
+
+    times = [3.5, 7, 1.0, 25, 53, 56.6, 59.8, 80]
+    voltages = [-1.61, -0.78, -0.99, -0.87, 0.75, -0.1315, 0.1, -0.015]
+    for (t, v) in zip(times, voltages):
+        index = np.argmin(np.abs(v_probe.t - t*1e-9))
+        assert np.all(np.isclose(v_probe.val[index, 0], v*1e-3, atol=2.5e-3))
+
+
+
+def test_wire_over_ground_incident_E_paul_11_3_6_10ns():
+    """
+    Described in Ch. 11.3.2 "Computed results" of Paul Clayton
+    Analysis of Multiconductor Transmission Lines. 2007. 
+    Computes the induced voltage at the left end of the line
+    when excited by an incident external field with rise time 10 ns
+    """
+
+    wire_radius = 0.254e-3
+    wire_h = 0.02
+    wire_separation = 2.*wire_h
+    l = (mu_0/(2*np.pi))*np.arccosh(wire_separation/wire_radius)
+    c = 2*np.pi*epsilon_0/np.arccosh(wire_separation/wire_radius)
+
+    nx, finalTime, rise_time, fall_time = 10, 40e-9, 10e-9, 10e-9
+
+    manager = mtln.MTLN()
+    line = mtl.MTL(l=l, c=c, length=1.0, nx=nx)
+
+    x, z, t = sp.symbols('x z t')
+    magnitude = wf.trapezoidal_wave_sp(
+        A=1, rise_time=rise_time, fall_time=fall_time, f0=1e6, D=0.5)
+
+    def e_x(x, z, t): return (x+z+t)*0
+    def e_z(x, z, t): return magnitude
+    line.add_external_field(e_x, e_z, ref_distance=0.0,
+                            distances=np.array([wire_separation]))
+
+    v_probe = line.add_probe(position=0.0, type='voltage')
+    manager.add_bundle(0, line)
+    
+    left = nw.Network(0, [0],[0])
+    conn = [{"node":0, "conductor":0}]
+    left.add_nodes_in_bundle(0, line, conn, "S")
+    left.connect_to_ground(node = 0, R= 500)
+
+    right = nw.Network(1, [1],[0])
+    conn = [{"node":1, "conductor":0}]
+    right.add_nodes_in_bundle(0, line, conn, "L")
+    right.connect_to_ground(node = 1, R= 1000)
+    
+    manager.add_networks([left, right])
+
+    manager.run_until(finalTime)
+
+    times = [3.4, 6.8, 9.9, 16.7, 20, 23.3, 35]
+    voltages = [-8.2, -3.8, -4.8, -0.55, 0.52, -0.019, 6e-3]
+    for (t, v) in zip(times, voltages):
+        index = np.argmin(np.abs(v_probe.t - t*1e-9))
+        assert np.all(np.isclose(v_probe.val[index, 0], v*1e-3, atol=1.5e-3))
+
+    # plt.plot(1e9*v_probe.t, 1e3*v_probe.val, label='v probe')
+    # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+    # plt.xlabel(r'$t\,[ns]$')
+    # plt.xticks(range(0, int(finalTime*1e9), 5))
+    # plt.grid('both')
+    # plt.legend()
+    # plt.show()
+
+
+def test_wire_over_ground_incident_E_paul_11_3_6_1ns():
+    """
+    Described in Ch. 11.3.2 "Computed results" of Paul Clayton
+    Analysis of Multiconductor Transmission Lines. 2007. 
+    Computes the induced voltage at the left end of the line
+    when excited by an incident external field with rise time 1 ns
+    """
+
+    wire_radius = 0.254e-3
+    wire_h = 0.02
+    wire_separation = 2.*wire_h
+    l = (mu_0/(2*np.pi))*np.arccosh(wire_separation/wire_radius)
+    c = 2*np.pi*epsilon_0/np.arccosh(wire_separation/wire_radius)
+
+    nx, finalTime, rise_time, fall_time = 50, 30e-9, 1e-9, 1e-9
+
+    manager = mtln.MTLN()
+    line = mtl.MTL(l=l, c=c, length=1.0, nx=nx)
+
+    x, z, t = sp.symbols('x z t')
+    magnitude = wf.trapezoidal_wave_sp(
+        A=1, rise_time=rise_time, fall_time=fall_time, f0=1e6, D=0.5)
+
+    def e_x(x, z, t): return (x+z+t)*0
+    def e_z(x, z, t): return magnitude
+    line.add_external_field(e_x, e_z, ref_distance=0.0,
+                            distances=np.array([wire_separation]))
+
+    v_probe = line.add_probe(position=0.0, type='voltage')
+    manager.add_bundle(0, line)
+    
+    left = nw.Network(0, [0],[0])
+    conn = [{"node":0, "conductor":0}]
+    left.add_nodes_in_bundle(0, line, conn, "S")
+    left.connect_to_ground(node = 0, R= 500)
+
+    right = nw.Network(1, [1],[0])
+    conn = [{"node":1, "conductor":0}]
+    right.add_nodes_in_bundle(0, line, conn, "L")
+    right.connect_to_ground(node = 1, R= 1000)
+    
+    manager.add_networks([left, right])
+
+    manager.run_until(finalTime)
+
+    times = [3, 5, 8.5, 12, 15, 19, 25]
+    voltages = [-24, 12.9, -3.2, 1.5, -0.6, 0.08, -0.38]
+    for (t, v) in zip(times, voltages):
+        index = np.argmin(np.abs(v_probe.t - t*1e-9))
+        assert np.all(np.isclose(v_probe.val[index, 0], v*1e-3, atol=2.5e-3))
+
+    # plt.plot(1e9*probe.v0.t, 1e3*probe.v0.val, label='port')
+    # plt.plot(1e9*v_probe.t, 1e3*v_probe.val, label='v probe')
+    # plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+    # plt.xlabel(r'$t\,[ns]$')
+    # plt.xticks(range(0, int(finalTime*1e9), 5))
+    # plt.grid('both')
+    # plt.legend()
+    # plt.show()
+    
+def test_wire_over_ground_incident_E_transversal_paul_12_4_6():
+    """
+    Described in Ch. 11.3.2 "Computed results" of Paul Clayton
+    Analysis of Multiconductor Transmission Lines. 2007. 
+    Computes the induced voltage at the left end of the line
+    when excited by an incident external field with rise time 1 ns
+    """
+
+    l = np.zeros([2,2])
+    l[0] = [0.7485e-6, 0.2408e-6]
+    l[1] = [0.2408e-6, 0.7485e-6]
+
+    c = np.zeros([2,2])
+    c[0] = [24.982e-12, -6.266e-12]
+    c[1] = [-6.266e-12, 24.982e-12]
+
+    nx, finalTime, rise_time, fall_time = 50, 30e-9, 1e-9, 1e-9
+
+    manager = mtln.MTLN()
+    line = mtl.MTL(l=l, c=c, length=1.0, nx=nx)
+
+    x, z, t = sp.symbols('x z t')
+    magnitude = wf.trapezoidal_wave_sp(
+        A=1, rise_time=rise_time, fall_time=fall_time, f0=1e6, D=0.5)
+
+    def e_x(x, z, t): return (x+z+t)*0
+    def e_z(x, z, t): return magnitude
+    line.add_external_field(e_x, e_z, ref_distance=0.0,
+                            distances=np.array([wire_separation]))
+
+    v_probe = line.add_probe(position=0.0, type='voltage')
+    manager.add_bundle(0, line)
+    
+    left = nw.Network(0, [0],[0])
+    conn = [{"node":0, "conductor":0}]
+    left.add_nodes_in_bundle(0, line, conn, "S")
+    left.connect_to_ground(node = 0, R= 500)
+
+    right = nw.Network(1, [1],[0])
+    conn = [{"node":1, "conductor":0}]
+    right.add_nodes_in_bundle(0, line, conn, "L")
+    right.connect_to_ground(node = 1, R= 1000)
+    
+    manager.add_networks([left, right])
+
+    manager.run_until(finalTime)
+
+    # times = [3, 5, 8.5, 12, 15, 19, 25]
+    # voltages = [-24, 12.9, -3.2, 1.5, -0.6, 0.08, -0.38]
+    # for (t, v) in zip(times, voltages):
+    #     index = np.argmin(np.abs(v_probe.t - t*1e-9))
+    #     assert np.all(np.isclose(v_probe.val[index, 0], v*1e-3, atol=2.5e-3))
+
+    plt.plot(1e9*v_probe.t, 1e3*v_probe.val, label='v probe')
+    plt.ylabel(r'$V_1 (0, t)\,[mV]$')
+    plt.xlabel(r'$t\,[ns]$')
+    plt.xticks(range(0, int(finalTime*1e9), 5))
+    plt.grid('both')
+    plt.legend()
     plt.show()
 
+
+def test_wire_over_ground_incident_E_transversal_paul_12_4_100ns():
+
+    """
+    Described in Ch. 12.4 "Computed results" of Paul Clayton
+    Analysis of Multiconductor Transmission Lines. 2007. 
+    """
+    l = np.zeros([2,2])
+    l[0] = [0.7485e-6, 0.2408e-6]
+    l[1] = [0.2408e-6, 0.7485e-6]
+
+    c = np.zeros([2,2])
+    c[0] = [24.982e-12, -6.266e-12]
+    c[1] = [-6.266e-12, 24.982e-12]
+
+    finalTime = 200e-9
+    manager = mtln.MTLN()    
+    line = mtl.MTL(l=l, c=c, length=2.0, nx=5)
+
+    x, z, t = sp.symbols('x z t')
+    magnitude = wf.trapezoidal_wave_sp(
+        A=1, 
+        rise_time=100e-9, 
+        fall_time=100e-9, 
+        f0=1e6, D=0.5)
+    # magnitude = wf.ramp_pulse_sp(A=1, x0=rise_time)
+    wire_separation = 2*0.00127
+
+    def e_z(x, z, t): return (x+z+t)*0
+    def e_x(x, z, t): return -magnitude
+    line.add_external_field(e_x, e_z, 
+                            ref_distance=0.0,
+                            distances=np.array([wire_separation,wire_separation]))
+
+    v_probe = line.add_probe(position=0.0, type='voltage')
+    
+    left = nw.Network(0, [0,1],[0])
+    conn = [{"node":0, "conductor":0}, {"node":1, "conductor":1}]
+    left.add_nodes_in_bundle(0, line, conn, "S")
+    left.connect_to_ground(node = 0, R= 500)
+    left.connect_to_ground(node = 1, R= 500)
+
+    right = nw.Network(1, [2,3],[0])
+    conn = [{"node":2, "conductor":0}, {"node":3, "conductor":1}]
+    right.add_nodes_in_bundle(0, line, conn, "L")
+    right.connect_to_ground(node = 2, R= 500)
+    right.connect_to_ground(node = 3, R= 500)
+
+
+    manager.add_bundle(0, line)
+    manager.add_networks([left, right])
+    # line.dt = finalTime/200
+    manager.run_until(finalTime)
+
+    # times = [20, 40, 60, 80, 100, 120, 140, 160, 180, 200]
+    # voltages = []
+    # for (t, v) in zip(times, voltages):
+    #     index = np.argmin(np.abs(v_probe.t - t*1e-9))
+    #     assert np.all(np.isclose(v_probe.val[index, 0], v*1e-6, atol=2.5e-3))
+
+    # plt.plot(1e9*probe.v0.t, 1e3*probe.v0.val, label='port')
+    plt.plot(1e9*v_probe.t, 1e6*v_probe.val, label='v probe')
+    plt.ylabel(r'$V_1 (0, t)\,[\mu V]$')
+    plt.xlabel(r'$t\,[ns]$')
+    # plt.xticks(range(0, int(finalTime*1e9), 5))
+    plt.grid('both')
+    plt.legend()
+    plt.show()
+    
+def test_wire_over_ground_incident_E_transversal_paul_12_4_10ns():
+
+    """
+    Described in Ch. 12.4 "Computed results" of Paul Clayton
+    Analysis of Multiconductor Transmission Lines. 2007. 
+    """
+    l = np.zeros([2,2])
+    l[0] = [0.7485e-6, 0.2408e-6]
+    l[1] = [0.2408e-6, 0.7485e-6]
+
+    c = np.zeros([2,2])
+    c[0] = [24.982e-12, -6.266e-12]
+    c[1] = [-6.266e-12, 24.982e-12]
+
+    finalTime = 100e-9
+    manager = mtln.MTLN()    
+    line = mtl.MTL(l=l, c=c, length=2.0, nx=5)
+
+    x, z, t = sp.symbols('x z t')
+    magnitude = wf.trapezoidal_wave_sp(
+        A=1, 
+        rise_time=10e-9, 
+        fall_time=10e-9, 
+        f0=1e6, D=0.5)
+    # magnitude = wf.ramp_pulse_sp(A=1, x0=rise_time)
+    wire_separation = 2*0.00127
+
+    def e_z(x, z, t): return (x+z+t)*0
+    def e_x(x, z, t): return -magnitude
+    line.add_external_field(e_x, e_z, 
+                            ref_distance=0.0,
+                            distances=np.array([wire_separation,wire_separation]))
+
+    v_probe = line.add_probe(position=0.0, type='voltage')
+    
+    left = nw.Network(0, [0,1],[0])
+    conn = [{"node":0, "conductor":0}, {"node":1, "conductor":1}]
+    left.add_nodes_in_bundle(0, line, conn, "S")
+    left.connect_to_ground(node = 0, R= 500)
+    left.connect_to_ground(node = 1, R= 500)
+
+    right = nw.Network(1, [2,3],[0])
+    conn = [{"node":2, "conductor":0}, {"node":3, "conductor":1}]
+    right.add_nodes_in_bundle(0, line, conn, "L")
+    right.connect_to_ground(node = 2, R= 500)
+    right.connect_to_ground(node = 3, R= 500)
+
+
+    manager.add_bundle(0, line)
+    manager.add_networks([left, right])
+    # manager.dt = finalTime/200
+    manager.run_until(finalTime)
+
+    # times = [20, 40, 60, 80, 100, 120, 140, 160, 180, 200]
+    # voltages = []
+    # for (t, v) in zip(times, voltages):
+    #     index = np.argmin(np.abs(v_probe.t - t*1e-9))
+    #     assert np.all(np.isclose(v_probe.val[index, 0], v*1e-6, atol=2.5e-3))
+
+    # plt.plot(1e9*probe.v0.t, 1e3*probe.v0.val, label='port')
+    plt.plot(1e9*v_probe.t, 1e6*v_probe.val, label='v probe')
+    plt.ylabel(r'$V_1 (0, t)\,[\mu V]$')
+    plt.xlabel(r'$t\,[ns]$')
+    # plt.xticks(range(0, int(finalTime*1e9), 5))
+    plt.grid('both')
+    plt.legend()
+    plt.show()
