@@ -1,0 +1,133 @@
+{
+	"_format": "Semba Data File in JSON format",
+	"_version": "0.16",
+
+	"model": {
+		"materials": [
+			{
+				"materialId": 1,
+				"name": "WireMaterial1",
+				"materialType": "Wire",
+				"radius": 0.0001,
+				"wireType": "Standard",
+				"resistance": 9.2e-2,
+				"inductance": 0.0,
+				"capacitance": 0.0,
+				"conductance": 0.0
+			},
+			{
+				"materialId": 2,
+				"name": "RL50",
+				"materialType": "Connector",
+				"connectorType": "Conn_sRLC",
+				"resistance": 50.0,
+				"inductance": 0.0,
+				"capacitance": 1e22
+			},
+			{
+				"materialId": 3,
+				"name": "Short",
+				"materialType": "Connector",
+				"connectorType": "Conn_short"
+			},
+			{
+				"materialId": 4,
+				"name": "CableBundleName",
+				"materialType": "Multiwire",
+				"resistanceVector": [ 9.2e-2, 9.0e-2 ],
+				"inductanceMatrix": [
+					[ 1e-9, 1e-10 ],
+					[ 1e-10, 1e-9 ]
+				],
+				"capacitanceMatrix": [
+					[ 1e-9, 1e-10 ],
+					[ 1e-10, 1e-9 ]
+				],
+				"conductanceMatrix": [
+					[ 0.0, 0.0 ],
+					[ 0.0, 0.0 ]
+				]
+			},
+			{
+				"materialId": 5,
+				"name": "CableBundleConnectorName",
+				"materialType": "Connector",
+				"connectorType": "MultiwireConnector",
+				"resistanceVector": [ 9.2e-2, 9.0e-2 ],
+                "sourceVector" : []
+			},
+            {
+				"materialId": 6,
+				"name": "CableBundleConnectorName",
+				"materialType": "Connector",
+				"connectorType": "MultiwireConnector",
+				"resistanceVector": [ 0, 0 ],
+                "sourceVector" : []
+			}
+
+		],
+		"layers": [
+			{ "id": 1, "name": "WiresLayer" }
+		],
+		"coordinates": [
+			"1  0.0  0.0 0.0",
+			"2  0.0  0.0 1.0",
+			"3 -1.0  0.0 1.0",
+			"4  0.0  0.0 0.0",
+			"5  0.0  0.0 1.0",
+			"6 -1.0  0.0 1.0",
+			"7  0.0  0.0 0.0",
+			"8  0.0 -1.0 0.0",
+			"9  1.0 -1.0 0.0",
+			"10 0.0  0.0 0.0",
+			"11 0.0  1.0 0.0",
+			"12 1.0  1.0 0.0"
+		],
+		"elements": {
+			"_line_description": "elemId materialId layerId coordId1 ... coordIdn",
+			"line": [
+				"1 0 1 1 2 3",
+				"2 0 1 4 5 6",
+				"3 0 1 7 8 9",
+				"4 0 1 10 11 12"
+			]
+		},
+		"sources":[
+			{
+				"name" : "gaussian",
+				"mean" : 1,
+				"sigma": 1
+			},
+			{
+				"name" : "pulse",
+				"riseTime" : 1e-9,
+				"fallTime" : 1e-9,
+				"frequency": 1e6,
+				"dutyCycle": 0.5
+			}
+		],
+		"networks": [
+			{ "name": "j1", "unitedCoordIds": [[ 1, 7], [ 4, 10 ] ], "connectorId":[6]},
+			{ "name": "t1", "unitedCoordIds": [[3, 0], [6, 0]], "connectorId":[5]},
+			{ "name": "t2", "unitedCoordIds": [9, 0], "connectorId":[2]},
+			{ "name": "t3", "unitedCoordIds": [12, 0], "connectorId":[2]}
+		],
+		"cables": [
+			{
+				"name": "bundle1",
+				"materialId": 4,
+				"elemIds": [ 1, 2 ]
+			},
+			{
+				"name": "wire2",
+				"materialId": 1,
+				"elemIds": [ 3 ]
+			},
+			{
+				"name": "wire3",
+				"materialId": 1,
+				"elemIds": [ 4 ]
+			}
+		]
+	}
+}

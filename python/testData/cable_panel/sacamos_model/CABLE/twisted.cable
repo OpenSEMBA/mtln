@@ -1,0 +1,90 @@
+v4.0.0
+twisted_pair
+           2  # cable type number
+           2  # Total Number of conductors
+           1  # Number of external conductors
+           2  # Total number of domains (including external domain)
+           1  # Number of internal conductors
+           1  # Number of internal domains
+           4  # Number of cable parameters
+   3.5000000000000000E-004
+   1.0000000000000000E-003
+   4.8999999999999998E-004
+   58000000.000000000     
+           1  # number of frequency dependent dielectric models
+ # Dielectric filter number           1
+   1.0000000000000000        # w normalisation constant
+           0   # a order, a coefficients follow below:
+   1.0000000000000000     
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+ # Conductor impedance models
+           1  # Conductor impedance model type
+   3.5000000000000000E-004  # conductor radius
+   58000000.000000000       # conductivity
+   1.5000000000000000       # Resistance_multiplication_factor
+           1  # Conductor impedance model type
+   3.5000000000000000E-004  # conductor radius
+   58000000.000000000       # conductivity
+   1.5000000000000000       # Resistance_multiplication_factor
+ External to domain conductor current transformation matrix, MI
+           3  Dimension of MI
+  5.00000000E-01 -5.00000000E-01  0.00000000E+00
+  1.00000000E+00  1.00000000E+00  0.00000000E+00
+  1.00000000E+00  1.00000000E+00  1.00000000E+00
+ External to domain conductor voltage transformation matrix, MV
+           3  Dimension of MV
+  1.00000000E+00 -1.00000000E+00  0.00000000E+00
+  5.00000000E-01  5.00000000E-01 -1.00000000E+00
+  0.00000000E+00  0.00000000E+00  1.00000000E+00
+ Domain number           1
+           2  # number of conductors
+ High frequency Per-Unit-length Inductance Matrix, L
+           1  Dimension of L
+  3.58235240E-07
+ High frequency Per-Unit-length Capacitance Matrix, C
+           1  Dimension of C
+  3.10592017E-11
+ Per-Unit-length Impedance Matrix, Z
+ Matrix of Laplace domain filters
+           1    # dimension of Sfilter matrix
+Element:   1   1
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+   0.0000000000000000        3.5823523981199035E-007
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+ Per-Unit-length Admittance Matrix, Y
+ Matrix of Laplace domain filters
+           1    # dimension of Sfilter matrix
+Element:   1   1
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+   0.0000000000000000        3.1059201675273467E-011
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+  # Local reference conductor for internal domains
+           2
+           0
+  # number of conductors in each domain
+           2
+           2
+  # External conductor information and dielectric model
+           1   conductor type
+   5.2499999999999997E-004  conductor_radius 
+   0.0000000000000000       conductor_width  
+   0.0000000000000000       conductor_width2  
+   0.0000000000000000       conductor_height 
+   0.0000000000000000        0.0000000000000000       conductor_ox,  conductor_oy    
+   6.6500000000000001E-004  dielectric_radius
+   0.0000000000000000       dielectric_width 
+   0.0000000000000000       dielectric_height
+   0.0000000000000000        0.0000000000000000       dielectric_ox, dielectric_oy    
+   1.0000000000000000        # w normalisation constant
+           0   # a order, a coefficients follow below:
+   1.0000000000000000     
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+  # Conductor labels
+ Cable name: twisted. type: twisted_pair. conductor 1 : Twisted pair wire 1
+ Cable name: twisted. type: twisted_pair. conductor 2 : Twisted pair wire 2

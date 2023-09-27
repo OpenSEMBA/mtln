@@ -1,0 +1,187 @@
+{
+	"_format": "Semba Data File in JSON format",
+	"_version": "0.16",
+
+	"model": {
+		"materials": [
+			{
+				"materialId": 1,
+				"name": "CableBundleName",
+				"materialType": "Multiwire",
+				"inductanceMatrix": [
+                    [4.47126171e-07, 1.48636546e-07],
+                    [1.48636546e-07, 4.47126171e-07]
+				],
+				"capacitanceMatrix": [
+					[ 2.242e-10, -7.453e-11],
+					[ -7.453e-11, 2.242e-10]
+				]
+			},
+            {
+				"materialId": 2,
+				"name": "WireMaterial1",
+				"materialType": "Wire",
+				"radius": 0.0001,
+				"wireType": "Standard",
+				"resistance": 0.0,
+				"inductance": 4.818698597541625e-07,
+				"capacitance": 1.915e-10
+			},
+			{
+				"materialId": 3,
+				"name": "Junction",
+				"materialType": "Connector",
+				"connectorType": "MultiwireConnector",
+				"resistanceVector": [ 0, 0 ]
+			},
+			{
+				"materialId": 6,
+				"name": "Junction",
+				"materialType": "Connector",
+				"connectorType": "MultiwireConnector",
+				"resistanceVector": [ 0, 0 ]
+			},
+			{
+				"materialId": 4,
+				"name": "Terminal1",
+				"materialType": "Connector",
+				"connectorType": "Conn_sRLC",
+				"resistance": 50.0,
+				"inductance": 0.0,
+				"capacitance": 1e22
+			},
+			{
+				"materialId": 5,
+				"name": "Terminal2",
+				"materialType": "Connector",
+				"connectorType": "Conn_sRLC",
+				"resistance": 1e-6,
+				"inductance": 0.0,
+				"capacitance": 1e22
+			}
+		],
+		"layers": [
+			{ "id": 1, "name": "WiresLayer" }
+		],
+		"coordinates": [
+			"1   0.0 0.0 0.0",
+			"2   0.0 0.1 0.0",
+			"3   0.0 0.0 0.120",
+			"4   0.0 0.0 0.120",
+			"5   0.0 0.0 0.120",
+			"6   0.0 0.0 0.120",
+			"7   0.0 0.0 0.2645",
+			"8   0.0 0.1 0.2645",
+			"9   0.0 0.0 0.1445",
+			"10  0.0 0.0 0.1445",
+			"11  0.0 0.0 0.1445",
+			"12  0.0 0.0 0.1445"
+		],
+		"elements": {
+			"_line_description": "elemId materialId layerId coordId1 coordId2",
+			"line": [
+				"1 0 1 1 3",
+				"2 0 1 2 4",
+				"3 0 1 5 9",
+				"4 0 1 6 10",
+				"5 0 1 11 7",
+				"6 0 1 12 8"
+			],
+			"_node_description": "elemId materialId layerId coordId",
+			"node": [
+				"7 0 1 1",
+				"8 0 1 8",
+				"9 0 1 7"
+			]
+		},
+		"sources": [
+			{
+				"sourceType": "source at terminal",
+				"type": "voltage",
+				"elemIds": [7],
+				"magnitude": {
+					"type": "gaussian_2",
+					"amplitude" : 1.0,
+					"x0": 400.0e-12,
+					"s0": 100.0e-12
+				}
+			}
+        ],
+		"probes": [
+			{
+				"name": "v1",
+				"type": "voltage",
+				"elemIds": [7]
+			},
+			{
+				"name": "v7",
+				"type": "voltage",
+				"elemIds": [9]
+			},
+			{
+				"name": "v8",
+				"type": "voltage",
+				"elemIds": [8]
+			}
+		],
+        "junctions" : [
+			{"name" : "j1", "unitedCoordIds": [[3,5],[4,6]]},
+			{"name" : "j2", "unitedCoordIds": [[9,11],[10,12]]}
+		],
+		"terminations" : [
+			{"name" : "t1", "coordIds": [[1]]},
+			{"name" : "t2", "coordIds": [[2]]},
+			{"name" : "t3", "coordIds": [[7]]},
+			{"name" : "t4", "coordIds": [[8]]}
+		],
+		"bundles": [
+			{"name": "bundle_1", "nestedElemIds": "1"},
+			{"name": "bundle_2", "nestedElemIds": "2"},
+			{"name": "bundle_3", "nestedElemIds": "3 4"},
+			{"name": "bundle_4", "nestedElemIds": "5"},
+			{"name": "bundle_5", "nestedElemIds": "6"}
+		],
+		"cables": [
+			{
+				"name": "line_1",
+				"materialId": 2,
+				"initialConnectorId": 4,
+				"endConnectorId": 3,
+				"elemIds": [ 1 ],
+				"ndiv": 80
+			},
+			{
+				"name": "line_2",
+				"materialId": 2,
+				"initialConnectorId": 5,
+				"endConnectorId": 3,
+				"elemIds": [ 2 ],
+				"ndiv": 80
+			},
+			{
+				"name": "line_3",
+				"materialId": 1,
+				"initialConnectorId": 3,
+				"endConnectorId": 6,
+				"elemIds": [ 3, 4 ],
+				"ndiv": 24
+			},
+			{
+				"name": "line_4",
+				"materialId": 2,
+				"initialConnectorId": 6,
+				"endConnectorId": 4,
+				"elemIds": [ 5 ],
+				"ndiv": 80
+			},
+			{
+				"name": "line_5",
+				"materialId": 2,
+				"initialConnectorId": 6,
+				"endConnectorId": 4,
+				"elemIds": [ 6 ],
+				"ndiv": 80
+			}
+		]
+	}
+}

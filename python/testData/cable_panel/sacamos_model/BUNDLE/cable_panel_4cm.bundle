@@ -1,0 +1,438 @@
+v4.0.0
+cable_panel_4cm
+           3   ! number of cables not including ground plane
+           4   ! number of cables, cable name and x y coordinates follow...
+wire_3mm
+   0.0000000000000000        3.9500000000000000E-002   0.0000000000000000       x y coordinates and angle of cable 
+wire_1mm
+   5.0000000000000003E-002   3.9500000000000000E-002   0.0000000000000000       x y coordinates and angle of cable 
+twisted
+  0.10000000000000001        3.9500000000000000E-002   0.0000000000000000       x y coordinates and angle of cable 
+ground_plane
+   0.0000000000000000        0.0000000000000000        90.000000000000000       x y coordinates and angle of ground plane 
+   6.1232339957367660E-017   1.0000000000000000       ground plane normal direction
+           1  orientation of cables wrt ground plane
+           5   # total number of conductors
+           4   # total number of external conductors
+           4   # dimension of the matrix system characterising the MTL propagation
+           2   # number of domains
+ Domain number           1
+           2  number of conductors in this domain
+ terminal_conductor_list
+           2  ! number of elements 
+           3
+           4
+ Per-Unit-length Inductance Matrix, [L]
+           1  Dimension of [L]
+  3.58235240E-07
+ Per-Unit-length Capacitance Matrix, [C]
+           1  Dimension of [C]
+  3.10592017E-11
+ Per-Unit-length Impedance Matrix, Z
+ Matrix of Laplace domain filters
+           1    # dimension of Sfilter matrix
+Element:   1   1
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+   0.0000000000000000        3.5823523981199035E-007
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+ Per-Unit-length Admittance Matrix, Y
+ Matrix of Laplace domain filters
+           1    # dimension of Sfilter matrix
+Element:   1   1
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+   0.0000000000000000        3.1059201675273467E-011
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+ Domain number           2
+           4  number of conductors in this domain
+ terminal_conductor_list
+           4  ! number of elements 
+           1
+           2
+           4
+           5
+ Per-Unit-length Inductance Matrix, [L]
+           3  Dimension of [L]
+  7.92796549E-07  1.25173387E-07  4.84953816E-08
+  1.25173387E-07  1.01251901E-06  1.25173387E-07
+  4.84953816E-08  1.25173387E-07  1.00276097E-06
+ Per-Unit-length Capacitance Matrix, [C]
+           3  Dimension of [C]
+  1.43342565E-11 -1.71281372E-12 -4.79422869E-13
+ -1.71281372E-12  1.13658354E-11 -1.33594804E-12
+ -4.79422869E-13 -1.33594804E-12  1.12858157E-11
+ Per-Unit-length Impedance Matrix, Z
+ Matrix of Laplace domain filters
+           3    # dimension of Sfilter matrix
+Element:   1   1
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+   0.0000000000000000        7.9279654887177142E-007
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   1   2
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+   0.0000000000000000        1.2517338677241959E-007
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   1   3
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+   0.0000000000000000        4.8495381619842019E-008
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   2   1
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+   0.0000000000000000        1.2517338677241959E-007
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   2   2
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+   0.0000000000000000        1.0125190066053935E-006
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   2   3
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+   0.0000000000000000        1.2517338677241962E-007
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   3   1
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+   0.0000000000000000        4.8495381619842019E-008
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   3   2
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+   0.0000000000000000        1.2517338677241962E-007
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   3   3
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+   0.0000000000000000        1.0027609737715070E-006
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+ Per-Unit-length Admittance Matrix, Y
+ Matrix of Laplace domain filters
+           3    # dimension of Sfilter matrix
+Element:   1   1
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+   0.0000000000000000        1.4334256456537569E-011
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   1   2
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+  -0.0000000000000000       -1.7128137170508016E-012
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   1   3
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+  -0.0000000000000000       -4.7942286925549311E-013
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   2   1
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+  -0.0000000000000000       -1.7128137170508016E-012
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   2   2
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+   0.0000000000000000        1.1365835426507738E-011
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   2   3
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+  -0.0000000000000000       -1.3359480414792231E-012
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   3   1
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+  -0.0000000000000000       -4.7942286925549311E-013
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   3   2
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+  -0.0000000000000000       -1.3359480414792231E-012
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   3   3
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+   0.0000000000000000        1.1285815655401695E-011
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+ # Global current domain transformation matrix, [MI]
+           4  Dimension of [MI]
+  0.00000000E+00  0.00000000E+00  5.00000000E-01 -5.00000000E-01
+  1.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  1.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  1.00000000E+00  1.00000000E+00
+ # Global voltage domain transformation matrix, [MV]
+           4  Dimension of [MV]
+  0.00000000E+00  0.00000000E+00  1.00000000E+00 -1.00000000E+00
+  1.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  1.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  5.00000000E-01  5.00000000E-01
+ # Global domain based inductance matrix, [L]
+           4  Dimension of [L]
+  3.58235240E-07  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  7.92796549E-07  1.25173387E-07  4.84953816E-08
+  0.00000000E+00  1.25173387E-07  1.01251901E-06  1.25173387E-07
+  0.00000000E+00  4.84953816E-08  1.25173387E-07  1.00276097E-06
+ # Global domain based capacitance matrix, [C]
+           4  Dimension of [C]
+  3.10592017E-11  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  1.43342565E-11 -1.71281372E-12 -4.79422869E-13
+  0.00000000E+00 -1.71281372E-12  1.13658354E-11 -1.33594804E-12
+  0.00000000E+00 -4.79422869E-13 -1.33594804E-12  1.12858157E-11
+ Global domain based Per-Unit-length Impedance Matrix, Z
+ Matrix of Laplace domain filters
+           4    # dimension of Sfilter matrix
+Element:   1   1
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+   0.0000000000000000        3.5823523981199035E-007
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   1   2
+   1.0000000000000000        # w normalisation constant
+           0   # a order, a coefficients follow below:
+   0.0000000000000000     
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   1   3
+   1.0000000000000000        # w normalisation constant
+           0   # a order, a coefficients follow below:
+   0.0000000000000000     
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   1   4
+   1.0000000000000000        # w normalisation constant
+           0   # a order, a coefficients follow below:
+   0.0000000000000000     
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   2   1
+   1.0000000000000000        # w normalisation constant
+           0   # a order, a coefficients follow below:
+   0.0000000000000000     
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   2   2
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+   0.0000000000000000        7.9279654887177142E-007
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   2   3
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+   0.0000000000000000        1.2517338677241959E-007
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   2   4
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+   0.0000000000000000        4.8495381619842019E-008
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   3   1
+   1.0000000000000000        # w normalisation constant
+           0   # a order, a coefficients follow below:
+   0.0000000000000000     
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   3   2
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+   0.0000000000000000        1.2517338677241959E-007
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   3   3
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+   0.0000000000000000        1.0125190066053935E-006
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   3   4
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+   0.0000000000000000        1.2517338677241962E-007
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   4   1
+   1.0000000000000000        # w normalisation constant
+           0   # a order, a coefficients follow below:
+   0.0000000000000000     
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   4   2
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+   0.0000000000000000        4.8495381619842019E-008
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   4   3
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+   0.0000000000000000        1.2517338677241962E-007
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   4   4
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+   0.0000000000000000        1.0027609737715070E-006
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+ Global domain based Per-Unit-length Admittance Matrix, Y
+ Matrix of Laplace domain filters
+           4    # dimension of Sfilter matrix
+Element:   1   1
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+   0.0000000000000000        3.1059201675273467E-011
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   1   2
+   1.0000000000000000        # w normalisation constant
+           0   # a order, a coefficients follow below:
+   0.0000000000000000     
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   1   3
+   1.0000000000000000        # w normalisation constant
+           0   # a order, a coefficients follow below:
+   0.0000000000000000     
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   1   4
+   1.0000000000000000        # w normalisation constant
+           0   # a order, a coefficients follow below:
+   0.0000000000000000     
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   2   1
+   1.0000000000000000        # w normalisation constant
+           0   # a order, a coefficients follow below:
+   0.0000000000000000     
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   2   2
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+   0.0000000000000000        1.4334256456537569E-011
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   2   3
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+  -0.0000000000000000       -1.7128137170508016E-012
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   2   4
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+  -0.0000000000000000       -4.7942286925549311E-013
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   3   1
+   1.0000000000000000        # w normalisation constant
+           0   # a order, a coefficients follow below:
+   0.0000000000000000     
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   3   2
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+  -0.0000000000000000       -1.7128137170508016E-012
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   3   3
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+   0.0000000000000000        1.1365835426507738E-011
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   3   4
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+  -0.0000000000000000       -1.3359480414792231E-012
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   4   1
+   1.0000000000000000        # w normalisation constant
+           0   # a order, a coefficients follow below:
+   0.0000000000000000     
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   4   2
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+  -0.0000000000000000       -4.7942286925549311E-013
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   4   3
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+  -0.0000000000000000       -1.3359480414792231E-012
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+Element:   4   4
+   1.0000000000000000        # w normalisation constant
+           1   # a order, a coefficients follow below:
+   0.0000000000000000        1.1285815655401695E-011
+           0   # b order, b coefficients follow below:
+   1.0000000000000000     
+  # conductor impedance models
+           1  # Conductor impedance model type
+   1.5000000000000000E-003  # conductor radius
+   58000000.000000000       # conductivity
+   1.0000000000000000       # Resistance_multiplication_factor
+           1  # Conductor impedance model type
+   5.0000000000000001E-004  # conductor radius
+   5.8000000000000000E-005  # conductivity
+   1.0000000000000000       # Resistance_multiplication_factor
+           1  # Conductor impedance model type
+   3.5000000000000000E-004  # conductor radius
+   58000000.000000000       # conductivity
+   1.5000000000000000       # Resistance_multiplication_factor
+           1  # Conductor impedance model type
+   3.5000000000000000E-004  # conductor radius
+   58000000.000000000       # conductivity
+   1.5000000000000000       # Resistance_multiplication_factor
+           0  # Conductor impedance model type
+  # conductor x y positions
+   0.0000000000000000        3.9500000000000000E-002
+   5.0000000000000003E-002   3.9500000000000000E-002
+  0.10000000000000001        3.9500000000000000E-002
+  0.10000000000000001        3.9500000000000000E-002
+   0.0000000000000000        0.0000000000000000     
+is_shield  tc_to_in_domain  tc_to_out_domain  tc_to_gdc    tc_to_ldc    tc_to_ref_tc  
+    F              0              2              2              1              5
+    F              0              2              3              2              5
+    F              0              1              1              1              4
+    F              0              2              4              3              5
+    F              0              2              5              4              5
+  # Conductor labels
+ Conductor number   1.  Cable name: wire_3mm. type: cylindrical. conductor 1 : wire
+ Conductor number   2.  Cable name: wire_1mm. type: cylindrical. conductor 1 : wire
+ Conductor number   3.  Cable name: twisted. type: twisted_pair. conductor 1 : Twisted pair wire 1
+ Conductor number   4.  Cable name: twisted. type: twisted_pair. conductor 2 : Twisted pair wire 2
+ Conductor number   5.  Cable name: ground plane. type: ground_plane. conductor 1 : ground plane

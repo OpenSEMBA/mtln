@@ -1,0 +1,5 @@
+* Time-Domain Multiconductor Transmission Line solver *
+
+Includes code in python and fortran. Current capabilties.
+
+Solve MTL of n conductors without losses given the p.u.l C and L matrices
