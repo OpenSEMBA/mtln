@@ -220,14 +220,14 @@ def test_1_double_exponential():
     |_________|     b0     |__________|                    
     """
     
-    file = 'python/testData/parser/1.smb.json'
+    file = 'python/testData/parser/test_1_double_exponential.smb.json'
     p = Parser(file)
 
     distances = np.zeros([1, 51, 3])
-    distances[:,:,0] = 0.0508
+    distances[:,:,2] = 0.0508
     p.runWithExternalField(
         finalTime=80e-9, 
-        field= Field(wf.double_exp_sp(5.25e4, 4.0e6,4.76e8),wf.null(),wf.null()), 
+        field= Field(wf.null(),wf.null(),wf.double_exp_sp(5.25e4, 4.0e6,4.76e8)), 
         distances = distances)
 
     fig, ax1 = plt.subplots()
@@ -257,7 +257,7 @@ def test_3_two_conductor_line():
     term_1(0)     term_2(1)
     
     """
-    file = 'python/testData/parser/3.smb.json'
+    file = 'python/testData/parser/test_3_two_conductor_line.smb.json'
     p = Parser(file)
     p.run(finalTime=5e-9)
     
@@ -296,9 +296,9 @@ def test_4_lines_multilines():
     t1            j1    j2             t3 
     
     """
-    file = 'python/testData/parser/4.smb.json'
+    file = 'python/testData/parser/test_4_multilines.smb.json'
     p = Parser(file)
-    p.run(finalTime=6.46e-9)
+    p.run(finalTime=6.46e-9, dt = 3.23e-12)
     
     fig, ax = plt.subplots(3,1)
     ax[0].plot(1e9*p.probes["v1"].t, p.probes["v1"].val, '-.', label = 'probe 1')
@@ -344,13 +344,14 @@ def test_5_coaxial():
      
     """ 
     
-    file = 'python/testData/parser/5.smb.json'
+    file = 'python/testData/parser/test_5_coaxial.smb.json'
     p = Parser(file)
 
     distances = np.zeros([1, 19, 3])
     distances[:,:,0] = 0.0508
     p.runWithExternalField(
         finalTime=30e-9, 
+        dt = 0,
         field= Field(wf.null(), wf.null(), wf.double_exp_xy_sp(C =5.25e4, a = 4.0e6, b = 4.76e8)), 
         distances = distances)
     
@@ -359,7 +360,8 @@ def test_5_coaxial():
     plt.ylabel(r'$I (t)\,[V]$')
     plt.xlabel(r'$t\,[ns]$')
     plt.xticks(range(0, 40, 10))
-    plt.yticks(range(-2, 10, 2))
+    plt.ylim(-2,8)
+    # plt.yticks(range(-2, 10, 2))
     plt.grid('both')
     plt.legend()
 
@@ -369,81 +371,181 @@ def test_5_coaxial():
     plt.ylabel(r'$V (t)\,[V]$')
     plt.xlabel(r'$t\,[ns]$')
     plt.xticks(range(0, 40, 10))
-    plt.yticks(range(-1, 4, 1))
+    plt.ylim(-1,3)
+    # plt.yticks(range(-1, 4, 1))
     plt.grid('both')
     plt.legend()
     
     plt.show()
 
 def test_6_agrawal():
-    file = 'python/testData/parser/6.smb.json'
+    file = 'python/testData/parser/test_6_agrawal.smb.json'
     p = Parser(file)
-    p.run(finalTime=7.0e-8)
-    
+    p.run(finalTime=7.0e-8, dt = 0.5e-10)
+    			# 	"inductanceMatrix": [
+                #     [0.8792e-6, 0.6791e-6, 0.6787e-6],
+                #     [0.6775e-6, 0.8827e-6, 0.6785e-6],
+                #     [0.6760e-6, 0.6774e-6, 0.8829e-6]
+                # ],
+				# "capacitanceMatrix": [
+                #     [75.54e-12, -34.57e-12,-34.92e-12],
+                #     [-34.63e-12, 73.87e-12, -33.96e-12],
+                #     [-34.29e-12, -34.0e-12, 73.41e-12]
+                # ]
+
+    t, V4, _, V5, _, V6 = np.genfromtxt('python/testData/ngspice/manual/agrawal.txt', usecols=(0,1,2,3,4,5), unpack = True)
+
     fig, ax = plt.subplots(3,1)
-    ax[0].plot(1e9*p.probes["v"].t, 1e3*p.probes["v"].val[:,2], '-.', label = 'V at end of wire 1')
-    ax[0].set_ylabel(r'$V (t)\,[mV]$')
+    ax[0].plot(1e9*p.probes["v"].t, p.probes["v"].val[:,2], 'r-.', label = 'V at end of wire 1')
+    ax[0].plot(1e9*t, V5, 'g-.', label = 'V at end of wire 1, Spice')
+    ax[0].set_ylabel(r'$V (t)\,[V]$')
     ax[0].set_xticks(range(0, 70, 10))
-    ax[2].set_yticks(range(-200, 500, 100))
+    ax[0].set_ylim(-0.2,0.4)
     ax[0].grid('both')
     ax[0].legend()
 
-    ax[1].plot(1e9*p.probes["v"].t, 1e3*p.probes["v"].val[:,1], label = 'V at end of wire 2')
-    ax[1].set_ylabel(r'$V (t)\,[mV]$')
+    ax[1].plot(1e9*p.probes["v"].t, p.probes["v"].val[:,1], 'r-.', label = 'V at end of wire 2')
+    ax[1].plot(1e9*t, V4, 'g-.', label = 'V at end of wire 2, Spice')
+    ax[1].set_ylabel(r'$V (t)\,[V]$')
     ax[1].set_xticks(range(0, 70, 10))
-    ax[2].set_yticks(range(-200, 500, 100))
+    ax[1].set_ylim(-0.2,0.4)
     ax[1].grid('both')
     ax[1].legend()
 
-    ax[2].plot(1e9*p.probes["v"].t, 1e3*p.probes["v"].val[:,0], label = 'V at end of wire 3')
-    ax[2].set_ylabel(r'$V (t)\,[mV]$')
+    ax[2].plot(1e9*p.probes["v"].t, p.probes["v"].val[:,1], 'r-.', label = 'V at end of wire 3')
+    ax[2].plot(1e9*t, V6, 'g-.', label = 'V at end of wire 3, Spice')
+    ax[2].set_ylabel(r'$V (t)\,[V]$')
     ax[2].set_xlabel(r'$t\,[ns]$')
     ax[2].set_xticks(range(0, 70, 10))
-    ax[2].set_yticks(range(-200, 500, 100))
+    ax[2].set_ylim(-0.2,0.4)
     ax[2].grid('both')
     ax[2].legend()
 
     fig.tight_layout()
     plt.show()
 
-    fig.tight_layout()
-    plt.show()
     
 def test_7_bundles():
-    file = 'python/testData/parser/7.smb.json'
+    # file = 'python/testData/parser/test_7_bundles.smb.json'
+    file = 'python/testData/parser/test_7_bundles_single_conductors.smb.json'
+    # file = 'python/testData/parser/test_7_bundles_T1_T1.smb.json'
+    # file = 'python/testData/parser/test_7_bundles_Level_0.smb.json'
+    # file = 'python/testData/parser/test_7_bundles_Level_1.smb.json'
+    # file = 'python/testData/parser/test_7_bundles_Level_1_single_bundle.smb.json'
+
     p = Parser(file)
-    p.run(finalTime=0.5e-7,dt=0.5e-10)
+    p.run(finalTime=50e-9,dt=0.5e-10)
+
+    t, I = np.genfromtxt('python/testData/ngspice/manual/im1.csv', delimiter=',', usecols=(0,1), unpack = True)
+    tv1, V1 = np.genfromtxt('python/testData/ngspice/manual/im2.csv', delimiter=',', usecols=(0,1), unpack = True)
+    tv2, V2 = np.genfromtxt('python/testData/ngspice/manual/im3.csv', delimiter=',', usecols=(0,1), unpack = True)
+
+    
+    fig, ax = plt.subplots(3,1)
+    ax[0].plot(1e9*p.probes["i_sh21c1"].t, 1e3*p.probes["i_sh21c1"].val[:,0], label = 'sh21c1 - shield 0, c1')
+    ax[0].plot(t, I, 'r--', label = 'result from manual ')
+    ax[0].set_ylabel(r'$I (t)\,[mA]$')
+    ax[0].set_xlabel(r'$t\,[ns]$')
+    ax[0].set_xticks(range(0, 60, 10))
+    # plt.yticks(range(0, 1.2, ))
+    # ax[0].set_ylim(0,1)
+    ax[0].grid('both')
+    ax[0].legend()
+    
+    # ax[1].plot(1e9*p.probes["cable_1_terminal_voltage"].t, -1e6*p.probes["cable_1_terminal_voltage"].val[:,8], label = 'cable 1 - s1s2c2 - V')
+    ax[1].plot(1e9*p.probes["cable_1_terminal_voltage"].t, 1e6*50*p.probes["cable_1_terminal_current"].val[:,8], label = 'cable 1 - s1s2c2 - I')
+    ax[1].plot(tv1, V1, 'r--', label = 'result from manual ')
+    ax[1].set_ylabel(r'$V (t)\,[\mu V]$')
+    ax[1].set_xlabel(r'$t\,[ns]$')
+    ax[1].set_xticks(range(0, 60, 10))
+    ax[1].grid('both')
+    ax[1].legend()
+
+    # ax[2].plot(1e9*p.probes["cable_1_terminal_voltage"].t, -1e6*p.probes["cable_1_terminal_voltage"].val[:,6], label = 'cable 1 - s1s4c2 -V')
+    ax[2].plot(1e9*p.probes["cable_1_terminal_voltage"].t, 1e6*50*p.probes["cable_1_terminal_current"].val[:,6], label = 'cable 1 - s1s4c2-I')
+    ax[2].plot(tv2, V2, 'r--', label = 'result from manual ')
+    ax[2].set_ylabel(r'$V (t)\,[\mu V]$')
+    ax[2].set_xlabel(r'$t\,[ns]$')
+    ax[2].set_xticks(range(0, 60, 10))
+    # ax[2].set_ylim(-120,120)
+    ax[2].grid('both')
+    ax[2].legend()
+    
+
+    plt.show()
+    
+def test_e_drive():
+    file = 'python/testData/parser/E_drive.smb.json'
+
+    p = Parser(file)
+    p.run(finalTime=50e-9,dt=0.5e-10)
 
     plt.figure()
-    plt.plot(1e9*p.probes["i_sh21c1"].t, p.probes["i_sh21c1"].val[:,0], label = 'Current on shield')
+    
+    plt.plot(1e9*p.probes["i_sh21c1"].t, 1e3*p.probes["i_sh21c1"].val[:,0], label = 'sh21c1 - shield 0, c1')
+    plt.ylabel(r'$I (t)\,[mA]$')
+    plt.xlabel(r'$t\,[ns]$')
+    plt.xticks(range(0, 60, 10))
+    plt.grid('both')
+    plt.legend()
+
+    plt.show()
+
+def test_1_bundle_3_levels_1_1_2():
+    # file = 'python/testData/parser/test_1_bundle_3_levels_1_1_2.smb.json'
+    file = 'python/testData/parser/test_7_bundles_Level_0.smb.json'
+    # file = 'python/testData/parser/test_7_bundles_Level_1.smb.json'
+    # file = 'python/testData/parser/test_7_bundles_Level_1_single_bundle.smb.json'
+
+    p = Parser(file)
+    p.run(finalTime=50e-9,dt=0.5e-10)
+    # p.run(finalTime=0.5e-7,dt=0.5e-11)
+
+    plt.figure()
+
+    # plt.plot(1e9*p.probes["v_1"].t, p.probes["v_1"].val[:,0], label = 'Voltage at source, node 1, terminal')
+    plt.plot(1e9*p.probes["v_2"].t, p.probes["v_2"].val[:,0], '--', label = 'Voltage on junction, node 2')
+    plt.plot(1e9*p.probes["v_3"].t, p.probes["v_3"].val[:,0], '-.', label = 'Voltage on junction, node 3')
+    plt.plot(1e9*p.probes["v_4"].t, p.probes["v_4"].val[:,0], ':',label = 'Voltage on junction, node 4')
     plt.ylabel(r'$I (t)\,[A]$')
     plt.xlabel(r'$t\,[ns]$')
-    plt.xticks(range(0, 60, 10))
+    plt.xticks(range(0, 55, 5))
     # plt.yticks(range(0, 1.2, ))
     # plt.ylim(0,1)
     plt.grid('both')
     plt.legend()
-    plt.figure()
+
+    # plt.plot(1e9*p.probes["v_2"].t, p.probes["v_2"].val[:,0], '--', label = 'Voltage on junction, node 2')
+    # plt.plot(1e9*p.probes["v_3"].t, p.probes["v_3"].val[:,0], '-.', label = 'Voltage on junction, node 3')
+    # plt.plot(1e9*p.probes["v_4"].t, p.probes["v_4"].val[:,0], ':',label = 'Voltage on junction, node 4')
+    # plt.ylabel(r'$V (t)\,[V]$')
+    # plt.xlabel(r'$t\,[ns]$')
+    # plt.xticks(range(0, 60, 5))
+    # plt.yticks(range(0, 1.2, ))
+    # plt.ylim(0,1)
+    # plt.grid('both')
+    # plt.legend()
     
-    plt.plot(1e9*p.probes["v_s1s4c2"].t, p.probes["v_s1s4c2"].val[:,1], label = 'Voltage on bundle 4, level 2, conductor 1')
-    plt.ylabel(r'$V (t)\,[V]$')
-    plt.xlabel(r'$t\,[ns]$')
-    plt.xticks(range(0, 60, 10))
-    # plt.yticks(range(0, 1.2, ))
-    # plt.ylim(0,1)
-    plt.grid('both')
-    plt.legend()
+    # ax[2].set_ylabel(r'$V (t)\,[V]$')
+    # ax[2].set_xlabel(r'$t\,[ns]$')
+    # ax[2].set_xticks(range(0, 60, 10))
+    # # plt.yticks(range(0, 1.2, ))
+    # # plt.ylim(0,1)
+    # ax[2].grid('both')
+    # ax[2].legend()
+
+    # ax[3].set_ylabel(r'$V (t)\,[V]$')
+    # ax[3].set_xlabel(r'$t\,[ns]$')
+    # ax[3].set_xticks(range(0, 60, 10))
+    # # plt.yticks(range(0, 1.2, ))
+    # # plt.ylim(0,1)
+    # ax[3].grid('both')
+    # ax[3].legend()
     
-    plt.figure()
-    plt.plot(1e9*p.probes["v_s1s2c2"].t, p.probes["v_s1s2c2"].val[:,1], label = 'Voltage on bundle 2, level 2, conductor 1')
-    plt.ylabel(r'$V (t)\,[V]$')
-    plt.xlabel(r'$t\,[ns]$')
-    plt.xticks(range(0, 60, 10))
-    # plt.yticks(range(0, 1.2, ))
-    # plt.ylim(0,1)
-    plt.grid('both')
-    plt.legend()
+    plt.tight_layout()
     plt.show()
+
+
 
 
 def test_8_two_conductor_line_with_source():
@@ -457,7 +559,7 @@ def test_8_two_conductor_line_with_source():
     term_1(0)     term_2(1)
     
     """
-    file = 'python/testData/parser/8.smb.json'
+    file = 'python/testData/parser/test_8_two_conductor_line_with_source.smb.json'
     p = Parser(file)
     p.run(finalTime=5e-9)
     
@@ -483,5 +585,78 @@ def test_8_two_conductor_line_with_source():
     
     plt.show()
 
+def test_bundles_R_line_C():
+    file = 'python/testData/parser/R_line_C.smb.json'
+
+    p = Parser(file)
+    p.run(finalTime=50e-9,dt=0.5e-10)
+
+
+    t0, V2, V3 = np.genfromtxt('python/testData/ngspice/nw_validation/C_termination.txt', usecols=(0,1,3), unpack = True)
+
+    plt.figure()
     
+    plt.plot(1e9*p.probes["v_left"].t, p.probes["v_left"].val, 'r',label = 'Voltage, left')
+    plt.plot(1e9*t0, V2, 'g-.' ,label = 'Voltage, left, Spice')
+    plt.plot(1e9*p.probes["v_right"].t, p.probes["v_right"].val, 'b', label = 'Voltage, right')
+    plt.plot(1e9*t0, V3, 'k-.', label = 'Voltage, right, Spice')
+    plt.ylabel(r'$V (t)\,[V]$')
+    plt.xlabel(r'$t\,[ns]$')
+    plt.xticks(range(0, 60, 10))
+    plt.grid('both')
+    plt.legend()
+
+    plt.show()
+
+
+def test_bundles_R_line_LCpRs():
+    file = 'python/testData/parser/R_line_LCp_Rs.smb.json'
+
+    p = Parser(file)
+    p.run(finalTime=50e-9,dt=0.5e-10)
+
+
+    t0, V2, V3 = np.genfromtxt('python/testData/ngspice/nw_validation/LCp_Rs_termination.txt', usecols=(0,1,3), unpack = True)
+
+    plt.figure()
     
+    plt.plot(1e9*p.probes["v_left"].t, p.probes["v_left"].val, 'r',label = 'Voltage, left')
+    plt.plot(1e9*t0, V2, 'g-.' ,label = 'Voltage, left, Spice')
+    plt.plot(1e9*p.probes["v_right"].t, p.probes["v_right"].val, 'b', label = 'Voltage, right')
+    plt.plot(1e9*t0, V3, 'k-.', label = 'Voltage, right, Spice')
+    plt.ylabel(r'$V (t)\,[V]$')
+    plt.xlabel(r'$t\,[ns]$')
+    plt.xticks(range(0, 60, 10))
+    plt.grid('both')
+    plt.legend()
+
+    plt.show()
+
+def test_bundles_R_MTL_LCpRs():
+    file = 'python/testData/parser/R_MTL_LCp_Rs.smb.json'
+
+    p = Parser(file)
+    p.run(finalTime=50e-9,dt=0.5e-10)
+
+
+    t0, V3, V6 = np.genfromtxt('python/testData/ngspice/nw_validation/MTL_LCp_Rs_termination.txt', usecols=(0,3,7), unpack = True)
+
+    fig, ax = plt.subplots(2,1)
+   
+    ax[0].plot(1e9*p.probes["v_right"].t, p.probes["v_right"].val[:,0], 'r',label = 'Voltage, right, line 0')
+    ax[0].plot(1e9*t0, V3, 'g-.' ,label = 'Voltage, right, line 0, Spice')
+    ax[1].plot(1e9*p.probes["v_right"].t, p.probes["v_right"].val[:,1], 'b', label = 'Voltage, right, line 1')
+    ax[1].plot(1e9*t0, V6, 'k-.', label = 'Voltage, right, line 1 Spice')
+    ax[0].set_ylabel(r'$V (t)\,[V]$')
+    ax[1].set_ylabel(r'$V (t)\,[V]$')
+    ax[1].set_xlabel(r'$t\,[ns]$')
+    ax[0].set_xticks(range(0, 60, 10))
+    ax[1].set_xticks(range(0, 60, 10))
+    ax[0].grid('both')
+    ax[1].grid('both')
+    ax[0].legend()
+    ax[1].legend()
+
+    plt.show()
+
+

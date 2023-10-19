@@ -1549,3 +1549,84 @@ def test_wire_over_ground_incident_E_transversal_paul_12_4_1ns():
     plt.grid('both')
     plt.legend()
     plt.show()
+
+def test_shorted_junction():
+    """
+    Described in Ch. 9.3.1 "Ribbon Cables" of Paul Clayton
+    Analysis of Multiconductor Transmission Lines. 2007. 
+    """
+    """
+    Solved with mtl approach and mltn approach: tube + 2 termination networks
+    """
+    l = 5.362505362505362e-07
+    c = 20.72e-12
+
+    finalTime = 50e-9
+
+    def magnitude(t): return wf.gaussian_2(t, A=1.0, x0=5.0e-9, s0 = 1.25e-9)
+
+    line1 = mtl.MTL(l=l, c=c, length=0.54, ndiv=18, name = "line1")
+    line2 = mtl.MTL(l=l, c=c, length=0.54, ndiv=18, name = "line2")
+    line3 = mtl.MTL(l=l, c=c, length=0.54, ndiv=18, name = "line3")
+    bundle1 = mtl.MTLD({0 : [line1]}, name = "bundle1")
+    bundle2 = mtl.MTLD({0 : [line2]}, name = "bundle2")
+    bundle3 = mtl.MTLD({0 : [line3]}, name = "bundle3")
+    v_probe_0 = bundle1.add_probe(position=0.0, probe_type='voltage')
+    v_probe_1 = bundle1.add_probe(position=0.54, probe_type='voltage')
+    v_probe_2 = bundle2.add_probe(position=0.0, probe_type='voltage')
+    v_probe_3 = bundle3.add_probe(position=0.0, probe_type='voltage')
+
+    t1  = {line1: {"connections" : [[0,0]], "side": "S", "bundle" : bundle1 }}
+    t2  = {line2: {"connections" : [[4,0]], "side": "L", "bundle" : bundle2 }}
+    j1  = {line1: {"connections" : [[1,0]], "side": "L", "bundle" : bundle1 },
+           line2: {"connections" : [[2,0]], "side": "S", "bundle" : bundle2 },
+           line3: {"connections" : [[3,0]], "side": "S", "bundle" : bundle3 }}
+    t3  = {line3: {"connections" : [[5,0]], "side": "L", "bundle" : bundle3 }}
+
+    terminal_1 = nw.Network(t1)
+    terminal_1.connect_to_ground(node = 0, R  = 0.7e-3, Vt = magnitude)
+    terminal_A = nw.NetworkD({0 : terminal_1})
+
+    terminal_2 = nw.Network(t2)
+    terminal_2.connect_to_ground(4, 0.7e-3)
+    terminal_B = nw.NetworkD({0 : terminal_2})
+
+    junction = nw.Network(j1)
+    junction.connect_nodes(1,2, 200)
+    junction.connect_nodes(1,3, 100)
+    junction.connect_nodes(2,3, 300)
+    junction_A = nw.NetworkD({0:junction})
+
+    terminal_3 = nw.Network(t3)
+    terminal_3.connect_to_ground(5, 0.7e-3)
+    terminal_C = nw.NetworkD({0 : terminal_3})
+
+    mtl_nw = mtln.MTLN()
+    mtl_nw.add_bundle(bundle1)
+    mtl_nw.add_bundle(bundle2)
+    mtl_nw.add_bundle(bundle3)
+
+    mtl_nw.add_network(terminal_A)
+    mtl_nw.add_network(terminal_B)
+    mtl_nw.add_network(terminal_C)
+    mtl_nw.add_network(junction_A)
+
+    # ####    
+    # file = 'python/testData/parser/ribbon_cable_20ns_termination_network.smb.json'
+    # p = Parser(file)
+    # ####
+
+    mtl_nw.run_until(finalTime)
+
+    # From Paul's book:
+    # "The crosstalk waveform rises to a peak of around 110 mV [...]"
+    # plt.plot(1e9*v_probe_0.t, v_probe_0.val, label='voltage at node 0')
+    plt.plot(1e9*v_probe_1.t, v_probe_1.val, '-',label='voltage at node 1')
+    plt.plot(1e9*v_probe_2.t, v_probe_2.val, '.',label='voltage at node 2')
+    plt.plot(1e9*v_probe_3.t, v_probe_3.val, '-.',label='voltage at node 3')
+    plt.ylabel(r'$V_1 (0, t)\,[V]$')
+    plt.xlabel(r'$t\,[ns]$')
+    plt.xticks(range(0, 55, 5))
+    plt.grid('both')
+    plt.legend()
+    plt.show()

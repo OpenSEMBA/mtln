@@ -187,10 +187,14 @@ class TransferImpedance(Dispersive):
     ):
         assert(np.abs(out_level - in_level) == 1)
         
-        d = transfer_impedance["cte"] 
-        e = transfer_impedance["prop"]
+        factor = 1
+        if "factor" in transfer_impedance.keys():
+            factor = transfer_impedance["factor"]
+
+        d = transfer_impedance["cte"]/factor
+        e = transfer_impedance["prop"]/factor
         poles = np.array(transfer_impedance["poles"])
-        residues = np.array(transfer_impedance["residues"])
+        residues = np.array(transfer_impedance["residues"])/factor
         
         if d == 0 and e == 0 and len(poles) == 0 and len(residues) == 0:
             return
@@ -204,10 +208,10 @@ class TransferImpedance(Dispersive):
         for i in range_out:
             for j in range_in:
 
-                self.d[:, i, j] -= d
+                # self.d[:, i, j] -= d
                 self.d[:, j, i] -= d
                 
-                self.e[:, i, j] -= e
+                # self.e[:, i, j] -= e
                 self.e[:, j, i] -= e
 
                 if (residues.size != 0 and poles.size != 0):
@@ -232,7 +236,7 @@ class TransferImpedance(Dispersive):
         self.q1sum = self.v_sum(self.q1)
         self.q2sum = self.v_sum(self.q2)
 
-    def add_transfer_impedance_at_index(
+    def set_transfer_impedance_at_index(
         self, 
         levels,
         out_level, out_level_conductors,
@@ -242,10 +246,14 @@ class TransferImpedance(Dispersive):
     ):
         assert(np.abs(out_level - in_level) == 1)
         
-        d = transfer_impedance["cte"]
-        e = transfer_impedance["prop"]
+        factor = 1
+        if "factor" in transfer_impedance.keys():
+            factor = transfer_impedance["factor"]
+
+        d = transfer_impedance["cte"]/factor
+        e = transfer_impedance["prop"]/factor
         poles    = np.array(transfer_impedance["poles"])
-        residues = np.array(transfer_impedance["residues"])
+        residues = np.array(transfer_impedance["residues"])/factor
         
         if d == 0 and e == 0 and len(poles) == 0 and len(residues) == 0:
             return
@@ -259,30 +267,30 @@ class TransferImpedance(Dispersive):
         for i in range_out:
             for j in range_in:
 
-                self.d[index, i, j] -= d
-                self.d[index, j, i] -= d
+                # self.d[index, i, j] = -d
+                self.d[index, j, i] = -d
                 
-                self.e[index, i, j] -= e
-                self.e[index, j, i] -= e
+                # self.e[index, i, j] = -e
+                self.e[index, j, i] = -e
 
                 if (residues.size != 0 and poles.size != 0):
-                    self.q1[index, i, j] += (residues / poles) * (
+                    self.q1[index, i, j] = (residues / poles) * (
                         1 - (np.exp(poles * self.dt) - 1) / (poles * self.dt)
                     )
-                    self.q2[index, i, j] -= (residues / poles) * (
+                    self.q2[index, i, j] = -(residues / poles) * (
                         1 / (poles * self.dt)
                         + np.exp(poles * self.dt) * (1 - 1 / (poles * self.dt))
                     )
-                    self.q3[index, i, j] -= np.exp(poles * self.dt)
+                    self.q3[index, i, j] = -np.exp(poles * self.dt)
 
-                    self.q1[index, j, i] += (residues / poles) * (
+                    self.q1[index, j, i] = -(residues / poles) * (
                         1 - (np.exp(poles * self.dt) - 1) / (poles * self.dt)
                     )
-                    self.q2[index, j, i] -= (residues / poles) * (
+                    self.q2[index, j, i] = (residues / poles) * (
                         1 / (poles * self.dt)
                         + np.exp(poles * self.dt) * (1 - 1 / (poles * self.dt))
                     )
-                    self.q3[index, j, i] -= np.exp(poles * self.dt)
+                    self.q3[index, j, i] = -np.exp(poles * self.dt)
 
         self.q1sum = self.v_sum(self.q1)
         self.q2sum = self.v_sum(self.q2)

@@ -22,14 +22,20 @@
 				"name": "Terminal",
 				"materialType": "Connector",
 				"connectorType": "MultiwireConnector",
-				"resistanceVector": [ 100, 50 ]
+				"connections" : ["Conn_R", "Conn_R"],
+				"resistanceVector": [ 100, 50 ],
+				"inductanceVector": [ 0, 0 ],
+				"capacitanceVector": [ 1e22, 1e22 ]
 			},
 			{
 				"materialId": 3,
 				"name": "Terminal",
 				"materialType": "Connector",
 				"connectorType": "MultiwireConnector",
-				"resistanceVector": [ 102, 102 ]
+				"connections" : ["Conn_R", "Conn_R"],
+				"resistanceVector": [ 102, 102 ],
+				"inductanceVector": [ 0, 0 ],
+				"capacitanceVector": [ 1e22, 1e22 ]
 			}
 		],
 		"layers": [
@@ -56,7 +62,7 @@
 		},
 		"sources": [
 			{
-				"sourceType": "generator",
+				"sourceType": "TerminalSource",
 				"type": "voltage",
 				"elemIds": [3],
 				"magnitude": {
@@ -64,18 +70,7 @@
 					"amplitude": 4.0,
 					"t0": 1.5e-9
 				}
-			},
-            {
-				"sourceType": "generator",
-				"type": "voltage",
-				"elemIds": [4],
-				"magnitude": {
-					"type": "ramp",
-					"amplitude": -4.0,
-					"t0": 1.5e-9
-				}
 			}
-
         ],
 		"probes": [
 			{
@@ -94,9 +89,7 @@
 			{"name" : "t2", "coordIds": [[3,4]]}
 		],
 		"bundles": [
-			{
-				"name": "bundle_0", "nestedElemIds" : "1 2"
-			}
+			{"name": "bundle_0", "nestedElemIds" : "1 2"}
 		],
 		"cables": [
 			{

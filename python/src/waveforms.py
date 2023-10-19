@@ -5,7 +5,11 @@ def gaussian(x, x0, s0):
     return np.exp( - (x-x0)**2 / (2*s0**2) )
 
 def gaussian_2(x, A, x0, s0):
-    return A*np.exp( - ((x-x0)/s0)**2 )
+    return A*np.exp(-((x-x0)/s0)**2 )
+
+def gaussian_2_sp(A, x0, s0):
+    x, y, z, t = sp.symbols('x y z t')
+    return A*sp.exp(-((t-x0)/s0)**2 )
 
 def square_pulse(x, A, x0):
     return A*(x <= x0)*(x >= 0)

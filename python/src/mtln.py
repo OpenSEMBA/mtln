@@ -57,6 +57,9 @@ class MTLN:
         for bundle in self.bundles.values():
             bundle.add_external_field(field, distances)
 
+    def add_localized_external_field(self, bundle_name, field: mtl.Field, distances, field_localization):
+        self.bundles[bundle_name].add_external_field(field, distances, field_localization)
+
 
     def run_until(self, finalTime):
         
@@ -79,7 +82,7 @@ class MTLN:
     def advance_networks_voltage(self):
         for nw in self.networks:
             nw.update_sources(self.time, self.dt)
-            nw.advance_voltage()
+            nw.advance_voltage(self.dt)
             nw.update_voltages(self.bundles)
     
     def advance_bundles_voltage(self):

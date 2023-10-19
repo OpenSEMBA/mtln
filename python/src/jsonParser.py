@@ -36,6 +36,8 @@ class Parser:
     def run(self, finalTime, dt=0):
         mtl_nw = mtln.MTLN()
         for b in self.bundles:
+            if dt:
+                b.dt = dt
             mtl_nw.add_bundle(b)
         for n in self.networks:
             mtl_nw.add_network(n)
@@ -43,14 +45,32 @@ class Parser:
             mtl_nw.dt = dt
         mtl_nw.run_until(finalTime)
 
-    def runWithExternalField(self, finalTime, field, distances):
+    def runWithExternalField(self, finalTime, dt, field, distances):
         mtl_nw = mtln.MTLN()
         for b in self.bundles:
+            if dt:
+                b.dt = dt
             mtl_nw.add_bundle(b)
         for n in self.networks:
             mtl_nw.add_network(n)
+        if dt:
+            mtl_nw.dt = dt
         
         mtl_nw.add_external_field(field, distances)
+        mtl_nw.run_until(finalTime)
+        
+    def runWithLocalizedExternalField(self, finalTime, dt, bundle_name, field, distances, field_localization):
+        mtl_nw = mtln.MTLN()
+        for b in self.bundles:
+            if dt:
+                b.dt = dt
+            mtl_nw.add_bundle(b)
+        for n in self.networks:
+            mtl_nw.add_network(n)
+        if dt:
+            mtl_nw.dt = dt
+        
+        mtl_nw.add_localized_external_field(bundle_name, field, distances, field_localization)
         mtl_nw.run_until(finalTime)
         
     def _getCoordinates(self):
@@ -239,7 +259,7 @@ class Parser:
         return number_of_conductors + position_in_line
     
     
-    def _addCableEnds(self, line):
+    def _addConnectorsResistance(self, line):
         for c in [c for c in self._cables if c["name"] == line.name]:
             for end in self._ends:
                 el_id, _ = self._getElementOfNode(end["coordIds"][0])
@@ -248,7 +268,7 @@ class Parser:
                     conn = [c for c in self._connectors if c["materialId"] == end["materialId"]][0]
                     resistance = conn["resistance"]
                     conductor = c["elemIds"].index(el_id)
-                    line.add_resistance_in_region(coordinate, coordinate, conductor, resistance)
+                    line.set_resistance_in_region(coordinate, coordinate, conductor, resistance)
     
     def _setBundleTransferImpedance(self, bundle, graph):
         for edge in graph.es:
@@ -267,7 +287,7 @@ class Parser:
                 conn = [c for c in self._connectors if c["materialId"] == end["materialId"]][0]
                 Zt = conn["transferImpedance"]
                 
-                bundle.add_connector_transfer_impedance(
+                bundle.set_connector_transfer_impedance(
                     side = side,
                     out_level = graph.vs[edge.source]["level"], 
                     out_level_conductors= [self._findConductorNumberInLevel(graph, edge.source, bundle)], 
@@ -293,7 +313,7 @@ class Parser:
                 for name in list(set([v["cable"] for v in graph.vs(level_eq=i)])):
                     line = self._buildMTLfromLine(name)
                     
-                    self._addCableEnds(line)
+                    self._addConnectorsResistance(line)
                     
                     bundle_levels[i].append(line)     
                     self._name_to_mtl[name] = line
@@ -325,11 +345,8 @@ class Parser:
             cable = [cable for cable in self._cables if cable["name"] == source["cable"]][0]
             bundle = self._getBundleWithCable(cable)
             if (source["type"] == "localized efield drive"):
-                
-                cStart = self._coordinates[self._getNodeCoordId(source["elemIds"][0])]
-                cEnd = self._coordinates[self._getNodeCoordId(source["elemIds"][1])] 
-                
-                
+                # cStart = self._coordinates[self._getNodeCoordId(source["elemIds"][0])]
+                # cEnd = self._coordinates[self._getNodeCoordId(source["elemIds"][1])] 
                 bundle.add_localized_longitudinal_field(self._coordinates[self._getNodeCoordId(source["elemIds"][0])],
                                                         self._coordinates[self._getNodeCoordId(source["elemIds"][1])],
                                                         conductor = 0, 
@@ -421,7 +438,7 @@ class Parser:
                         if not self._name_to_mtl[cable_name] in description.keys():
                             description[self._name_to_mtl[cable_name]] = {"side":side, "bundle":self._name_to_bundle[cable_name], "connections" : []}
             
-                        description[self._name_to_mtl[cable_name]]["connections"].append([c, conductor])
+                        description[self._name_to_mtl[cable_name]]["connections"].append([c, conductor, conn])
                         d["nodes"].append(c)
                         d["connectors"].append(conn)
                         d["conductors"].append(conductor)
@@ -434,19 +451,51 @@ class Parser:
                     if len(c["nodes"]) == 1:
                         if (c["connectors"][0]["connectorType"] == "Conn_short"):
                             network.short_to_ground(c["nodes"][0])
-                        elif (c["connectors"][0]["connectorType"] == "Conn_sRLC"):
+                        elif (c["connectors"][0]["connectorType"] == "Conn_sRLC" or c["connectors"][0]["connectorType"] == "Conn_R"):
                             network.connect_to_ground(c["nodes"][0], 
                                                       c["connectors"][0]["resistance"], 
                                                       c["sources"][0])
+                        elif (c["connectors"][0]["connectorType"] == "Conn_C"):
+                            network.connect_to_ground_C(c["nodes"][0], 
+                                                        c["connectors"][0]["capacitance"], 
+                                                        c["sources"][0])
+                        elif (c["connectors"][0]["connectorType"] == "Conn_LCpRs"):
+                            network.connect_to_ground_LCpRs(c["nodes"][0], 
+                                                            c["connectors"][0]["resistance"], 
+                                                            c["connectors"][0]["inductance"], 
+                                                            c["connectors"][0]["capacitance"], 
+                                                            c["sources"][0])
                     
                     elif len(c["nodes"]) > 1:
                         for node, conductor in zip(c["nodes"], c["conductors"]):
                             if (c["connectors"][conductor]["connectorType"] == "MultiwireConnector"):
-                                R = c["connectors"][conductor]["resistanceVector"][conductor]
-                                if R != 0:
-                                    network.connect_to_ground(node, R, c["sources"][conductor])
+                                
+                                if "resistanceVector" in c["connectors"][conductor].keys():
+                                    R = c["connectors"][conductor]["resistanceVector"][conductor]
                                 else:
+                                    R = 0
+                                if "capacitanceVector" in c["connectors"][conductor].keys():
+                                    C = c["connectors"][conductor]["capacitanceVector"][conductor]
+                                else:
+                                    C = 1e22
+                                if "inductanceVector" in c["connectors"][conductor].keys():
+                                    L = c["connectors"][conductor]["inductanceVector"][conductor]
+                                else:
+                                    L = 0
+
+                                if (c["connectors"][conductor]["connections"][conductor] == "Conn_short"):
                                     network.short_to_ground(node)
+                                elif (c["connectors"][conductor]["connections"][conductor] == "Conn_R" or 
+                                      c["connectors"][conductor]["connections"][conductor] == "Conn_sRLC"):
+                                    network.connect_to_ground_R(node, R, c["sources"][conductor])
+                                elif (c["connectors"][conductor]["connections"][conductor] == "Conn_LCpRs"):
+                                    network.connect_to_ground_LCpRs(node, R ,L, C, c["sources"][conductor])
+                                elif (c["connectors"][conductor]["connections"][conductor] == "Conn_C"):
+                                    network.connect_to_ground_C(node, C, c["sources"][conductor])
+                                # if R != 0:
+                                #     network.connect_to_ground(node, R, c["sources"][conductor])
+                                # else:
+                                #     network.short_to_ground(node)
 
                 networkd[bundle_level] = network
             terminations.append(nw.NetworkD(networkd))
@@ -491,8 +540,8 @@ class Parser:
             for n in self._nodes:
                 if int(n.split()[0]) == source["elemIds"][0] and int(n.split()[-1]) == node:
                     return self._buildSource(source)
-        return lambda t : 0
-            
+        # return lambda t : 0
+        return 0
 
     def _getNetworkJunctionList(self):
         coordToNetwork = {}
@@ -525,8 +574,8 @@ class Parser:
                         if not self._name_to_mtl[cable_name] in description.keys():
                             description[self._name_to_mtl[cable_name]] = {"side":side, "bundle":self._name_to_bundle[cable_name], "connections" : []}
 
-                        if not [p,conductor] in description[self._name_to_mtl[cable_name]]["connections"]:
-                            description[self._name_to_mtl[cable_name]]["connections"].append([p, conductor])
+                        if not [p,conductor, conn] in description[self._name_to_mtl[cable_name]]["connections"]:
+                            description[self._name_to_mtl[cable_name]]["connections"].append([p, conductor, conn])
 
                         d["nodes"].append(p)
                         d["connectors"].append(conn)

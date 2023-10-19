@@ -90,16 +90,16 @@
 				"materialType": "Multiwire",
 				"resistanceVector": [3.9e-3,3.9e-3,3.9e-3,3.9e-3],
 				"inductanceMatrix": [
-					[ 28.51627112e-08, -0.00000000e+00,  0.00000000e+00, -0.00000000e+00],
-					[ 0.00000000e+00,  28.51627112e-08,  0.00000000e+00, -0.00000000e+00],
-					[ 0.00000000e+00,  0.00000000e+00,  28.51627112e-08, -0.00000000e+00],
-					[0.00000000e+00,   0.00000000e+00,   0.00000000e+00, 28.51627112e-08]
+					[ 7.12906778e-08, -0.00000000e+00,  0.00000000e+00, -0.00000000e+00],
+					[ 0.00000000e+00,  7.12906778e-08,  0.00000000e+00, -0.00000000e+00],
+					[ 0.00000000e+00,  0.00000000e+00,  7.12906778e-08, -0.00000000e+00],
+					[0.00000000e+00,   0.00000000e+00,   0.00000000e+00, 7.12906778e-08]
 				],
 				"capacitanceMatrix": [
-					[139.6e-12, -1e22,-1e22,-1e22],
-					[-1e22, 139.6e-12, -1e22,-1e22],
-					[-1e22, -1e22, 139.6e-12, -1e22],
-					[-1e22, -1e22, -1e22, 139.6e-12]
+					[588.4e-12, 0.0, 0.0, 0.0],
+					[0.0, 588.4e-12, 0.0, 0.0],
+					[0.0, 0.0, 588.4e-12, 0.0],
+					[0.0, 0.0, 0.0, 588.4e-12]
 				],
 				"transferImpedance" : {
 					"cte" : 0.0,
@@ -128,14 +128,14 @@
 				"materialType": "Multiwire",
 				"resistanceVector": [6.5e-3,6.5e-3,6.5e-3],
 				"inductanceMatrix": [
-					[ 26.667155010000002e-08, -0.00000000e+00, -0.00000000e+00],
-					[ 0.00000000e+00,  26.667155010000002e-08, -0.00000000e+00],
-					[ 0.00000000e+00,  0.00000000e+00,  26.667155010000002e-08]
+					[ 8.88905167e-08, -0.00000000e+00, -0.00000000e+00],
+					[ 0.00000000e+00,  8.88905167e-08, -0.00000000e+00],
+					[ 0.00000000e+00,  0.00000000e+00,  8.88905167e-08]
 				],
 				"capacitanceMatrix": [
-					[157.3e-12, -1e22,-1e22],
-					[-1e22, 157.3e-12, -1e22],
-					[-1e22, -1e22, 157.3e-12]
+					[471.9e-12, 0.0, 0.0],
+					[0.0, 471.9e-12, 0.0],
+					[0.0, 0.0, 471.9e-12]
 				],
 				"transferImpedance" : {
 					"cte" : 0.0,
@@ -150,12 +150,12 @@
 				"materialType": "Multiwire",
 				"resistanceVector": [4.2e-3,4.2e-3],
 				"inductanceMatrix": [
-					[ 2.30670524e-07, -0.00000000e+00],
-					[ 0.00000000e+00,  2.30670524e-07]
+					[ 1.15335262e-07, -0.00000000e+00],
+					[ 0.00000000e+00,  1.15335262e-07]
 				],
 				"capacitanceMatrix": [
-					[181.85e-12, -1e22],
-					[-1e22, 181.85e-12]
+					[363.7e-12, 0.0],
+					[0.0, 363.7e-12]
 				],
 				"transferImpedance" : {
 					"cte" : 0.0,
@@ -182,13 +182,12 @@
 				"materialId": 6,
 				"name": "Coaxial",
 				"materialType": "Multiwire",
-				"resistaceVector" : [62.0e-3,62.0e-3],
 				"inductanceMatrix": [
-                    [2.45027704e-07, 4.76120184e-08],
-                    [4.76120184e-08, 2.43866436e-07]
+                    [3.05515985e-07, 5.93656653e-08],
+                    [5.93656653e-08, 2.46150320e-07]
 				],
 				"capacitanceMatrix": [
-                    [105.0e-12, -20.5e-12],
+                    [85.0e-12, -20.5e-12],
                     [-20.5e-12, 105.5e-12 ]
 				]
 			},
@@ -202,53 +201,36 @@
 				"materialId": 71,
 				"name": "Short_1x1",
 				"materialType": "Connector",
-				"connectorType": "Conn_R",
-				"resistanceVector": [ 1e-10 ],
-				"inductanceVector" : [ 0.0 ],
-				"capacitanceVector": [ 1e22]
-
-
+				"connectorType": "MultiwireConnector",
+				"resistanceVector": [ 1e-6 ]
 			},
 			{
 				"materialId": 72,
 				"name": "Short_2x2_",
 				"materialType": "Connector",
 				"connectorType": "MultiwireConnector",
-				"connections" : ["Conn_R", "Conn_R"],
-				"resistanceVector": [ 1e-10, 1e-10 ],
-				"inductanceVector" : [ 0.0, 0.0 ],
-				"capacitanceVector": [ 1e22, 1e22]
+				"resistanceVector": [ 1e-6, 1e-6 ]
 			},
 			{
 				"materialId": 73,
 				"name": "Short3x3",
 				"materialType": "Connector",
 				"connectorType": "MultiwireConnector",
-				"connections" : ["Conn_R", "Conn_R", "Conn_R"],
-				"resistanceVector": [ 1e-10, 1e-10, 1e-10 ],
-				"inductanceVector" : [ 0.0, 0.0,0.0 ],
-				"capacitanceVector": [ 1e22,1e22,1e22]
+				"resistanceVector": [ 1e-6, 1e-6, 1e-6 ]
 			},
 			{
 				"materialId": 74,
 				"name": "Short4x4",
 				"materialType": "Connector",
 				"connectorType": "MultiwireConnector",
-				"connections" : ["Conn_R", "Conn_R", "Conn_R", "Conn_R"],
-				"resistanceVector": [ 1e-10, 1e-10, 1e-10, 1e-10 ],
-				"inductanceVector" : [ 0.0,0.0,0.0,0.0 ],
-				"capacitanceVector": [ 1e22,1e22,1e22,1e22]
+				"resistanceVector": [ 1e-6, 1e-6, 1e-6, 1e-6 ]
 			},
 			{
 				"materialId": 8,
 				"name": "T_2_50_50",
 				"materialType": "Connector",
 				"connectorType": "MultiwireConnector",
-				"connections" : ["Conn_R", "Conn_R"],
-				"resistanceVector": [ 50, 50 ],
-				"inductanceVector" : [ 0.0, 0.0 ],
-				"capacitanceVector": [ 1.00e22, 1.00e22 ]
-
+				"resistanceVector": [ 50, 50 ]
 			},
 			{
 				"materialId": 9,
@@ -276,7 +258,7 @@
 				"materialType": "Connector",
 				"connectorType": "MultiwireConnector",
 				"connections" : ["Conn_R", "Conn_LCpRs"],
-				"resistanceVector" : [ 1e10, 50 ],
+				"resistanceVector" : [ 1e10, 50e-6 ],
 				"inductanceVector" : [ 0.0, 30.0e-12 ],
 				"capacitanceVector": [ 0.0, 60.0e-9 ]
 			},
@@ -524,18 +506,6 @@
 				"type": "current",
 				"elemIds": [39],
 				"cable" : "line_0_0"
-			},
-			{
-				"name": "i_s1s2c2",
-				"type": "current",
-				"elemIds": [42],
-				"cable" : "line_2_4"
-			},
-			{
-				"name": "i_s1s4c2",
-				"type": "current",
-				"elemIds": [43],
-				"cable" : "line_2_8"
 			}
 		],
 		"sources": [
@@ -554,78 +524,22 @@
         ],
 		"terminations" : [
 			{"name" : "t_0_1", "coordIds": [[1]]},
-			{"name" : "t_0_2", "coordIds": [[5]]},
-			{"name" : "t_0_4", "coordIds": [[9]]},
-			{"name" : "t_0_5", "coordIds": [[10]]},
 			{"name" : "t_1_1", "coordIds": [[11,12,13,14]]},
-			{"name" : "t_1_2", "coordIds": [[23]]},
-			{"name" : "t_1_4", "coordIds": [[30,31]]},
-			{"name" : "t_1_5", "coordIds": [[32]]},
 			{"name" : "t_2_1", "coordIds": [[33,34,35,36,37,38,39,40]]},
-			{"name" : "t_2_2", "coordIds": [[51,52]]},
-			{"name" : "t_2_4", "coordIds": [[69,70,71,72]]},
-			{"name" : "t_2_5", "coordIds": [[75,76]]}
-		],
-		"junctions": [
-			{"name" : "j_0_0", "unitedCoordIds": [[2,3], [3,4], [2,4]]},
-
-			{"name" : "j_1_0", "unitedCoordIds": [[15,20],[15,21],[15,22],
-												  [16,20],[16,21],[16,22],
-												  [17,20],[17,21],[17,21],
-												  [18,20],[18,21],[18,22],
-												  [20,19],[21,19],[22,19],
-												  [15,19],[16,19],[17,19],
-												  [18,19]]},
-												  
-			{"name" : "j_2_0", "unitedCoordIds": [[41,53], [42,54], [43,55], [44,56], [45,57], [46,58], 
-												  [47,49], [48,50]]},
-			{"name" : "j_0_1", "unitedCoordIds": [[6,7], [6,8], [7,8]]},
-			{"name" : "j_1_1", "unitedCoordIds": [[29,24],[29,25],[29,26],
-												  [27,24],[27,25],[27,26],
-												  [28,24],[28,25],[28,26],
-												  [29,27],[29,28]]},
-			{"name" : "j_2_0", "unitedCoordIds": [[73,59], [74,60], [65,61], [66,62], [67,63], [68,64]]}
+			{"name" : "t_0_2", "coordIds": [[2]]},
+			{"name" : "t_1_2", "coordIds": [[15,16,17,18]]},
+			{"name" : "t_2_2", "coordIds": [[41,42,43,44,45,46,47,48]]}
 		],
 		"bundles": [
-			{"name": "bundle_1", "nestedElemIds": {"1" : {"6" : "17 18", "7" : "19 20", "8" : "21 22", "9" : "23 24"}}},
-			{"name": "bundle_2", "nestedElemIds": {"2" : {"10" : "25 26"}}},
-			{"name": "bundle_3", "nestedElemIds": {"3" : {"11" : "27 28", "12" : "29 30", "13" : "31 32"}}},
-			{"name": "bundle_4", "nestedElemIds": {"4" : {"14" : "33 34", "15" : "35 36"}}},
-			{"name": "bundle_5", "nestedElemIds": {"5" : {"16" : "37 38"}}}
-
+			{"name": "bundle_1", "nestedElemIds": {"1" : {"6" : "17 18", "7" : "19 20", "8" : "21 22", "9" : "23 24"}}}
 		],
 		"cables": [
-			{"name": "line_0_0", "materialId": 10,"initialConnectorId": 20, "endConnectorId": 7,"elemIds": [1],    "ndiv": 18},
-			{"name": "line_1_0", "materialId": 2,"initialConnectorId": 74, "endConnectorId": 74,"elemIds": [6,7,8,9],"ndiv": 18},
-			{"name": "line_2_0", "materialId": 6,"initialConnectorId": 100, "endConnectorId": 7,"elemIds": [17,18],"ndiv": 18},
-			{"name": "line_2_1", "materialId": 6,"initialConnectorId": 100, "endConnectorId": 7,"elemIds": [19,20],"ndiv": 18},
-			{"name": "line_2_2", "materialId": 6,"initialConnectorId": 100, "endConnectorId": 7,"elemIds": [21,22],"ndiv": 18},
-			{"name": "line_2_3", "materialId": 6,"initialConnectorId": 100, "endConnectorId": 7,"elemIds": [23,24],"ndiv": 18},
-
-			{"name": "line_0_1", "materialId": 11,"initialConnectorId": 7, "endConnectorId": 21,"elemIds": [2],  "ndiv": 11},
-			{"name": "line_1_1", "materialId": 3,"initialConnectorId": 71, "endConnectorId": 71,"elemIds": [10],   "ndiv": 11},
-			{"name": "line_2_4", "materialId": 6,"initialConnectorId": 7, "endConnectorId": 8,"elemIds": [25,26],"ndiv": 11},
-
-			{"name": "line_0_2", "materialId": 12,"initialConnectorId": 7, "endConnectorId": 7,"elemIds": [3],      "ndiv": 5},
-			{"name": "line_1_2", "materialId": 4,"initialConnectorId": 73, "endConnectorId": 73,"elemIds": [11,12,13],"ndiv": 5},
-			{"name": "line_2_5", "materialId": 6,"initialConnectorId": 7, "endConnectorId": 7,"elemIds": [27,28],   "ndiv": 5},
-			{"name": "line_2_6", "materialId": 6,"initialConnectorId": 7, "endConnectorId": 7,"elemIds": [29,30],   "ndiv": 5},
-			{"name": "line_2_7", "materialId": 6,"initialConnectorId": 7, "endConnectorId": 7,"elemIds": [31,32],   "ndiv": 5},
-
-			{"name": "line_0_3", "materialId": 13,"initialConnectorId": 7, "endConnectorId": 22,"elemIds": [4],  "ndiv": 11},
-			{"name": "line_1_3", "materialId": 5,"initialConnectorId": 72, "endConnectorId": 72,"elemIds": [14,15],"ndiv": 11},
-			{"name": "line_2_8", "materialId": 6,"initialConnectorId": 7, "endConnectorId": 9,"elemIds": [33,34],"ndiv": 11},
-			{"name": "line_2_9", "materialId": 6,"initialConnectorId": 7, "endConnectorId": 91,"elemIds": [35,36],"ndiv": 11},
-
-			{"name": "line_0_4", "materialId": 14,"initialConnectorId": 7, "endConnectorId": 23,"elemIds": [5],  "ndiv": 5},
-			{"name": "line_1_4", "materialId": 31,"initialConnectorId": 71, "endConnectorId": 71,"elemIds": [16],  "ndiv": 5},
-			{"name": "line_2_10", "materialId": 6,"initialConnectorId":7, "endConnectorId": 8,"elemIds": [37,38],"ndiv": 5}
-        ],
-		"cableEnds":[
-			{"name": "Shield1End", "materialId": 24, "coordIds": [1]},
-			{"name": "Shield1End", "materialId": 25, "coordIds": [5]},
-			{"name": "Shield1End", "materialId": 26, "coordIds": [9]},
-			{"name": "Shield1End", "materialId": 27, "coordIds": [10]}
-		]
+			{"name": "line_0_0", "materialId": 10,"initialConnectorId": 20, "endConnectorId": 20,"elemIds": [1],    "ndiv": 18},
+			{"name": "line_1_0", "materialId": 2,"initialConnectorId": 7, "endConnectorId": 7,"elemIds": [6,7,8,9],"ndiv": 18},
+			{"name": "line_2_0", "materialId": 6,"initialConnectorId": 100, "endConnectorId": 100, "elemIds": [17,18],"ndiv": 18},
+			{"name": "line_2_1", "materialId": 6,"initialConnectorId": 100, "endConnectorId": 100, "elemIds": [19,20],"ndiv": 18},
+			{"name": "line_2_2", "materialId": 6,"initialConnectorId": 100, "endConnectorId": 100, "elemIds": [21,22],"ndiv": 18},
+			{"name": "line_2_3", "materialId": 6,"initialConnectorId": 100, "endConnectorId": 100, "elemIds": [23,24],"ndiv": 18}
+        ]
 	}
 }

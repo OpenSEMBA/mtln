@@ -19,7 +19,7 @@ from typing import Dict
 from .probes import *
 from .dispersive import TransferImpedance, DispersiveConnector
 from .dispersive import Dispersive
-from .utils import add_t_functions as add
+from .utils import add_t_functions as add, multiply
 
 
 class Field:
@@ -373,10 +373,10 @@ class MTL():
         self.i_diff = IF1
 
 
-    def add_resistance_at_point(self, position, conductor, resistance):
-        self.add_resistance_in_region(position, position, conductor, resistance)
+    def set_resistance_at_point(self, position, conductor, resistance):
+        self.set_resistance_in_region(position, position, conductor, resistance)
         
-    def add_resistance_in_region(self, begin, end, conductor, resistance):
+    def set_resistance_in_region(self, begin, end, conductor, resistance):
         assert(end >= begin)
         if (type(begin) == float):
             begin = np.array([0.0,0.0,begin])
@@ -467,15 +467,22 @@ class MTL():
         pw.e_z = e_0 * pw.ez
         self.add_external_field(pw, distances)
     
-    def add_external_field(self, field : Field, distances: npt.NDArray[np.float64]):
+    def add_external_field(self, field : Field, distances: npt.NDArray[np.float64], field_localization: list[npt.NDArray[np.float64]] = []):
     # def add_external_field(self, field : Field, distances: np.array):
 
         assert(distances.shape == (self.number_of_conductors, self.u.shape[0], 3))
         x, y, z, t, v = sp.symbols('x y z t v')
          
+        indices = range(self.u.shape[0] - 1)
+        if len(field_localization) != 0:
+            start_index = np.argmin(np.apply_along_axis(np.linalg.norm, 1, np.abs(self.u - field_localization[0])))
+            end_index =   np.argmin(np.apply_along_axis(np.linalg.norm, 1, np.abs(self.u - field_localization[1])))
+            indices = range(start_index, end_index)
+         
+         
         vu = self.get_phase_velocities()
         for n in range(self.number_of_conductors):
-            for nz in range(self.u.shape[0] - 1):
+            for nz in indices:
               
                 eL = field.compute_eL_at_segment(self.du[nz])
                 x0, y0, z0 = self.u[nz,:]
@@ -722,6 +729,7 @@ class MTLD:
             # self.v_sources[conductor, index] = magnitude*np.linalg.norm(np.abs(start-self.u[index]))
             # self.e_L[conductor, index] += magnitude
             self.e_L[conductor, index] = add(self.e_L[conductor, index],magnitude)
+            # self.e_L[conductor, index] = add(self.e_L[conductor, index],multiply(magnitude, 1/np.linalg.norm(self.du[index])))
 
 
     def add_probe(self, position, probe_type = str):
@@ -759,7 +767,10 @@ class MTLD:
         
         F1 = np.einsum('...ij,...jk->...ik' , du_norm, self.c/self.dt + self.g/2)
         F2 = np.einsum('...ij,...jk->...ik' , du_norm, self.c/self.dt - self.g/2)
-        IF1 = np.linalg.inv(F1)
+        try:
+            IF1 = np.linalg.inv(F1)
+        except:
+            raise Exception('')
         self.v_term = np.einsum('...ij,...jk->...ik' , IF1, F2)
         self.i_diff = IF1
 
@@ -774,14 +785,20 @@ class MTLD:
 
 
     # def add_external_field(self, field : Field, distances: np.array):
-    def add_external_field(self, field : Field, distances: npt.NDArray[np.float64]):
+    def add_external_field(self, field : Field, distances: npt.NDArray[np.float64], field_localization: list[npt.NDArray[np.float64]] = []):
 
         assert(distances.shape == (self.levels[0][0].number_of_conductors, self.u.shape[0], 3))
         x, y, z, t, v = sp.symbols('x y z t v')
-         
+
+        indices = range(self.u.shape[0] - 1)
+        if len(field_localization) != 0:
+            start_index = np.argmin(np.apply_along_axis(np.linalg.norm, 1, np.abs(self.u - field_localization[0])))
+            end_index =   np.argmin(np.apply_along_axis(np.linalg.norm, 1, np.abs(self.u - field_localization[1])))
+            indices = range(start_index, end_index+1)
+        
         vu = self.get_phase_velocities()
         for n in range(self.levels[0][0].number_of_conductors):
-            for nz in range(self.u.shape[0] - 1):
+            for nz in indices:
               
                 eL = field.compute_eL_at_segment(self.du[nz])
                 x0, y0, z0 = self.u[nz,:]
@@ -878,7 +895,7 @@ class MTLD:
             in_level, in_level_conductors,
             transfer_impedance)
 
-    def add_connector_transfer_impedance(self,
+    def set_connector_transfer_impedance(self,
         side,
         out_level, out_level_conductors,
         in_level, in_level_conductors,
@@ -892,13 +909,13 @@ class MTLD:
         else:
             raise Exception("side must be either 'initial' or 'end'")
         
-        self.transfer_impedance.add_transfer_impedance_at_index(
+        self.transfer_impedance.set_transfer_impedance_at_index(
             self.conductors_in_level,
             out_level, out_level_conductors, 
             in_level, in_level_conductors,
             index, transfer_impedance)
 
-    def add_resistance_in_region(self, start, end, conductor, resistance):
+    def set_resistance_in_region(self, start, end, conductor, resistance):
         assert(end >= start)
         if (type(start) == float):
             start = np.array([0.0,0.0,start])

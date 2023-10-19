@@ -32,20 +32,26 @@
 				"name": "Junction",
 				"materialType": "Connector",
 				"connectorType": "MultiwireConnector",
-				"resistanceVector": [ 0, 0 ]
+				"connections" : ["Conn_short","Conn_short"],
+				"resistanceVector": [ 0, 0 ],
+				"inductanceVector": [ 0, 0 ],
+				"capacitanceVector": [ 1e22, 1e22 ]
 			},
 			{
 				"materialId": 6,
 				"name": "Junction",
 				"materialType": "Connector",
 				"connectorType": "MultiwireConnector",
-				"resistanceVector": [ 0, 0 ]
+				"connections" : ["Conn_short","Conn_short"],
+				"resistanceVector": [ 0, 0 ],
+				"inductanceVector": [ 0, 0 ],
+				"capacitanceVector": [ 1e22, 1e22 ]
 			},
 			{
 				"materialId": 4,
 				"name": "Terminal1",
 				"materialType": "Connector",
-				"connectorType": "Conn_sRLC",
+				"connectorType": "Conn_R",
 				"resistance": 50.0,
 				"inductance": 0.0,
 				"capacitance": 1e22
@@ -54,7 +60,7 @@
 				"materialId": 5,
 				"name": "Terminal2",
 				"materialType": "Connector",
-				"connectorType": "Conn_sRLC",
+				"connectorType": "Conn_R",
 				"resistance": 1e-6,
 				"inductance": 0.0,
 				"capacitance": 1e22
@@ -96,7 +102,7 @@
 		},
 		"sources": [
 			{
-				"sourceType": "source at terminal",
+				"sourceType": "TerminalSource",
 				"type": "voltage",
 				"elemIds": [7],
 				"magnitude": {

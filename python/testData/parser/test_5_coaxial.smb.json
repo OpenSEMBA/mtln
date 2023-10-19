@@ -27,7 +27,7 @@
 				"capacitance": 20.72e-12,
 				"resistance": 22.9e-3,
                 "transferImpedance" : {
-                    "cte" : 0.0,
+                    "cte" : 22.9e-3,
                     "prop" : 4.0e-9,
                     "poles" : [],
                     "residues" : []
@@ -38,13 +38,17 @@
 				"name": "CoaxialTerminal",
 				"materialType": "Connector",
 				"connectorType": "MultiwireConnector",
-				"resistanceVector": [ 50, 50 ]
+				"connections" : ["Conn_R", "Conn_R"],
+				"resistanceVector": [ 50, 50 ],
+				"capacitanceVector" : [1e22, 1e22],
+				"inductanceVector" : [0, 0]
+
 			},
 			{
 				"materialId": 4,
 				"name": "ShieldTerminal",
 				"materialType": "Connector",
-				"connectorType": "Conn_sRLC",
+				"connectorType": "Conn_R",
 				"resistance": 50.0,
 				"inductance": 0.0,
 				"capacitance": 1e22

@@ -37,8 +37,8 @@
 			{ "id": 1, "name": "WiresLayer" }
 		],
 		"coordinates": [
-			"1  0.0 0.0508 0.0",
-			"2  0.0 0.0508 3.0"
+			"1  0.0 0.0 0.0508",
+			"2  3.0 0.0 0.0508"
 		],
 		"elements": {
 			"_line_description": "elemId materialId layerId coordId1 coordId2",

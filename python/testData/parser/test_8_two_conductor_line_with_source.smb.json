@@ -22,6 +22,7 @@
 				"name": "Terminal",
 				"materialType": "Connector",
 				"connectorType": "MultiwireConnector",
+				"connections": ["Conn_R","Conn_R"],
 				"resistanceVector": [ 100, 50 ]
 			},
 			{
@@ -29,6 +30,7 @@
 				"name": "Terminal",
 				"materialType": "Connector",
 				"connectorType": "MultiwireConnector",
+				"connections": ["Conn_R","Conn_R"],
 				"resistanceVector": [ 102, 102 ]
 			}
 		],
@@ -64,7 +66,18 @@
 					"amplitude": 4.0,
 					"t0": 1.5e-9
 				}
+			},
+            {
+				"sourceType": "TerminalSource",
+				"type": "voltage",
+				"elemIds": [4],
+				"magnitude": {
+					"type": "ramp",
+					"amplitude": -4.0,
+					"t0": 1.5e-9
+				}
 			}
+
         ],
 		"probes": [
 			{
@@ -83,7 +96,9 @@
 			{"name" : "t2", "coordIds": [[3,4]]}
 		],
 		"bundles": [
-			{"name": "bundle_0", "nestedElemIds" : "1 2"}
+			{
+				"name": "bundle_0", "nestedElemIds" : "1 2"
+			}
 		],
 		"cables": [
 			{
