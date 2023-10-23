@@ -28,7 +28,7 @@
 				"resistance": 22.9e-3,
                 "transferImpedance" : {
                     "cte" : 22.9e-3,
-                    "prop" : 2.0e-9,
+                    "prop" : 4.0e-9,
                     "poles" : [],
                     "residues" : []
                 }
@@ -39,7 +39,7 @@
 				"materialType": "Connector",
 				"connectorType": "MultiwireConnector",
 				"connections" : ["short", "short"],
-				"resistanceVector": [ 0.01, 0.01 ],
+				"resistanceVector": [ 0 ,0 ],
 				"capacitanceVector" : [1e22, 1e22],
 				"inductanceVector" : [0, 0]
 
@@ -63,7 +63,10 @@
 			"3   0.0 0.0 0.0",
 			"4   0.0 0.0 0.0",
 			"5   0.0 0.0 0.540",
-			"6   0.0 0.0 0.540"
+			"6   0.0 0.0 0.540",
+			"7   0.0 0.0 0.03",
+			"8   0.0 0.0 0.12",
+			"9   0.0 0.0 0.5"
 		],
 		"elements": {
 			"_line_description": "elemId materialId layerId coordId1 coordId2",
@@ -74,7 +77,10 @@
 			],
 			"_node_description": "elemId materialId layerId coordId",
 			"node": [
-				"4 0 1 2"
+				"4 0 1 2",
+				"5 0 1 7",
+				"6 0 1 8",
+				"7 0 1 9"
 			]
 		},
 		"probes": [
@@ -86,9 +92,24 @@
 			{
 				"name": "i",
 				"type": "current",
-				"elemIds": [4]
+				"elemIds": [7],
+                "cable" : "line_0"
 			}
 		],
+		"sources": [
+			{
+				"sourceType": "DistributedSource",
+				"type": "localized efield drive",
+				"elemIds": [5, 6],
+				"cable" : "line_0",
+				"magnitude": {
+					"type": "gaussian_2",
+					"amplitude": 1.00,
+					"x0": 5.0e-9,
+					"s0": 1.25e-9
+				}
+            }
+        ],
 		"terminations" : [
 			{"name" : "t1", "coordIds": [[1]]},
 			{"name" : "t2", "coordIds": [[2]]},

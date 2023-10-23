@@ -1,0 +1,202 @@
+{
+	"_format": "Semba Data File in JSON format",
+	"_version": "0.16",
+
+	"model": {
+		"materials": [
+			{
+				"materialId": 10,
+				"name": "Bundle_1_level_0",
+				"materialType": "Wire",
+				"radius": 0.0001,
+				"wireType": "Standard",
+				"resistance": 22.9e-3,
+				"inductance": 5.4815536E-07,
+				"capacitance": 2.0270004E-11,
+				"transferImpedance" : {
+					"cte" : 22.9e-3,
+					"prop" : 8.9e-9,
+					"poles" : [],
+					"residues" : []
+				}
+			},
+			{
+				"materialId": 2,
+				"name": "Bundle_1_level_1",
+				"materialType": "Wire",
+				"resistance": 3.9e-3,
+				"inductance": 7.5120752E-08,
+				"capacitance": 5.5840010E-10,
+				"transferImpedance" : {
+					"cte" : 3.9e-3,
+					"prop" : 4.2e-9,
+					"poles" : [],
+					"residues" : [],
+                    "factor" : 1.0
+				}
+			},
+            {
+				"materialId": 62,
+				"name": "Bundle_1_level_2",
+				"materialType": "Wire",
+				"resistance" : 62.0e-3,
+				"inductance": 2.3461477E-07,
+				"capacitance": 1.0550002E-10
+			},
+			{
+				"materialId": 7,
+				"name": "Short",
+				"materialType": "Connector",
+				"connectorType": "Conn_R",
+				"resistance":   1e-6,
+				"inductance" :  0.0 ,
+				"capacitance":  1e22
+			},
+			{
+				"materialId": 71,
+				"name": "Short_1x1",
+				"materialType": "Connector",
+				"connectorType": "Conn_R",
+				"resistance":   50,
+				"inductance" :  0.0 ,
+				"capacitance":  1e22
+
+
+			},
+			{
+				"materialId": 72,
+				"name": "right_end",
+				"materialType": "Connector",
+				"connectorType": "Conn_LCpRs",
+				"resistance":   50.0,
+				"inductance" :  30.0e-12,
+				"capacitance":  60.0e-9
+
+
+			},
+			{
+				"materialId": 20,
+				"name": "T_0_1",
+				"materialType": "Connector",
+				"connectorType": "Conn_R",
+				"resistance": 0.7e-3,
+				"inductance": 0.0,
+				"capacitance": 1e22
+			},
+			{
+				"materialId": 24,
+				"name": "SegmentConnector1",
+				"materialType": "Connector",
+				"connectorType": "Conn_sRLC",
+				"resistance": 100.0e-3,
+				"inductance": 0.0,
+				"capacitance": 0.5e22,
+				"transferImpedance" : {
+					"cte" : 3.33,
+					"prop" : 2.6e-9,
+					"poles" : [],
+					"residues" : []
+				}
+			}
+		],
+		"layers": [
+			{ "id": 1, "name": "WiresLayer" }
+		],
+		"coordinates": [
+			"1   0.0 0.0 0.000",
+			"2   0.0 0.0 0.540",
+			"3   0.0 0.0 0.000",
+			"4   0.0 0.0 0.540",
+			"5   0.0 0.0 0.000",
+			"6   0.0 0.0 0.540",
+			"7   0.0 0.0 0.1",
+			"8   0.0 0.0 0.3",
+			"9   0.0 0.0 0.42",
+			"10   0.0 0.0 0.000",
+			"11   0.0 0.0 0.540"
+		],
+		"elements": {
+			"_line_description": "elemId materialId layerId coordId1 coordId2",
+			"line": [
+				"1 0 1 1 2",
+				"2 0 1 3 4",
+				"3 0 1 5 6"
+			],
+			"_node_description": "elemId materialId layerId coordId",
+			"node": [
+				"4 0 1 7",
+				"5 0 1 8",
+				"6 0 1 9",
+				"7 0 1 10",
+				"8 0 1 11"
+			]
+		},
+		"probes": [
+			{
+				"name": "i_sh21c1",
+				"type": "current",
+				"elemIds": [4],
+				"cable" : "line_0_0"
+			},
+			{
+				"name": "cable_1_terminal_voltage_start",
+				"type": "voltage",
+				"elemIds": [7],
+				"cable" : "line_0_0"
+			},
+			{
+				"name": "cable_1_terminal_voltage_end",
+				"type": "voltage",
+				"elemIds": [8],
+				"cable" : "line_0_0"
+			},
+			{
+				"name": "cable_1_terminal_current_start",
+				"type": "current",
+				"elemIds": [7],
+				"cable" : "line_0_0"
+			},
+			{
+				"name": "cable_1_terminal_current_end",
+				"type": "current",
+				"elemIds": [8],
+				"cable" : "line_0_0"
+			}
+		],
+		"sources": [
+			{
+				"sourceType": "DistributedSource",
+				"type": "localized efield drive",
+				"elemIds": [5, 6],
+				"cable" : "line_0_0",
+				"magnitude": {
+					"type": "gaussian_2",
+					"amplitude": 1.00,
+					"x0": 5.0e-9,
+					"s0": 1.25e-9
+				}
+            }
+        ],
+		"terminations" : [
+			{"name" : "t_0_1", "coordIds": [[1]]},
+			{"name" : "t_0_2", "coordIds": [[2]]},
+			{"name" : "t_0_4", "coordIds": [[3]]},
+			{"name" : "t_0_5", "coordIds": [[4]]},
+			{"name" : "t_1_1", "coordIds": [[5]]},
+			{"name" : "t_1_2", "coordIds": [[6]]}
+		],
+		"bundles": [
+			{"name": "bundle_1", "nestedElemIds": {"1" : {"2" : "3"}}}
+
+		],
+		"cables": [
+			{"name": "line_0_0", "materialId": 10,"initialConnectorId": 20,  "endConnectorId": 20, "elemIds": [1], "ndiv": 18},
+			{"name": "line_1_0", "materialId": 2, "initialConnectorId": 7,   "endConnectorId": 7,  "elemIds": [2], "ndiv": 18},
+			{"name": "line_2_0", "materialId": 62,"initialConnectorId": 72,  "endConnectorId": 72, "elemIds": [3], "ndiv": 18}
+        ],
+		"cableEnds":[
+			{"name": "Shield1End", "materialId": 24, "coordIds": [1]},
+			{"name": "Shield1End", "materialId": 24, "coordIds": [2]}
+		]
+	}
+}

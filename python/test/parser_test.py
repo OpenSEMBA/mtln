@@ -371,7 +371,7 @@ def test_5_coaxial():
     plt.ylabel(r'$V (t)\,[V]$')
     plt.xlabel(r'$t\,[ns]$')
     plt.xticks(range(0, 40, 10))
-    plt.ylim(-1,3)
+    # plt.ylim(-1,3)
     # plt.yticks(range(-1, 4, 1))
     plt.grid('both')
     plt.legend()
@@ -434,16 +434,14 @@ def test_7_bundles():
     # file = 'python/testData/parser/test_7_bundles_Level_1_single_bundle.smb.json'
 
     p = Parser(file)
-    p.run(finalTime=50e-9,dt=0.5e-10)
+    p.run(finalTime=50e-9,dt=0.5e-10)   
 
-    t, I = np.genfromtxt('python/testData/ngspice/manual/im1.csv', delimiter=',', usecols=(0,1), unpack = True)
-    tv1, V1 = np.genfromtxt('python/testData/ngspice/manual/im2.csv', delimiter=',', usecols=(0,1), unpack = True)
-    tv2, V2 = np.genfromtxt('python/testData/ngspice/manual/im3.csv', delimiter=',', usecols=(0,1), unpack = True)
-
+    t, Ish = np.genfromtxt('python/testData/bundles_test/ex7s2cout.txt', delimiter=',', usecols=(0,1), unpack = True)
+    I1, I2 = np.genfromtxt('python/testData/bundles_test/ex7curout.txt', delimiter=',', usecols=(1,2), unpack = True)
     
     fig, ax = plt.subplots(3,1)
     ax[0].plot(1e9*p.probes["i_sh21c1"].t, 1e3*p.probes["i_sh21c1"].val[:,0], label = 'sh21c1 - shield 0, c1')
-    ax[0].plot(t, I, 'r--', label = 'result from manual ')
+    ax[0].plot(1e9*t, 1e3*Ish, 'r--', label = 'result from manual ')
     ax[0].set_ylabel(r'$I (t)\,[mA]$')
     ax[0].set_xlabel(r'$t\,[ns]$')
     ax[0].set_xticks(range(0, 60, 10))
@@ -454,7 +452,7 @@ def test_7_bundles():
     
     # ax[1].plot(1e9*p.probes["cable_1_terminal_voltage"].t, -1e6*p.probes["cable_1_terminal_voltage"].val[:,8], label = 'cable 1 - s1s2c2 - V')
     ax[1].plot(1e9*p.probes["cable_1_terminal_voltage"].t, 1e6*50*p.probes["cable_1_terminal_current"].val[:,8], label = 'cable 1 - s1s2c2 - I')
-    ax[1].plot(tv1, V1, 'r--', label = 'result from manual ')
+    ax[1].plot(1e9*t, 1e6*50*I1, 'r--', label = 'result from manual ')
     ax[1].set_ylabel(r'$V (t)\,[\mu V]$')
     ax[1].set_xlabel(r'$t\,[ns]$')
     ax[1].set_xticks(range(0, 60, 10))
@@ -463,11 +461,134 @@ def test_7_bundles():
 
     # ax[2].plot(1e9*p.probes["cable_1_terminal_voltage"].t, -1e6*p.probes["cable_1_terminal_voltage"].val[:,6], label = 'cable 1 - s1s4c2 -V')
     ax[2].plot(1e9*p.probes["cable_1_terminal_voltage"].t, 1e6*50*p.probes["cable_1_terminal_current"].val[:,6], label = 'cable 1 - s1s4c2-I')
-    ax[2].plot(tv2, V2, 'r--', label = 'result from manual ')
+    ax[2].plot(1e9*t, 1e6*50*I2, 'r--', label = 'result from manual ')
     ax[2].set_ylabel(r'$V (t)\,[\mu V]$')
     ax[2].set_xlabel(r'$t\,[ns]$')
     ax[2].set_xticks(range(0, 60, 10))
     # ax[2].set_ylim(-120,120)
+    ax[2].grid('both')
+    ax[2].legend()
+    
+
+    plt.show()
+    
+def test_ex7_simplified():
+    file = 'python/testData/parser/example7_simplified.smb.json'
+
+    p = Parser(file)
+    p.run(finalTime=50e-9,dt=0.5e-10)   
+
+    t, Ish = np.genfromtxt('python/testData/bundles_test/ex7s2cout_simplified.txt', delimiter=',', usecols=(0,1), unpack = True)
+    I1, I2 = np.genfromtxt('python/testData/bundles_test/ex7curout_simplified.txt', delimiter=',', usecols=(1,2), unpack = True)
+    
+    fig, ax = plt.subplots(3,1)
+    ax[0].plot(1e9*p.probes["i_sh21c1"].t, 1e3*p.probes["i_sh21c1"].val[:,0], label = 'sh21c1 - shield 0, c1')
+    ax[0].plot(1e9*t, 1e3*Ish, 'r--', label = 'result from manual ')
+    ax[0].set_ylabel(r'$I (t)\,[mA]$')
+    ax[0].set_xlabel(r'$t\,[ns]$')
+    ax[0].set_xticks(range(0, 60, 10))
+    ax[0].grid('both')
+    ax[0].legend()
+    
+    ax[1].plot(1e9*p.probes["cable_1_terminal_current_start"].t, 1e6*p.probes["cable_1_terminal_current_start"].val[:,2], label = 'cable 1 - s1s2c2 - I')
+    ax[1].plot(1e9*t, 1e6*I1, 'r--', label = 'result from manual ')
+    ax[1].set_ylabel(r'$I (t)\,[\mu A]$')
+    ax[1].set_xlabel(r'$t\,[ns]$')
+    ax[1].set_xticks(range(0, 60, 10))
+    ax[1].grid('both')
+    ax[1].legend()
+
+    ax[2].plot(1e9*p.probes["cable_1_terminal_current_end"].t, 1e6*p.probes["cable_1_terminal_current_end"].val[:,2], label = 'cable 1 - s1s4c2-I')
+    ax[2].plot(1e9*t, 1e6*I2, 'r--', label = 'result from manual ')
+    ax[2].set_ylabel(r'$I (t)\,[\mu A]$')
+    ax[2].set_xlabel(r'$t\,[ns]$')
+    ax[2].set_xticks(range(0, 60, 10))
+    ax[2].grid('both')
+    ax[2].legend()
+    
+
+    plt.show()
+def test_ex7_simplified_R_R():
+    file = 'python/testData/parser/example7_simplified_R_R.smb.json'
+
+    p = Parser(file)
+    p.run(finalTime=50e-9,dt=0.5e-10)   
+
+    t, Ish = np.genfromtxt('python/testData/bundles_test/ex7s2cout_simplified_R_R.txt', delimiter=',', usecols=(0,1), unpack = True)
+    I1, I2 = np.genfromtxt('python/testData/bundles_test/ex7curout_simplified_R_R.txt', delimiter=',', usecols=(1,2), unpack = True)
+    
+    # tzz, Ishzz = np.genfromtxt('python/testData/bundles_test/ex7s2cout_simplified_Z_Z.txt', delimiter=',', usecols=(0,1), unpack = True)
+    # I1zz, I2zz = np.genfromtxt('python/testData/bundles_test/ex7curout_simplified_Z_Z.txt', delimiter=',', usecols=(1,2), unpack = True)
+
+    
+    fig, ax = plt.subplots(3,1)
+    ax[0].plot(1e9*p.probes["i_sh21c1"].t, 1e3*p.probes["i_sh21c1"].val[:,0], label = 'sh21c1 - shield 0, c1')
+    ax[0].plot(1e9*t, 1e3*Ish, 'r--', label = 'result from manual ')
+    # ax[0].plot(1e9*tzz, 1e3*Ishzz, '-.', label = 'result from manual zz')
+    ax[0].set_ylabel(r'$I (t)\,[mA]$')
+    ax[0].set_xlabel(r'$t\,[ns]$')
+    ax[0].set_xticks(range(0, 60, 10))
+    ax[0].grid('both')
+    ax[0].legend()
+    
+    ax[1].plot(1e9*p.probes["cable_1_terminal_current_start"].t, 1e6*p.probes["cable_1_terminal_current_start"].val[:,2], label = 'cable 1 - s1s2c2 - I')
+    ax[1].plot(1e9*t, 1e6*I1, 'r--', label = 'result from manual ')
+    # ax[1].plot(1e9*tzz, 1e6*I1zz, '-.', label = 'result from manual zz ')
+    ax[1].set_ylabel(r'$I (t)\,[\mu A]$')
+    ax[1].set_xlabel(r'$t\,[ns]$')
+    ax[1].set_xticks(range(0, 60, 10))
+    ax[1].grid('both')
+    ax[1].legend()
+
+    ax[2].plot(1e9*p.probes["cable_1_terminal_current_end"].t, 1e6*p.probes["cable_1_terminal_current_end"].val[:,2], label = 'cable 1 - s1s4c2-I')
+    ax[2].plot(1e9*t, 1e6*I2, 'r--', label = 'result from manual ')
+    # ax[2].plot(1e9*tzz, 1e6*I2zz, '-.', label = 'result from manual zz')
+    ax[2].set_ylabel(r'$I (t)\,[\mu A]$')
+    ax[2].set_xlabel(r'$t\,[ns]$')
+    ax[2].set_xticks(range(0, 60, 10))
+    ax[2].grid('both')
+    ax[2].legend()
+    
+
+    plt.show()
+
+def test_ex7_simplified_Z_Z():
+    file = 'python/testData/parser/example7_simplified_Z_Z.smb.json'
+
+    p = Parser(file)
+    p.run(finalTime=50e-9,dt=0.5e-10)   
+
+    # trr, Ishrr = np.genfromtxt('python/testData/bundles_test/ex7s2cout_simplified_R_R.txt', delimiter=',', usecols=(0,1), unpack = True)
+    # I1rr, I2rr = np.genfromtxt('python/testData/bundles_test/ex7curout_simplified_R_R.txt', delimiter=',', usecols=(1,2), unpack = True)
+
+    t, Ish = np.genfromtxt('python/testData/bundles_test/ex7s2cout_simplified_Z_Z.txt', delimiter=',', usecols=(0,1), unpack = True)
+    I1, I2 = np.genfromtxt('python/testData/bundles_test/ex7curout_simplified_Z_Z.txt', delimiter=',', usecols=(1,2), unpack = True)
+    
+    fig, ax = plt.subplots(3,1)
+    ax[0].plot(1e9*p.probes["i_sh21c1"].t, 1e3*p.probes["i_sh21c1"].val[:,0], label = 'sh21c1 - shield 0, c1')
+    ax[0].plot(1e9*t, 1e3*Ish, 'r--', label = 'result from manual ')
+    # ax[0].plot(1e9*trr, 1e3*Ishrr, '-.', label = 'result from manual rr')
+    ax[0].set_ylabel(r'$I (t)\,[mA]$')
+    ax[0].set_xlabel(r'$t\,[ns]$')
+    ax[0].set_xticks(range(0, 60, 10))
+    ax[0].grid('both')
+    ax[0].legend()
+    
+    ax[1].plot(1e9*p.probes["cable_1_terminal_current_start"].t, 1e6*p.probes["cable_1_terminal_current_start"].val[:,2], label = 'cable 1 - s1s2c2 - I')
+    ax[1].plot(1e9*t, 1e6*I1, 'r--', label = 'result from manual ')
+    # ax[1].plot(1e9*trr, 1e6*I1rr, '-.', label = 'result from manual rr ')
+    ax[1].set_ylabel(r'$I (t)\,[\mu A]$')
+    ax[1].set_xlabel(r'$t\,[ns]$')
+    ax[1].set_xticks(range(0, 60, 10))
+    ax[1].grid('both')
+    ax[1].legend()
+
+    ax[2].plot(1e9*p.probes["cable_1_terminal_current_end"].t, 1e6*p.probes["cable_1_terminal_current_end"].val[:,2], label = 'cable 1 - s1s4c2-I')
+    ax[2].plot(1e9*t, 1e6*I2, 'r--', label = 'result from manual ')
+    # ax[2].plot(1e9*trr, 1e6*I2rr, '-.', label = 'result from manual rr ')
+    ax[2].set_ylabel(r'$I (t)\,[\mu A]$')
+    ax[2].set_xlabel(r'$t\,[ns]$')
+    ax[2].set_xticks(range(0, 60, 10))
     ax[2].grid('both')
     ax[2].legend()
     
@@ -659,4 +780,48 @@ def test_bundles_R_MTL_LCpRs():
 
     plt.show()
 
+def test_5_coaxial_v1():
+    """
+    
+      -------------------
+     |  \                   \
+     R   \                   \
+     ·---|                   |
+     ·---|                   |
+     R   /                   /
+     |  /                   /
+     --------------------
+     |                   |
+     R                   R
+  ___|___________________|___
+     
+    """ 
+    
+    file = 'python/testData/parser/test_5_coaxial_v1.smb.json'
+    p = Parser(file)
+
+    p.run(finalTime=30e-9)
+    
+    plt.figure()
+    plt.plot(1e9*p.probes["i"].t, p.probes["i"].val[:,0], label = 'Current on shield')
+    plt.ylabel(r'$I (t)\,[V]$')
+    plt.xlabel(r'$t\,[ns]$')
+    plt.xticks(range(0, 40, 10))
+    # plt.ylim(-2,8)
+    # plt.yticks(range(-2, 10, 2))
+    plt.grid('both')
+    plt.legend()
+
+    plt.figure()
+    plt.plot(1e9*p.probes["v"].t, p.probes["v"].val[:,1], label = 'Voltage on inner conductor 1')
+    plt.plot(1e9*p.probes["v"].t, p.probes["v"].val[:,2], label = 'Voltage on inner conductor 2')
+    plt.ylabel(r'$V (t)\,[V]$')
+    plt.xlabel(r'$t\,[ns]$')
+    plt.xticks(range(0, 40, 10))
+    # plt.ylim(-1,3)
+    # plt.yticks(range(-1, 4, 1))
+    plt.grid('both')
+    plt.legend()
+    
+    plt.show()
 

@@ -96,7 +96,7 @@
 					"prop" : 4.2e-9,
 					"poles" : [],
 					"residues" : [],
-					"factor" : 4
+					"factor" : 8
 				}
 			},
 			{
@@ -111,7 +111,7 @@
 					"prop" : 4.2e-9,
 					"poles" : [],
 					"residues" : [],
-					"factor" : 1
+					"factor" : 2
 				}
 			},
 			{
@@ -126,7 +126,7 @@
 					"prop" : 4.2e-9,
 					"poles" : [],
 					"residues" : [],
-					"factor" : 3
+					"factor" : 6
 				}
 			},
 			{
@@ -141,14 +141,14 @@
 					"prop" : 4.2e-9,
 					"poles" : [],
 					"residues" : [],
-					"factor" : 2
+					"factor" : 4
 				}
 			},
 			{
 				"materialId": 31,
 				"name": "Bundle_5_level_1",
 				"materialType": "Wire",
-				"resistance": 5.7e-3,
+				"resistance": 5.7e-1,
 				"inductance": 1.2982800E-07,
 				"capacitance":3.2310005E-10,
 				"transferImpedance" : {
@@ -156,7 +156,7 @@
 					"prop" : 4.2e-9,
 					"poles" : [],
 					"residues" : [],
-					"factor" : 1
+					"factor" : 2
 				}
 			},
 			{
@@ -548,7 +548,7 @@
 			"77   0.0 0.0 0.1",
 			"78   0.0 0.0 0.3",
 			"79   0.0 0.0 0.42",
-			"80   0.0 0.0 0.0"
+			"80   0.0 0.0 0.00"
 		],
 		"elements": {
 			"_line_description": "elemId materialId layerId coordId1 coordId2",
@@ -597,14 +597,7 @@
 				"39 0 1 77",
 				"40 0 1 78",
 				"41 0 1 79",
-				"42 0 1 51",
-				"43 0 1 66",
-				"44 0 1 78",
-				"45 0 1 79",
-				"46 0 1 1",
-				"47 0 1 5",
-				"48 0 1 9",
-				"49 0 1 80"
+				"42 0 1 80"
 			]
 		},
 		"probes": [
@@ -617,13 +610,13 @@
 			{
 				"name": "cable_1_terminal_voltage",
 				"type": "voltage",
-				"elemIds": [49],
+				"elemIds": [42],
 				"cable" : "line_0_0"
 			},
 			{
 				"name": "cable_1_terminal_current",
 				"type": "current",
-				"elemIds": [49],
+				"elemIds": [42],
 				"cable" : "line_0_0"
 			}
 		],
