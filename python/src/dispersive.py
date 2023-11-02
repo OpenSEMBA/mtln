@@ -205,6 +205,8 @@ class TransferImpedance(Dispersive):
         range_out = n_before_out + np.array(out_level_conductors)
         range_in  = n_before_in  + np.array(in_level_conductors)
 
+
+
         for i in range_out:
             for j in range_in:
 

@@ -28,7 +28,7 @@
 				"resistance": 22.9e-3,
                 "transferImpedance" : {
                     "cte" : 22.9e-3,
-                    "prop" : 2.0e-9,
+                    "prop" : 4.0e-9,
                     "poles" : [],
                     "residues" : []
                 }
@@ -38,8 +38,8 @@
 				"name": "CoaxialTerminal",
 				"materialType": "Connector",
 				"connectorType": "MultiwireConnector",
-				"connections" : ["short", "short"],
-				"resistanceVector": [ 0.01, 0.01 ],
+				"connections" : ["Conn_R", "Conn_R"],
+				"resistanceVector": [ 50, 50 ],
 				"capacitanceVector" : [1e22, 1e22],
 				"inductanceVector" : [0, 0]
 

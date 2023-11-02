@@ -26,6 +26,7 @@ shield2_1, sh21c1, 0.3, 0.4
 !!SIMPLE
 cable_1, 0, 0
 s1s2c1
+s1s2c2
 *------------ Section 5B: System Level 1 – SHIELD ONE Topology -------------
 !SHIELD ONE SEGMENT
 !!SIMPLE

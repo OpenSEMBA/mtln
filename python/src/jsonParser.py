@@ -374,9 +374,9 @@ class Parser:
             if "inductance" in k:
                 L = val
             if "capacitance" in k:
-                    C = val
+                C = val
             if "resistance" in k:
-                    R = val
+                R = val
 
         if type(L) == list:
             L = np.array(L)
@@ -592,12 +592,12 @@ class Parser:
                     cond0, cond1 = conn["conductors"]
                     s0, s1 = conn["sources"]
                     R0, R1 = 0.0, 0.0
-                    if (conn0["connectorType"] == "Conn_sRLC"):
+                    if (conn0["connectorType"] == "Conn_sRLC" or conn0["connectorType"] == "Conn_R"):
                         R0 += conn0["resistance"]
                     elif conn0["connectorType"] == "MultiwireConnector":
                         R0 += conn0["resistanceVector"][cond0]
 
-                    if (conn1["connectorType"] == "Conn_sRLC"):
+                    if (conn1["connectorType"] == "Conn_sRLC" or conn0["connectorType"] == "Conn_R"):
                         R1 += conn1["resistance"]
                     elif conn1["connectorType"] == "MultiwireConnector":
                         R1 += conn1["resistanceVector"][cond1]

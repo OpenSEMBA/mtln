@@ -1,0 +1,387 @@
+ 
+ Release: MHarness v3.2 (Sept 2003)      
+ Revision: MHarness 3.2.3 (Oct 2008)     
+ 
+ Date of execution: 2023-10-27   14:41:44
+ Inputfile is: 
+     
+ C:\Users\c82202\Desktop\Job\PC\Tecnologias\Hecate\MHarness_UGR\Example7_more\ex
+ ample7_guada.inp
+ diagnostic file will be: 
+     
+ C:\Users\c82202\Desktop\Job\PC\Tecnologias\Hecate\MHarness_UGR\Example7_more\ex
+ ample7_guada.diag
+
+
+           -------------- segments --------------- 
+     seg            #cond  #cell  end1                 end2                length
+cable_1    8     18   0      jct_1    5.400E-01
+cable_2    2     11   jct_1  0        3.430E-01
+cable_3    6      5   jct_1  jct_2    1.650E-01
+cable_4    4     11   jct_2  0        3.560E-01
+cable_5    2      5   jct_2  0        1.780E-01
+
+
+                    junctions and nodes
+ conductor id format: (seg cond end); end=1 for end1, end=2 for end2
+ jct_1                                                           
+     node  node1                                                           
+          cable_1  s1s2c1     2
+          cable_2  s1s2c1     1
+     node  node2                                                           
+          cable_1  s1s2c2     2
+          cable_2  s1s2c2     1
+     node  node3                                                           
+          cable_1  s1s4c1     2
+          cable_3  s1s4c1     1
+     node  node4                                                           
+          cable_1  s1s4c2     2
+          cable_3  s1s4c2     1
+     node  node5                                                           
+          cable_1  s1s4c3     2
+          cable_3  s1s4c3     1
+     node  node6                                                           
+          cable_1  s1s4c4     2
+          cable_3  s1s4c4     1
+     node  node7                                                           
+          cable_1  s1s5c1     2
+          cable_3  s1s5c1     1
+     node  node8                                                           
+          cable_1  s1s5c2     2
+          cable_3  s1s5c2     1
+ jct_2                                                           
+     node  1node                                                           
+          cable_3  s1s4c1     2
+          cable_4  s1s4c1     1
+     node  2node                                                           
+          cable_3  s1s4c2     2
+          cable_4  s1s4c2     1
+     node  3node                                                           
+          cable_3  s1s4c3     2
+          cable_4  s1s4c3     1
+     node  4node                                                           
+          cable_3  s1s4c4     2
+          cable_4  s1s4c4     1
+     node  5node                                                           
+          cable_3  s1s5c1     2
+          cable_5  s1s5c1     1
+     node  6node                                                           
+          cable_3  s1s5c2     2
+          cable_5  s1s5c2     1
+
+
+  !capacitance  
+ 
+ cable_1                                                         
+   1.0550002E-10 -2.0500004E-11  0.0000000E+00  0.0000000E+00  0.0000000E+00  0.0000000E+00  0.0000000E+00
+  0.0000000E+00
+  -2.0500004E-11  1.0550002E-10  0.0000000E+00  0.0000000E+00  0.0000000E+00  0.0000000E+00  0.0000000E+00
+  0.0000000E+00
+   0.0000000E+00  0.0000000E+00  1.0550002E-10 -2.0500004E-11  0.0000000E+00  0.0000000E+00  0.0000000E+00
+  0.0000000E+00
+   0.0000000E+00  0.0000000E+00 -2.0500004E-11  1.0550002E-10  0.0000000E+00  0.0000000E+00  0.0000000E+00
+  0.0000000E+00
+   0.0000000E+00  0.0000000E+00  0.0000000E+00  0.0000000E+00  1.0550002E-10 -2.0500004E-11  0.0000000E+00
+  0.0000000E+00
+   0.0000000E+00  0.0000000E+00  0.0000000E+00  0.0000000E+00 -2.0500004E-11  1.0550002E-10  0.0000000E+00
+  0.0000000E+00
+   0.0000000E+00  0.0000000E+00  0.0000000E+00  0.0000000E+00  0.0000000E+00  0.0000000E+00  1.0550002E-10
+ -2.0500004E-11
+   0.0000000E+00  0.0000000E+00  0.0000000E+00  0.0000000E+00  0.0000000E+00  0.0000000E+00 -2.0500004E-11
+  1.0550002E-10
+ 
+ cable_2                                                         
+   1.0550002E-10 -2.0500004E-11
+  -2.0500004E-11  1.0550002E-10
+ 
+ cable_3                                                         
+   1.0550002E-10 -2.0500004E-11  0.0000000E+00  0.0000000E+00  0.0000000E+00  0.0000000E+00
+  -2.0500004E-11  1.0550002E-10  0.0000000E+00  0.0000000E+00  0.0000000E+00  0.0000000E+00
+   0.0000000E+00  0.0000000E+00  1.0550002E-10 -2.0500004E-11  0.0000000E+00  0.0000000E+00
+   0.0000000E+00  0.0000000E+00 -2.0500004E-11  1.0550002E-10  0.0000000E+00  0.0000000E+00
+   0.0000000E+00  0.0000000E+00  0.0000000E+00  0.0000000E+00  1.0550002E-10 -2.0500004E-11
+   0.0000000E+00  0.0000000E+00  0.0000000E+00  0.0000000E+00 -2.0500004E-11  1.0550002E-10
+ 
+ cable_4                                                         
+   1.0550002E-10 -2.0500004E-11  0.0000000E+00  0.0000000E+00
+  -2.0500004E-11  1.0550002E-10  0.0000000E+00  0.0000000E+00
+   0.0000000E+00  0.0000000E+00  1.0550002E-10 -2.0500004E-11
+   0.0000000E+00  0.0000000E+00 -2.0500004E-11  1.0550002E-10
+ 
+ cable_5                                                         
+   1.0550002E-10 -2.0500004E-11
+  -2.0500004E-11  1.0550002E-10
+
+
+  !inductance  
+ 
+ cable_1                                                         
+   2.4382084E-07  4.7377505E-08  0.0000000E+00  0.0000000E+00  0.0000000E+00  0.0000000E+00  0.0000000E+00
+  0.0000000E+00
+   4.7377508E-08  2.4382081E-07  0.0000000E+00  0.0000000E+00  0.0000000E+00  0.0000000E+00  0.0000000E+00
+  0.0000000E+00
+   0.0000000E+00  0.0000000E+00  2.4382084E-07  4.7377505E-08  0.0000000E+00  0.0000000E+00  0.0000000E+00
+  0.0000000E+00
+   0.0000000E+00  0.0000000E+00  4.7377508E-08  2.4382081E-07  0.0000000E+00  0.0000000E+00  0.0000000E+00
+  0.0000000E+00
+   0.0000000E+00  0.0000000E+00  0.0000000E+00  0.0000000E+00  2.4382084E-07  4.7377505E-08  0.0000000E+00
+  0.0000000E+00
+   0.0000000E+00  0.0000000E+00  0.0000000E+00  0.0000000E+00  4.7377508E-08  2.4382081E-07  0.0000000E+00
+  0.0000000E+00
+   0.0000000E+00  0.0000000E+00  0.0000000E+00  0.0000000E+00  0.0000000E+00  0.0000000E+00  2.4382084E-07
+  4.7377505E-08
+   0.0000000E+00  0.0000000E+00  0.0000000E+00  0.0000000E+00  0.0000000E+00  0.0000000E+00  4.7377508E-08
+  2.4382081E-07
+ 
+ cable_2                                                         
+   2.4382084E-07  4.7377505E-08
+   4.7377508E-08  2.4382081E-07
+ 
+ cable_3                                                         
+   2.4382084E-07  4.7377505E-08  0.0000000E+00  0.0000000E+00  0.0000000E+00  0.0000000E+00
+   4.7377508E-08  2.4382081E-07  0.0000000E+00  0.0000000E+00  0.0000000E+00  0.0000000E+00
+   0.0000000E+00  0.0000000E+00  2.4382084E-07  4.7377505E-08  0.0000000E+00  0.0000000E+00
+   0.0000000E+00  0.0000000E+00  4.7377508E-08  2.4382081E-07  0.0000000E+00  0.0000000E+00
+   0.0000000E+00  0.0000000E+00  0.0000000E+00  0.0000000E+00  2.4382084E-07  4.7377505E-08
+   0.0000000E+00  0.0000000E+00  0.0000000E+00  0.0000000E+00  4.7377508E-08  2.4382081E-07
+ 
+ cable_4                                                         
+   2.4382084E-07  4.7377505E-08  0.0000000E+00  0.0000000E+00
+   4.7377508E-08  2.4382081E-07  0.0000000E+00  0.0000000E+00
+   0.0000000E+00  0.0000000E+00  2.4382084E-07  4.7377505E-08
+   0.0000000E+00  0.0000000E+00  4.7377508E-08  2.4382081E-07
+ 
+ cable_5                                                         
+   2.4382084E-07  4.7377505E-08
+   4.7377508E-08  2.4382081E-07
+
+
+  resistance
+seg                  cond                  cell# 1     body       last cell
+ 
+cable_1 s1s2c1    6.200E-02  6.200E-02  6.200E-02
+cable_1 s1s2c2    6.200E-02  6.200E-02  6.200E-02
+cable_1 s1s4c1    6.200E-02  6.200E-02  6.200E-02
+cable_1 s1s4c2    6.200E-02  6.200E-02  6.200E-02
+cable_1 s1s4c3    6.200E-02  6.200E-02  6.200E-02
+cable_1 s1s4c4    6.200E-02  6.200E-02  6.200E-02
+cable_1 s1s5c1    6.200E-02  6.200E-02  6.200E-02
+cable_1 s1s5c2    6.200E-02  6.200E-02  6.200E-02
+ 
+cable_2 s1s2c1    6.200E-02  6.200E-02  6.200E-02
+cable_2 s1s2c2    6.200E-02  6.200E-02  6.200E-02
+ 
+cable_3 s1s4c1    6.200E-02  6.200E-02  6.200E-02
+cable_3 s1s4c2    6.200E-02  6.200E-02  6.200E-02
+cable_3 s1s4c3    6.200E-02  6.200E-02  6.200E-02
+cable_3 s1s4c4    6.200E-02  6.200E-02  6.200E-02
+cable_3 s1s5c1    6.200E-02  6.200E-02  6.200E-02
+cable_3 s1s5c2    6.200E-02  6.200E-02  6.200E-02
+ 
+cable_4 s1s4c1    6.200E-02  6.200E-02  6.200E-02
+cable_4 s1s4c2    6.200E-02  6.200E-02  6.200E-02
+cable_4 s1s4c3    6.200E-02  6.200E-02  6.200E-02
+cable_4 s1s4c4    6.200E-02  6.200E-02  6.200E-02
+ 
+cable_5 s1s5c1    6.200E-02  6.200E-02  6.200E-02
+cable_5 s1s5c2    6.200E-02  6.200E-02  6.200E-02
+
+
+  !shield one to cable
+ seg                  seg                  cond                 paral sfact    tzl 1      tzl 2      tzl 3   
+cable_1  shield1_1  1 1     4      4.200E-09  4.200E-09  4.200E-09
+cable_2  shield1_2  1 1     1      4.200E-09  4.200E-09  4.200E-09
+cable_3  shield1_3  1 1     3      4.200E-09  4.200E-09  4.200E-09
+cable_4  shield1_4  1 1     2      4.200E-09  4.200E-09  4.200E-09
+cable_5  shield1_5  1 1     1      4.200E-09  4.200E-09  4.200E-09
+
+
+boundary condition
+  seg                  cond                 end#     type         r          l          c          r
+  cable_1  s1s2c1  1    resistive   1.000E+10
+  cable_1  s1s2c2  1   lcprs                3.000E-11  6.000E-08  5.000E+01
+  cable_1  s1s4c1  1    resistive   1.000E+10
+  cable_1  s1s4c2  1   lcprs                3.000E-11  6.000E-08  5.000E+01
+  cable_1  s1s4c3  1    resistive   1.000E+10
+  cable_1  s1s4c4  1   lcprs                3.000E-11  6.000E-08  5.000E+01
+  cable_1  s1s5c1  1    resistive   1.000E+10
+  cable_1  s1s5c2  1   lcprs                3.000E-11  6.000E-08  5.000E+01
+  cable_2  s1s2c1  2    resistive   5.000E+01
+  cable_2  s1s2c2  2    resistive   5.000E+01
+  cable_4  s1s4c1  2   capacitive                         3.000E-12
+  cable_4  s1s4c2  2   capacitive                         2.700E-12
+  cable_4  s1s4c3  2   capacitive                         3.400E-11
+  cable_4  s1s4c4  2   capacitive                         3.500E-11
+  cable_5  s1s5c1  2    resistive   5.000E+01
+  cable_5  s1s5c2  2    resistive   5.000E+01
+
+
+           ---------- shield one segments ---------
+     seg            #cond  #cell  end1                 end2                length
+shield1_1    1     18   0      jct_1    5.400E-01
+shield1_2    1     11   jct_1  0        3.430E-01
+shield1_3    1      5   jct_1  jct_2    1.650E-01
+shield1_4    1     11   jct_2  0        3.560E-01
+shield1_5    1      5   jct_2  0        1.780E-01
+
+
+                    junctions and nodes
+ conductor id format: (seg cond end); end=1 for end1, end=2 for end2
+ jct_1                                                           
+     node  s1j1node1                                                       
+          shield1_1  1     2
+          shield1_2  1     1
+          shield1_3  1     1
+ jct_2                                                           
+     node  s1j2node1                                                       
+          shield1_3  1     2
+          shield1_4  1     1
+          shield1_5  1     1
+
+
+  !shield one capacitance  
+ 
+ shield1_1                                                       
+   5.5840010E-10
+ 
+ shield1_2                                                       
+   3.2310005E-10
+ 
+ shield1_3                                                       
+   4.7190007E-10
+ 
+ shield1_4                                                       
+   3.6370007E-10
+ 
+ shield1_5                                                       
+   3.2310005E-10
+
+
+  !shield one inductance  
+ 
+ shield1_1                                                       
+   7.5120752E-08
+ 
+ shield1_2                                                       
+   1.2982800E-07
+ 
+ shield1_3                                                       
+   8.8890502E-08
+ 
+ shield1_4                                                       
+   1.1533524E-07
+ 
+ shield1_5                                                       
+   1.2982800E-07
+
+
+  shield one resistance
+seg                  cond                  cell# 1     body       last cell
+ 
+shield1_1 1    3.900E-03  3.900E-03  3.900E-03
+ 
+shield1_2 1    1.220E-02  1.220E-02  1.220E-02
+ 
+shield1_3 1    6.500E-03  6.500E-03  6.500E-03
+ 
+shield1_4 1    4.200E-03  4.200E-03  4.200E-03
+ 
+shield1_5 1    5.700E-03  5.700E-03  5.700E-03
+
+
+  !shield two to shield one
+ seg                  seg                  cond                 paral sfact    tzl 1      tzl 2      tzl 3   
+shield1_1  shield2_1  sh21c1 1     1      2.600E-09  8.900E-09  8.900E-09
+shield1_2  shield2_2  sh22c1 1     1      7.400E-09  7.400E-09  2.600E-09
+shield1_3  shield2_3  sh23c1 1     1      3.000E-09  3.000E-09  3.000E-09
+shield1_4  shield2_4  sh24c1 1     1      4.500E-09  4.500E-09  2.600E-09
+shield1_5  shield2_5  sh25c1 1     1      9.000E-10  9.000E-10  2.600E-09
+
+
+boundary condition
+  seg                  cond                 end#     type         r          l          c          r
+  shield1_1  1  1    resistive   1.000E-06
+  shield1_2  1  2    resistive   1.000E-06
+  shield1_4  1  2    resistive   1.000E-06
+  shield1_5  1  2    resistive   1.000E-06
+
+
+           ---------- shield two segments ---------
+     seg            #cond  #cell  end1                 end2                length
+shield2_1    1     18   0      jct_1    5.400E-01
+shield2_2    1     11   jct_1  0        3.430E-01
+shield2_3    1      5   jct_1  jct_2    1.650E-01
+shield2_4    1     11   jct_2  0        3.560E-01
+shield2_5    1      5   jct_2  0        1.780E-01
+
+
+                    junctions and nodes
+ conductor id format: (seg cond end); end=1 for end1, end=2 for end2
+ jct_1                                                           
+     node  s2j1node1                                                       
+          shield2_1  sh21c1     2
+          shield2_2  sh22c1     1
+          shield2_3  sh23c1     1
+ jct_2                                                           
+     node  s2j2node1                                                       
+          shield2_3  sh23c1     2
+          shield2_4  sh24c1     1
+          shield2_5  sh25c1     1
+
+
+  !shield two capacitance  
+ 
+ shield2_1                                                       
+   2.0270004E-11
+ 
+ shield2_2                                                       
+   1.7140003E-11
+ 
+ shield2_3                                                       
+   1.9150003E-11
+ 
+ shield2_4                                                       
+   1.8350004E-11
+ 
+ shield2_5                                                       
+   1.7140003E-11
+
+
+  !shield two inductance  
+ 
+ shield2_1                                                       
+   5.4815536E-07
+ 
+ shield2_2                                                       
+   6.4825610E-07
+ 
+ shield2_3                                                       
+   5.8021459E-07
+ 
+ shield2_4                                                       
+   6.0551002E-07
+ 
+ shield2_5                                                       
+   6.4825610E-07
+
+
+  shield two resistance
+seg                  cond                  cell# 1     body       last cell
+ 
+shield2_1 sh21c1    3.333E+00  2.290E-02  2.290E-02
+ 
+shield2_2 sh22c1    1.180E-02  1.180E-02  6.093E+02
+ 
+shield2_3 sh23c1    1.730E-02  1.730E-02  1.730E-02
+ 
+shield2_4 sh24c1    1.480E-02  1.480E-02  1.557E+01
+ 
+shield2_5 sh25c1    1.180E-02  1.180E-02  6.264E-01
+
+
+boundary condition
+  seg                  cond                 end#     type         r          l          c          r
+  shield2_1  sh21c1  1    resistive   7.000E-04
+  shield2_2  sh22c1  2    resistive   1.000E+00
+  shield2_4  sh24c1  2    resistive   2.000E-01
+  shield2_5  sh25c1  2    resistive   1.650E+02

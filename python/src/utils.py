@@ -1,3 +1,5 @@
+import numpy as np
+
 class SFunction(object):
     def __init__(self, func):
             self.func = func
@@ -25,3 +27,14 @@ def add_t_functions(f1,f2):
 def multiply(f, k):
         assert('t' in f.__code__.co_varnames)
         return lambda t : k*f(t)
+
+def point_in_line(point, start, end):
+        
+        v1 = start-end
+        v2 = start-point
+        line_norm = np.linalg.norm(start-end)
+        cross = np.cross(v1,v2)
+        if (np.linalg.norm(cross) < 1e-6 and np.linalg.norm(start-point) <= line_norm and np.linalg.norm(end-point) <= line_norm):
+                return True
+        return False
+        

@@ -20,7 +20,7 @@ from .probes import *
 from .dispersive import TransferImpedance, DispersiveConnector
 from .dispersive import Dispersive
 from .utils import add_t_functions as add, multiply
-
+from .utils import point_in_line
 
 class Field:
     def __init__(self, incident_x: sp.Function, incident_y: sp.Function, incident_z: sp.Function):
@@ -376,15 +376,20 @@ class MTL():
     def set_resistance_at_point(self, position, conductor, resistance):
         self.set_resistance_in_region(position, position, conductor, resistance)
         
-    def set_resistance_in_region(self, begin, end, conductor, resistance):
-        assert(end >= begin)
-        if (type(begin) == float):
-            begin = np.array([0.0,0.0,begin])
+    def set_resistance_in_region(self, start, end, conductor, resistance):
+        assert(end >= start)
+        if (type(start) == float):
+            start = np.array([0.0,0.0,start])
         if (type(end) == float):
             end = np.array([0.0,0.0,end])
 
-        index1 = np.argmin(np.abs(self.u - begin))
-        index2 = np.argmin(np.abs(self.u - end))
+        index1 = np.argmin(np.apply_along_axis(np.linalg.norm, 1, np.abs(self.u - start)))
+        index2 = np.argmin(np.apply_along_axis(np.linalg.norm, 1, np.abs(self.u - end)))
+        
+        if (index1 == self.r.shape[0]):
+            index1 -= 1
+        if (index2 == self.r.shape[0]):
+            index2 -= 1
         
         if (index1 != index2):
             self.r[index1:index2+1][conductor][conductor] = resistance/np.linalg.norm(self.u[index2]-self.u[index1])
@@ -725,18 +730,73 @@ class MTLD:
 
         start_index = np.argmin(np.apply_along_axis(np.linalg.norm, 1, np.abs(self.u - start)))
         end_index   = np.argmin(np.apply_along_axis(np.linalg.norm, 1, np.abs(self.u - end)))
-        for index in range(start_index, end_index ):
-            # self.v_sources[conductor, index] = magnitude*np.linalg.norm(np.abs(start-self.u[index]))
-            # self.e_L[conductor, index] += magnitude
-            self.e_L[conductor, index] = add(self.e_L[conductor, index],magnitude)
-            # self.e_L[conductor, index] = add(self.e_L[conductor, index],multiply(magnitude, 1/np.linalg.norm(self.du[index])))
-
+        
+        source_factor = {}
+        for index in range(start_index, end_index):
+            source_factor[index]  = 1.0
+        
+        if (np.linalg.norm(np.abs(start - self.u[start_index])) > 1e-10) and start_index != 0:
+            
+            du = start-self.u[start_index]
+            cross_prev = np.linalg.norm(np.cross(self.du[start_index-1], du))
+            cross_curr = np.linalg.norm(np.cross(self.du[start_index], du))
+            
+            if (cross_prev < 1e-10 and cross_curr < 1e-10):
+                if (du.dot(self.du[start_index]) < 0):
+                    frac = np.linalg.norm(np.abs(start - self.u[start_index]))/np.linalg.norm(self.du[start_index-1])
+                    source_factor[start_index-1] = frac
+                elif (du.dot(self.du[start_index]) > 0):
+                    frac = 1 - np.linalg.norm(np.abs(start - self.u[start_index]))/np.linalg.norm(self.du[start_index])
+                    source_factor[start_index] = frac
+            
+            elif (cross_prev < 1e-10):
+                frac = np.linalg.norm(np.abs(start - self.u[start_index]))/np.linalg.norm(self.du[start_index-1])
+                source_factor[start_index-1] = frac
+            elif (cross_curr < 1e-10):
+                frac = 1 - np.linalg.norm(np.abs(start - self.u[start_index]))/np.linalg.norm(self.du[start_index])
+                source_factor[start_index] = frac
+                
+        if (np.linalg.norm(np.abs(end - self.u[end_index])) > 1e-10) and end_index != self.u.shape[0]:
+            
+            du = end-self.u[end_index]
+            cross_prev = np.linalg.norm(np.cross(self.du[end_index-1], du))
+            cross_curr = np.linalg.norm(np.cross(self.du[end_index], du))
+            
+            if (cross_prev < 1e-10 and cross_curr < 1e-10):
+                if (du.dot(self.du[end_index]) < 0):
+                    frac = 1-np.linalg.norm(np.abs(end - self.u[end_index]))/np.linalg.norm(self.du[end_index-1])
+                    source_factor[end_index-1] = frac
+                    source_factor[end_index] = 0.0
+                elif (du.dot(self.du[end_index]) > 0):
+                    frac = np.linalg.norm(np.abs(end - self.u[end_index]))/np.linalg.norm(self.du[end_index])
+                    source_factor[end_index] = frac
+            
+            elif (cross_prev < 1e-10):
+                frac = 1 - np.linalg.norm(np.abs(end - self.u[end_index]))/np.linalg.norm(self.du[end_index-1])
+                source_factor[end_index-1] = frac
+                source_factor[end_index] = 0.0
+            elif (cross_curr < 1e-10):
+                frac = np.linalg.norm(np.abs(end - self.u[end_index]))/np.linalg.norm(self.du[end_index])
+                source_factor[end_index] = frac
+               
+        for index, factor in source_factor.items():
+            self.e_L[conductor, index] = add(self.e_L[conductor, index],multiply(magnitude, factor))
 
     def add_probe(self, position, probe_type = str):
         if (type(position) == float):
             position = np.array([0.0,0.0,position])
         
-        if (np.any(position > self.u[-1])) or np.any((position < self.u[0])):
+        start = self.u[0].copy()
+        
+        probe_in_segment = False
+        for du in self.du:
+            end = start + du
+            if point_in_line(position, start, end):
+                probe_in_segment = True
+            start += du
+        
+        # if (np.any(position > self.u[-1])) or np.any((position < self.u[0])):
+        if not probe_in_segment:
             raise ValueError("Probe position is out of MTL length.")
 
         probe = Probe(position, probe_type, self.dt, self.u)

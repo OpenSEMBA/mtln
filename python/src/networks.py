@@ -236,7 +236,7 @@ class Network:
         except:
             raise Exception("block fail")        
 
-        self.nw_v_prev = self.nw_v
+        self.nw_v_prev = self.nw_v.copy()
         # assert( (self.B1.dot(self.H[:,np.newaxis]) + self.B2.dot(self.v_sources_now[:,np.newaxis]) + self.B3).shape[1] == self.H.shape[0])
         self.H = np.linalg.solve(self.A, self.B1.dot(self.H.reshape(self.number_of_nodes + self.number_of_state_vars,1)) + self.B2.dot(self.v_sources_now[:,np.newaxis]) + self.B3)
         self.nw_v = self.H[0:self.number_of_nodes]

@@ -14,7 +14,7 @@
 				"inductance": 5.4815536E-07,
 				"capacitance": 2.0270004E-11,
 				"transferImpedance" : {
-					"cte" : 22.9e-3,
+					"cte" : 0.0,
 					"prop" : 8.9e-9,
 					"poles" : [],
 					"residues" : []
@@ -89,14 +89,14 @@
 				"name": "Bundle_1_level_1",
 				"materialType": "Wire",
 				"resistance": 3.9e-3,
-				"inductance": 7.5120752E-08,
+				"inductance": 8.802075200000001e-08,
 				"capacitance": 5.5840010E-10,
 				"transferImpedance" : {
-					"cte" : 3.9e-3,
+					"cte" : 0.0,
 					"prop" : 4.2e-9,
 					"poles" : [],
 					"residues" : [],
-					"factor" : 8
+					"factor" : 4
 				}
 			},
 			{
@@ -104,14 +104,14 @@
 				"name": "Bundle_2_level_1",
 				"materialType": "Wire",
 				"resistance": 12.2e-3,
-				"inductance": 1.2982800E-07,
+				"inductance": 1.37228e-07,
 				"capacitance":3.2310005E-10,
 				"transferImpedance" : {
-					"cte" : 12.2e-3,
+					"cte" : 0.0,
 					"prop" : 4.2e-9,
 					"poles" : [],
 					"residues" : [],
-					"factor" : 2
+					"factor" : 1
 				}
 			},
 			{
@@ -119,14 +119,14 @@
 				"name": "Bundle_3_level_1",
 				"materialType": "Wire",
 				"resistance": 6.5e-3,
-				"inductance": 8.8890502E-08,
+				"inductance": 9.1890502e-08,
 				"capacitance": 4.7190007E-10,
 				"transferImpedance" : {
-					"cte" : 6.5e-3,
+					"cte" : 0.0,
 					"prop" : 4.2e-9,
 					"poles" : [],
 					"residues" : [],
-					"factor" : 6
+					"factor" : 3
 				}
 			},
 			{
@@ -137,11 +137,11 @@
 				"inductance": 1.1533524E-07,
 				"capacitance": 3.6370007E-10,
 				"transferImpedance" : {
-					"cte" : 4.2e-3,
+					"cte" : 0.0,
 					"prop" : 4.2e-9,
 					"poles" : [],
 					"residues" : [],
-					"factor" : 4
+					"factor" : 2
 				}
 			},
 			{
@@ -152,11 +152,11 @@
 				"inductance": 1.2982800E-07,
 				"capacitance":3.2310005E-10,
 				"transferImpedance" : {
-					"cte" : 5.7e-3,
+					"cte" : 0.0,
 					"prop" : 4.2e-9,
 					"poles" : [],
 					"residues" : [],
-					"factor" : 2
+					"factor" : 1
 				}
 			},
 			{
@@ -323,7 +323,7 @@
 				"materialType": "Connector",
 				"connectorType": "MultiwireConnector",
 				"connections" : ["Conn_R", "Conn_R", "Conn_R", "Conn_R","Conn_R", "Conn_R", "Conn_R", "Conn_R"],
-				"resistanceVector": [ 1e-6, 1e-6, 1e-6, 1e-6,1e-6, 1e-6, 1e-6,6 ],
+				"resistanceVector": [ 1e-6, 1e-6, 1e-6, 1e-6,1e-6, 1e-6, 1e-6,1e-6 ],
 				"inductanceVector" : [ 0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0  ],
 				"capacitanceVector": [ 1e22,1e22,1e22,1e22,1e22,1e22,1e22,1e22]
 			},
@@ -372,7 +372,7 @@
 				"materialId": 20,
 				"name": "T_0_1",
 				"materialType": "Connector",
-				"connectorType": "Conn_sRLC",
+				"connectorType": "Conn_R",
 				"resistance": 0.7e-3,
 				"inductance": 0.0,
 				"capacitance": 1e22
@@ -381,7 +381,7 @@
 				"materialId": 21,
 				"name": "T_0_2",
 				"materialType": "Connector",
-				"connectorType": "Conn_sRLC",
+				"connectorType": "Conn_R",
 				"resistance": 1.0,
 				"inductance": 0.0,
 				"capacitance": 1e22
@@ -390,7 +390,7 @@
 				"materialId": 22,
 				"name": "T_0_4",
 				"materialType": "Connector",
-				"connectorType": "Conn_sRLC",
+				"connectorType": "Conn_R",
 				"resistance": 200e-3,
 				"inductance": 0.0,
 				"capacitance": 1e22
@@ -399,7 +399,7 @@
 				"materialId": 23,
 				"name": "T_0_5",
 				"materialType": "Connector",
-				"connectorType": "Conn_sRLC",
+				"connectorType": "Conn_R",
 				"resistance": 165.0,
 				"inductance": 0.0,
 				"capacitance": 1e22
@@ -408,7 +408,7 @@
 				"materialId": 24,
 				"name": "SegmentConnector1",
 				"materialType": "Connector",
-				"connectorType": "Conn_sRLC",
+				"connectorType": "Conn_R",
 				"resistance": 100.0e-3,
 				"inductance": 0.0,
 				"capacitance": 1e22,
@@ -423,13 +423,43 @@
 				"materialId": 25,
 				"name": "SegmentConnector2",
 				"materialType": "Connector",
-				"connectorType": "Conn_sRLC",
+				"connectorType": "Conn_R",
 				"resistance": 19.0,
 				"inductance": 0.0,
 				"capacitance": 1e22,
 				"transferImpedance" : {
-					"cte" : 633.33,
+					"cte" : 609.3,
 					"prop" : 2.6e-9,
+					"poles" : [],
+					"residues" : []
+				}
+			},
+			{
+				"materialId": 204,
+				"name": "SegmentConnector1",
+				"materialType": "Connector",
+				"connectorType": "Conn_R",
+				"resistance": 100.0e-3,
+				"inductance": 0.0,
+				"capacitance": 1e22,
+				"transferImpedance" : {
+					"cte" : 0.0,
+					"prop" : 0.0,
+					"poles" : [],
+					"residues" : []
+				}
+			},
+			{
+				"materialId": 205,
+				"name": "SegmentConnector2",
+				"materialType": "Connector",
+				"connectorType": "Conn_R",
+				"resistance": 19.0,
+				"inductance": 0.0,
+				"capacitance": 1e22,
+				"transferImpedance" : {
+					"cte" : 0.0,
+					"prop" : 0.0,
 					"poles" : [],
 					"residues" : []
 				}
@@ -438,12 +468,12 @@
 				"materialId": 26,
 				"name": "SegmentConnector4",
 				"materialType": "Connector",
-				"connectorType": "Conn_sRLC",
+				"connectorType": "Conn_R",
 				"resistance": 504e-3,
 				"inductance": 0.0,
 				"capacitance": 1e22,
 				"transferImpedance" : {
-					"cte" : 16.8,
+					"cte" : 15.57,
 					"prop" : 2.6e-9,
 					"poles" : [],
 					"residues" : []
@@ -453,7 +483,7 @@
 				"materialId": 27,
 				"name": "SegmentConnector5",
 				"materialType": "Connector",
-				"connectorType": "Conn_sRLC",
+				"connectorType": "Conn_R",
 				"resistance": 22.3e-3,
 				"inductance": 0.0,
 				"capacitance": 1e22,
@@ -463,7 +493,38 @@
 					"poles" : [],
 					"residues" : []
 				}
+			},
+			{
+				"materialId": 206,
+				"name": "SegmentConnector4",
+				"materialType": "Connector",
+				"connectorType": "Conn_R",
+				"resistance": 504e-3,
+				"inductance": 0.0,
+				"capacitance": 1e22,
+				"transferImpedance" : {
+					"cte" : 0.0,
+					"prop" : 0.0,
+					"poles" : [],
+					"residues" : []
+				}
+			},
+			{
+				"materialId": 207,
+				"name": "SegmentConnector5",
+				"materialType": "Connector",
+				"connectorType": "Conn_R",
+				"resistance": 22.3e-3,
+				"inductance": 0.0,
+				"capacitance": 1e22,
+				"transferImpedance" : {
+					"cte" : 0.0,
+					"prop" : 0.0,
+					"poles" : [],
+					"residues" : []
+				}
 			}
+
 		],
 		"layers": [
 			{ "id": 1, "name": "WiresLayer" }
@@ -690,10 +751,14 @@
 			{"name": "line_2_10", "materialId": 65,"initialConnectorId":72, "endConnectorId": 8,"elemIds": [37,38],"ndiv": 5}
         ],
 		"cableEnds":[
-			{"name": "Shield1End", "materialId": 24, "coordIds": [1]},
-			{"name": "Shield1End", "materialId": 25, "coordIds": [5]},
-			{"name": "Shield1End", "materialId": 26, "coordIds": [9]},
-			{"name": "Shield1End", "materialId": 27, "coordIds": [10]}
+			{"name": "Shield1End_0", "materialId": 24, "coordIds": [1]},
+			{"name": "Shield2End_0", "materialId": 25, "coordIds": [5]},
+			{"name": "Shield4End_0", "materialId": 26, "coordIds": [9]},
+			{"name": "Shield5End_0", "materialId": 27, "coordIds": [10]},
+			{"name": "Shield1End_1", "materialId": 204, "coordIds": [11]},
+			{"name": "Shield2End_1", "materialId": 205, "coordIds": [23]},
+			{"name": "Shield4End_1", "materialId": 206, "coordIds": [30]},
+			{"name": "Shield5End_1", "materialId": 207, "coordIds": [32]}
 		]
 	}
 }
