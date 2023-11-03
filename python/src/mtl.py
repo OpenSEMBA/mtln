@@ -24,14 +24,11 @@ from .utils import point_in_line
 
 class Field:
     def __init__(self, incident_x: sp.Function, incident_y: sp.Function, incident_z: sp.Function):
-    # def __init__(self, incident_x: FunctionType, incident_y: FunctionType, incident_z: FunctionType):
-        # assert (type(incident_x) == LambdaType and type(incident_z) == LambdaType)
         self.e_x = incident_x
         self.e_y = incident_y
         self.e_z = incident_z
 
     def compute_eL_at_segment(self, du: npt.NDArray[np.float64]):
-    # def compute_eL_at_segment(self, du: np.array):
         du = du/np.linalg.norm(du)
         assert (np.isclose(np.linalg.norm(du), 1, rtol = 0.01))
         return self.e_x*du[0] + self.e_y*du[1] + self.e_z*du[2]
@@ -882,12 +879,6 @@ class MTLD:
 
     @dispatch()
     def update_sources(self):
-        # self.v_sources_now = np.vectorize(FunctionType.__call__, otypes=["float64"])(
-        #     self.v_sources, self.time
-        # )
-        # self.v_sources_prev = np.vectorize(FunctionType.__call__, otypes=["float64"])(
-        #     self.v_sources, self.time - self.dt
-        # )
         self.e_L_now = np.vectorize(FunctionType.__call__, otypes=["float64"])(
             self.e_L, self.time + self.dt / 2
         )
@@ -903,13 +894,7 @@ class MTLD:
 
     @dispatch(float,float)
     def update_sources(self, time, dt):
-        # self.v_sources_now = np.vectorize(FunctionType.__call__, otypes=["float64"])(
-        #     self.v_sources, self.time
-        # )
-        # self.v_sources_prev = np.vectorize(FunctionType.__call__, otypes=["float64"])(
-        #     self.v_sources, self.time - self.dt
-        # )
-       
+      
         self.e_L_now = np.vectorize(FunctionType.__call__, otypes=["float64"])(
             self.e_L, time + dt / 2
         )

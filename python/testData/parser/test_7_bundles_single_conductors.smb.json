@@ -14,6 +14,7 @@
 				"inductance": 5.4815536E-07,
 				"capacitance": 2.0270004E-11,
 				"transferImpedance" : {
+					"direction" :"in",
 					"cte" : 0.0,
 					"prop" : 8.9e-9,
 					"poles" : [],
@@ -30,7 +31,8 @@
 				"inductance": 6.4825610E-07,
 				"capacitance": 1.7140003E-11,
 				"transferImpedance" : {
-					"cte" : 11.8e-3,
+					"direction" :"in",
+					"cte" : 0.0,
 					"prop" : 7.4e-9,
 					"poles" : [],
 					"residues" : []
@@ -46,6 +48,7 @@
 				"inductance": 5.8021459E-07,
 				"capacitance": 1.9150003E-11,
 				"transferImpedance" : {
+					"direction" :"in",
 					"cte" : 17.3e-3,
 					"prop" : 3.0e-9,
 					"poles" : [],
@@ -62,6 +65,7 @@
 				"inductance": 6.0551002E-07,
 				"capacitance": 1.8350004E-11,
 				"transferImpedance" : {
+					"direction" :"in",
 					"cte" : 14.8e-3,
 					"prop" : 4.5e-9,
 					"poles" : [],
@@ -78,6 +82,7 @@
 				"inductance": 6.4825610E-07,
 				"capacitance": 1.7140003E-11,
 				"transferImpedance" : {
+					"direction" :"in",
 					"cte" : 11.8e-3,
 					"prop" : 0.9e-9,
 					"poles" : [],
@@ -89,9 +94,10 @@
 				"name": "Bundle_1_level_1",
 				"materialType": "Wire",
 				"resistance": 3.9e-3,
-				"inductance": 8.802075200000001e-08,
+				"inductance": 8.4020752e-08,
 				"capacitance": 5.5840010E-10,
 				"transferImpedance" : {
+					"direction" :"in",
 					"cte" : 0.0,
 					"prop" : 4.2e-9,
 					"poles" : [],
@@ -104,9 +110,10 @@
 				"name": "Bundle_2_level_1",
 				"materialType": "Wire",
 				"resistance": 12.2e-3,
-				"inductance": 1.37228e-07,
+				"inductance": 1.3722800e-07,
 				"capacitance":3.2310005E-10,
 				"transferImpedance" : {
+					"direction" :"in",
 					"cte" : 0.0,
 					"prop" : 4.2e-9,
 					"poles" : [],
@@ -119,9 +126,10 @@
 				"name": "Bundle_3_level_1",
 				"materialType": "Wire",
 				"resistance": 6.5e-3,
-				"inductance": 9.1890502e-08,
+				"inductance":  9.1890502e-08,
 				"capacitance": 4.7190007E-10,
 				"transferImpedance" : {
+					"direction" :"in",
 					"cte" : 0.0,
 					"prop" : 4.2e-9,
 					"poles" : [],
@@ -134,9 +142,10 @@
 				"name": "Bundle_4_level_1",
 				"materialType": "Wire",
 				"resistance": 4.2e-3,
-				"inductance": 1.1533524E-07,
+				"inductance": 1.1983524e-07,
 				"capacitance": 3.6370007E-10,
 				"transferImpedance" : {
+					"direction" :"in",
 					"cte" : 0.0,
 					"prop" : 4.2e-9,
 					"poles" : [],
@@ -149,9 +158,10 @@
 				"name": "Bundle_5_level_1",
 				"materialType": "Wire",
 				"resistance": 5.7e-1,
-				"inductance": 1.2982800E-07,
+				"inductance": 1.3072800e-07,
 				"capacitance":3.2310005E-10,
 				"transferImpedance" : {
+					"direction" :"in",
 					"cte" : 0.0,
 					"prop" : 4.2e-9,
 					"poles" : [],
@@ -413,6 +423,7 @@
 				"inductance": 0.0,
 				"capacitance": 1e22,
 				"transferImpedance" : {
+					"direction" : "in",
 					"cte" : 3.33,
 					"prop" : 2.6e-9,
 					"poles" : [],
@@ -428,6 +439,7 @@
 				"inductance": 0.0,
 				"capacitance": 1e22,
 				"transferImpedance" : {
+					"direction" : "in",
 					"cte" : 609.3,
 					"prop" : 2.6e-9,
 					"poles" : [],
@@ -443,6 +455,7 @@
 				"inductance": 0.0,
 				"capacitance": 1e22,
 				"transferImpedance" : {
+					"direction" : "in",
 					"cte" : 0.0,
 					"prop" : 0.0,
 					"poles" : [],
@@ -458,6 +471,7 @@
 				"inductance": 0.0,
 				"capacitance": 1e22,
 				"transferImpedance" : {
+					"direction" : "in",
 					"cte" : 0.0,
 					"prop" : 0.0,
 					"poles" : [],
@@ -473,6 +487,7 @@
 				"inductance": 0.0,
 				"capacitance": 1e22,
 				"transferImpedance" : {
+					"direction" : "in",
 					"cte" : 15.57,
 					"prop" : 2.6e-9,
 					"poles" : [],
@@ -488,6 +503,7 @@
 				"inductance": 0.0,
 				"capacitance": 1e22,
 				"transferImpedance" : {
+					"direction" : "in",
 					"cte" : 0.74,
 					"prop" : 2.6e-9,
 					"poles" : [],
@@ -503,6 +519,7 @@
 				"inductance": 0.0,
 				"capacitance": 1e22,
 				"transferImpedance" : {
+					"direction" : "in",
 					"cte" : 0.0,
 					"prop" : 0.0,
 					"poles" : [],
@@ -518,6 +535,7 @@
 				"inductance": 0.0,
 				"capacitance": 1e22,
 				"transferImpedance" : {
+					"direction" : "in",
 					"cte" : 0.0,
 					"prop" : 0.0,
 					"poles" : [],

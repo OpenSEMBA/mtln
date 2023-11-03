@@ -130,49 +130,6 @@ class DispersiveConnector(Dispersive):
         self.q1sum = self.v_sum(self.q1)
         self.q2sum = self.v_sum(self.q2)
 
-    # def add_dispersive_connector(
-    #     self,
-    #     position : np.ndarray,
-    #     conductor,
-    #     d: float,
-    #     e: float,
-    #     poles: np.ndarray,
-    #     residues: np.ndarray,
-    # ):
-    #     # check complex poles are conjugate
-
-        
-    
-    #     if (np.any(position > self.u[-1])) or np.any((position < self.u[0])):
-    #         raise ValueError("Connector position is out of MTL length.")
-
-    #     index = np.argmin(np.abs(self.u - position))
-
-    #     assert(
-    #         self.d[index, conductor, conductor] == 0.0 and \
-    #         self.e[index, conductor, conductor] == 0.0 and \
-    #         self.q1[index, conductor, conductor] == 0.0 and \
-    #         self.q2[index, conductor, conductor] == 0.0 and \
-    #         self.q3[index, conductor, conductor] == 0.0, \
-    #         f"Dispersive connector already in conductor {conductor} at position {index} "
-    #     )
-
-    #     self.d[index, conductor, conductor] = d
-    #     self.e[index, conductor, conductor] = e
-
-
-    #     self.q1[index, conductor, conductor] = -(residues / poles) * (
-    #         1 - (np.exp(poles * self.dt) - 1) / (poles * self.dt)
-    #     )
-    #     self.q2[index, conductor, conductor] = (residues / poles) * (
-    #         1 / (poles * self.dt)
-    #         + np.exp(poles * self.dt) * (1 - 1 / (poles * self.dt))
-    #     )
-    #     self.q3[index, conductor, conductor] = np.exp(poles * self.dt)
-
-    #     self.q1sum = self.v_sum(self.q1)
-    #     self.q2sum = self.v_sum(self.q2)
-
 
 class TransferImpedance(Dispersive):
     def __init__(self, number_of_conductors, nx, u, dt):
@@ -205,35 +162,36 @@ class TransferImpedance(Dispersive):
         range_out = n_before_out + np.array(out_level_conductors)
         range_in  = n_before_in  + np.array(in_level_conductors)
 
-
+        dir = transfer_impedance["direction"]
 
         for i in range_out:
             for j in range_in:
 
-                # self.d[:, i, j] -= d
-                self.d[:, j, i] -= d
-                
-                # self.e[:, i, j] -= e
-                self.e[:, j, i] -= e
-
-                if (residues.size != 0 and poles.size != 0):
-                    self.q1[:, i, j] += (residues / poles) * (
-                        1 - (np.exp(poles * self.dt) - 1) / (poles * self.dt)
-                    )
-                    self.q2[:, i, j] -= (residues / poles) * (
-                        1 / (poles * self.dt)
-                        + np.exp(poles * self.dt) * (1 - 1 / (poles * self.dt))
-                    )
-                    self.q3[:, i, j] -= np.exp(poles * self.dt)
-
-                    self.q1[:, j, i] += (residues / poles) * (
-                        1 - (np.exp(poles * self.dt) - 1) / (poles * self.dt)
-                    )
-                    self.q2[:, j, i] -= (residues / poles) * (
-                        1 / (poles * self.dt)
-                        + np.exp(poles * self.dt) * (1 - 1 / (poles * self.dt))
-                    )
-                    self.q3[:, j, i] -= np.exp(poles * self.dt)
+                if (dir == ("in" or "both")):
+                    self.d[:, j, i] -= d
+                    self.e[:, j, i] -= e
+                    if (residues.size != 0 and poles.size != 0):
+                        self.q1[:, j, i] += (residues / poles) * (
+                            1 - (np.exp(poles * self.dt) - 1) / (poles * self.dt)
+                        )
+                        self.q2[:, j, i] -= (residues / poles) * (
+                            1 / (poles * self.dt)
+                            + np.exp(poles * self.dt) * (1 - 1 / (poles * self.dt))
+                        )
+                        self.q3[:, j, i] -= np.exp(poles * self.dt)
+                        
+                if (dir == ("out" or "both")):
+                    self.d[:, i, j] -= d
+                    self.e[:, i, j] -= e
+                    if (residues.size != 0 and poles.size != 0):
+                        self.q1[:, i, j] += (residues / poles) * (
+                            1 - (np.exp(poles * self.dt) - 1) / (poles * self.dt)
+                        )
+                        self.q2[:, i, j] -= (residues / poles) * (
+                            1 / (poles * self.dt)
+                            + np.exp(poles * self.dt) * (1 - 1 / (poles * self.dt))
+                        )
+                        self.q3[:, i, j] -= np.exp(poles * self.dt)
 
         self.q1sum = self.v_sum(self.q1)
         self.q2sum = self.v_sum(self.q2)
@@ -266,33 +224,36 @@ class TransferImpedance(Dispersive):
         range_out = n_before_out + np.array(out_level_conductors)
         range_in  = n_before_in  + np.array(in_level_conductors)
 
+        dir = transfer_impedance["direction"]
+
         for i in range_out:
             for j in range_in:
 
-                # self.d[index, i, j] = -d
-                self.d[index, j, i] = -d
-                
-                # self.e[index, i, j] = -e
-                self.e[index, j, i] = -e
-
-                if (residues.size != 0 and poles.size != 0):
-                    self.q1[index, i, j] = (residues / poles) * (
-                        1 - (np.exp(poles * self.dt) - 1) / (poles * self.dt)
-                    )
-                    self.q2[index, i, j] = -(residues / poles) * (
-                        1 / (poles * self.dt)
-                        + np.exp(poles * self.dt) * (1 - 1 / (poles * self.dt))
-                    )
-                    self.q3[index, i, j] = -np.exp(poles * self.dt)
-
-                    self.q1[index, j, i] = -(residues / poles) * (
-                        1 - (np.exp(poles * self.dt) - 1) / (poles * self.dt)
-                    )
-                    self.q2[index, j, i] = (residues / poles) * (
-                        1 / (poles * self.dt)
-                        + np.exp(poles * self.dt) * (1 - 1 / (poles * self.dt))
-                    )
-                    self.q3[index, j, i] = -np.exp(poles * self.dt)
+                if (dir == ("in" or "both")):
+                    self.d[index, j, i] = -d
+                    self.e[index, j, i] = -e
+                    if (residues.size != 0 and poles.size != 0):
+                        self.q1[index, j, i] = (residues / poles) * (
+                            1 - (np.exp(poles * self.dt) - 1) / (poles * self.dt)
+                        )
+                        self.q2[index, j, i] = -(residues / poles) * (
+                            1 / (poles * self.dt)
+                            + np.exp(poles * self.dt) * (1 - 1 / (poles * self.dt))
+                        )
+                        self.q3[index, j, i] = -np.exp(poles * self.dt)
+                        
+                if (dir == ("out" or "both")):
+                    self.d[index, i, j] = -d
+                    self.e[index, i, j] = -e
+                    if (residues.size != 0 and poles.size != 0):
+                        self.q1[index, i, j] = (residues / poles) * (
+                            1 - (np.exp(poles * self.dt) - 1) / (poles * self.dt)
+                        )
+                        self.q2[index, i, j] = -(residues / poles) * (
+                            1 / (poles * self.dt)
+                            + np.exp(poles * self.dt) * (1 - 1 / (poles * self.dt))
+                        )
+                        self.q3[index, i, j] = -np.exp(poles * self.dt)
 
         self.q1sum = self.v_sum(self.q1)
         self.q2sum = self.v_sum(self.q2)

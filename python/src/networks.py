@@ -185,7 +185,6 @@ class Network:
         assert(R != 0)
         index1 = self.connections[node1]["index"]
         index2 = self.connections[node2]["index"]
-        # assert(self.P1[index1, index1] == 0)
         if (R != 0):
             self.P1[index1, index1] += -1/R 
             self.P1[index1, index2] += 1/R
@@ -214,12 +213,6 @@ class Network:
 
         self.v_sources_prev2 = np.vectorize(FunctionType.__call__, otypes=["float64"])(self.v_sources, time - 2*dt)
 
-        # self.v_sources_now = self.v_sources_now.reshape(self.v_sources_now.shape[0],1)
-        # self.v_sources_prev =self.v_sources_prev.reshape(self.v_sources_prev.shape[0],1) 
-        # self.v_sources_prev2 =self.v_sources_prev2.reshape(self.v_sources_prev2.shape[0],1) 
-        # self.e_T_now = self.e_T_now.reshape(self.e_T_now.shape[0],1)
-        # self.e_T_prev = self.e_T_prev.reshape(self.e_T_prev.shape[0],1)
-
     def advance_voltage(self, dt):
         try:
             self.Is = self.O.dot(self.X.reshape(self.number_of_state_vars,1)) + self.P1.dot(self.nw_v.reshape(self.number_of_nodes,1)) + self.Ps.dot(self.v_sources_prev[:,np.newaxis]) +\
@@ -237,16 +230,11 @@ class Network:
             raise Exception("block fail")        
 
         self.nw_v_prev = self.nw_v.copy()
-        # assert( (self.B1.dot(self.H[:,np.newaxis]) + self.B2.dot(self.v_sources_now[:,np.newaxis]) + self.B3).shape[1] == self.H.shape[0])
         self.H = np.linalg.solve(self.A, self.B1.dot(self.H.reshape(self.number_of_nodes + self.number_of_state_vars,1)) + self.B2.dot(self.v_sources_now[:,np.newaxis]) + self.B3)
         self.nw_v = self.H[0:self.number_of_nodes]
         self.nw_v_prev.shape = self.nw_v.shape
         self.X = self.H[self.number_of_nodes:]
 
-    # def advance_voltage(self):
-    #     self.nw_v = self.terminal_term_1.dot(self.nw_v) +\
-    #                 self.terminal_term_2.dot(self.Ps.dot(self.v_sources_now + self.v_sources_prev) - 2*self.nw_i)+\
-    #                 self.terminal_term_3.dot(self.e_T_now - self.e_T_prev)
        
     def update_voltages(self, lines):
         for node in self.connections.values():
@@ -276,11 +264,7 @@ class Network:
             [dt * self.Ns          ]
         ])
 
-        # inv = np.linalg.inv(self.dx.dot(self.c) / dt - self.P1)
-        # self.terminal_term_1 = inv.dot(self.dx.dot(self.c) / dt + self.P1)
-        # self.terminal_term_2 = inv
-        # self.terminal_term_3 = -inv.dot(self.dx).dot(self.c)/dt
-       
+      
 class NetworkD:
     """
     Networks can be joining tubes (junctions) or ending tubes (terminations)

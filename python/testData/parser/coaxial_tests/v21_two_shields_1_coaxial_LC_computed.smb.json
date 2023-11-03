@@ -11,7 +11,7 @@
 				"radius": 0.0001,
 				"wireType": "Standard",
 				"resistance": 22.9e-3,
-				"inductance": 5.65815542E-07,
+				"inductance": 5.6715542E-07,
 				"capacitance": 2.0270004E-11,
 				"transferImpedance" : {
 					"cte" : 0.0,
@@ -26,7 +26,7 @@
 				"name": "Bundle_1_level_1",
 				"materialType": "Wire",
 				"resistance": 3.9e-3,
-				"inductance": 8.812076438120569e-08,
+				"inductance": 8.622077400000001e-08,
 				"capacitance": 5.5840010E-10,
 				"transferImpedance" : {
 					"cte" : 0.0,
@@ -42,8 +42,8 @@
 				"materialType": "Multiwire",
 				"resistanceVector" : [62.0e-3,62.0e-3],
 				"inductanceMatrix": [
-					[2.45073724e-07, 4.78477270e-08],
-					[4.78477270e-08, 2.45073724e-07]
+					[2.49273724e-07, 4.78477270e-08],
+					[4.78477270e-08, 2.49273724e-07]
 				],                
 				"capacitanceMatrix": [
                     [105.5e-12, -20.5e-12],

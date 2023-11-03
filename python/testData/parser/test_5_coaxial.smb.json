@@ -9,8 +9,8 @@
 				"name": "InnerCoaxial",
 				"materialType": "Multiwire",
 				"inductanceMatrix": [
-                    [3.09182309e-07, 7.45674981e-08],
-                    [7.45674981e-08, 3.09182309e-07]
+                    [3.13182309e-07, 7.45674981e-08],
+                    [7.45674981e-08, 3.13182309e-07]
 				],
 				"capacitanceMatrix": [
                     [85.0e-12, -20.5e-12],
@@ -27,7 +27,7 @@
 				"capacitance": 20.72e-12,
 				"resistance": 22.9e-3,
                 "transferImpedance" : {
-                    "cte" : 22.9e-3,
+                    "cte" : 0.0,
                     "prop" : 4.0e-9,
                     "poles" : [],
                     "residues" : []

@@ -358,27 +358,28 @@ def test_5_coaxial():
     p.runWithExternalField(
         finalTime=30e-9, 
         dt = 0,
-        field= Field(wf.null(), wf.null(), wf.double_exp_xy_sp(C =5.25e4, a = 4.0e6, b = 4.76e8)), 
+        field= Field(wf.null(), wf.null(), wf.double_exp_xy_sp(C =10.5e4, a = 4.0e6, b = 4.76e8)), 
         distances = distances)
+    
+    t, _, I = np.genfromtxt('python/testData/test5/ex5s1cout', delimiter = ',',usecols=(0,1,2), unpack = True)
+    _, _, V = np.genfromtxt('python/testData/test5/ex5vout', delimiter = ',',usecols=(0,1,2), unpack = True)
+
     
     plt.figure()
     plt.plot(1e9*p.probes["i"].t, p.probes["i"].val[:,0], label = 'Current on shield')
-    plt.ylabel(r'$I (t)\,[V]$')
+    plt.plot(1e9*t, I, label = 'Result from manual')
+    plt.ylabel(r'$I (t)\,[A]$')
     plt.xlabel(r'$t\,[ns]$')
     plt.xticks(range(0, 40, 10))
-    plt.ylim(-2,8)
-    # plt.yticks(range(-2, 10, 2))
     plt.grid('both')
     plt.legend()
 
     plt.figure()
-    # plt.plot(1e9*p.probes["v"].t, p.probes["v"].val[:,1], label = 'Voltage on inner conductor 1')
     plt.plot(1e9*p.probes["v"].t, p.probes["v"].val[:,2], label = 'Voltage on inner conductor 2')
+    plt.plot(1e9*t, V, label = 'Result from manual')
     plt.ylabel(r'$V (t)\,[V]$')
     plt.xlabel(r'$t\,[ns]$')
     plt.xticks(range(0, 40, 10))
-    # plt.ylim(-1,3)
-    # plt.yticks(range(-1, 4, 1))
     plt.grid('both')
     plt.legend()
     
