@@ -20,6 +20,9 @@ def triangle_pulse(x, A, x0):
 def sin_sq_pulse(x, A, w):
     return (A*(np.sin(w*x))**2)*(x >= 0)*(x < np.pi/w)
 
+def sin_pulse(x, A, w):
+    return (A*(np.sin(w*x)))
+
 def trapezoidal_wave_x_sp(A, rise_time, fall_time, f0, D, v):
     x, t = sp.symbols('x t')
 
@@ -63,24 +66,24 @@ def trapezoidal_wave(x, A, rise_time, fall_time, f0, D):
 def ramp_pulse(x, A, x0):
     return A*(x/x0)*(x <= x0)*(x >= 0) + A*(x >= x0)
 
-def ramp_pulse_x_sp(A, x0):
-    x,y,z,t,v = sp.symbols('x y z t v')
-    f1 = sp.Piecewise((A*(t/x0), (t+x/v <= x0)), (A, (t+x/v >= x0)))
-    return f1
 
 def ramp_pulse_sp(A, x0):
     t = sp.symbols('t')
     f1 = sp.Piecewise((A*(t/x0), (t <= x0)), (A, (t >= x0)))
     return f1
 
+def ramp_pulse_x_sp(A, x0, v):
+    x,y,z,t,v = sp.symbols('x y z t v')
+    f1 = sp.Piecewise((A*(t/x0), (t+x/v <= x0)), (A, (t+x/v >= x0)))
+    return f1
+
 def ramp_pulse_y_sp(A, x0, v):
-    x,y,z,t = sp.symbols('x y z t')
-    A_sp, x0_sp, v_sp = sp.symbols('A_sp x0_sp v')
+    x,y,z,t,v = sp.symbols('x y z t v')
     f1 = sp.Piecewise((A*(t/x0), (t+y/v <= x0)), (A, (t+y/v >= x0)))
     return f1
 
 def ramp_pulse_z_sp(A, x0, v):
-    x,y,z,t = sp.symbols('x y z t')
+    x,y,z,t,v = sp.symbols('x y z t v')
     f1 = sp.Piecewise((A*(t/x0), (t+z/v <= x0)), (A, (t+z/v >= x0)))
     return f1
 

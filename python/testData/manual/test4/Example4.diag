@@ -1,0 +1,101 @@
+ 
+ Release: MHarness v3.2 (Sept 2003)      
+ Revision: MHarness 3.2.3 (Oct 2008)     
+ 
+ Date of execution: 2023-11-07   13:48:07
+ Inputfile is: 
+     
+ C:\Users\c82202\Desktop\Job\PC\Tecnologias\Hecate\MHarness_UGR\Ejemplos\Example
+ 4.inp
+ diagnostic file will be: 
+     
+ C:\Users\c82202\Desktop\Job\PC\Tecnologias\Hecate\MHarness_UGR\Ejemplos\Example
+ 4.diag
+
+
+           -------------- segments --------------- 
+     seg            #cond  #cell  end1                 end2                length
+S1    1     80   0   J1    1.200E-01
+S2    1     80   J1  0     1.200E-01
+S3    2     24   J1  J2    2.450E-02
+S4    1     80   J2  0     1.200E-01
+S5    1     80   J2  0     1.200E-01
+
+
+                    junctions and nodes
+ conductor id format: (seg cond end); end=1 for end1, end=2 for end2
+ J1                                                              
+     node  J1N1                                                            
+          S1  1      2
+          S3  C2     1
+     node  J1N2                                                            
+          S2  1      1
+          S3  C1     1
+ J2                                                              
+     node  J2N1                                                            
+          S3  C2     2
+          S5  1      1
+     node  J2N2                                                            
+          S4  1      1
+          S3  C1     2
+
+
+  !capacitance  
+ 
+ S1                                                              
+   1.9150002E-10
+ 
+ S2                                                              
+   1.9150002E-10
+ 
+ S3                                                              
+   2.2420003E-10 -7.4530014E-11
+  -7.4530014E-11  2.2420003E-10
+ 
+ S4                                                              
+   1.9150002E-10
+ 
+ S5                                                              
+   1.9150002E-10
+
+
+  !inductance  
+ 
+ S1                                                              
+   4.8186979E-07
+ 
+ S2                                                              
+   4.8186979E-07
+ 
+ S3                                                              
+   4.4712610E-07  1.4863653E-07
+   1.4863654E-07  4.4712610E-07
+ 
+ S4                                                              
+   4.8186979E-07
+ 
+ S5                                                              
+   4.8186979E-07
+
+
+  resistance
+seg                  cond                  cell# 1     body       last cell
+ 
+S1 1     0.000E+00  0.000E+00  0.000E+00
+ 
+S2 1     0.000E+00  0.000E+00  0.000E+00
+ 
+S3 C1    0.000E+00  0.000E+00  0.000E+00
+S3 C2    0.000E+00  0.000E+00  0.000E+00
+ 
+S4 1     0.000E+00  0.000E+00  0.000E+00
+ 
+S5 1     0.000E+00  0.000E+00  0.000E+00
+
+
+boundary condition
+  seg                  cond                 end#     type         r          l          c          r
+  S1  1   1    resistive   5.000E+01
+  S2  1   2    resistive   1.000E-06
+  S4  1   2    resistive   5.000E+01
+  S5  1   2    resistive   5.000E+01

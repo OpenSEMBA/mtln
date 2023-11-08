@@ -1,0 +1,59 @@
+* input file for mharness
+* example 6, three-wire segment, voltage drive, compute L and C
+*-------------------------- Section 1: TIME STEP ---------------------------
+!TIME STEP
+!!NOTCOMPUTE
+0.5e-10, 1400
+*-------------------------- Section 2: SPACE STEP --------------------------
+!SPACE STEP
+sabc 300
+*---------------------- Section 4: EXCITATION/SOURCE -----------------------
+!EXCITATION TYPE
+!!cable
+!!!pin voltage drive
+*--------------------
+!SOURCE WAVEFORM
+!!SINE SQUARED
+1.0, 1.6667e8
+sabc, cxx1, 1
+*------------- Section 5A: System Level 0 – Conductor Topology -------------
+!SEGMENT
+!!COMPLEX
+sabc 0 0
+cxx1 0.0, 0.0, 84.527e-3, 10.0, 0.0
+cxx2 0.0, 3.048e-3, 79.248e-3, 10.0, 3.048e-3
+cxx3 0.0, -3.048e-3, 79.248e-3, 10.0, -3.048e-3
+*-------- Section 8A: System Level 0 – Conductor BOUNDARY CONDITION---------
+!BOUNDARY CONDITION
+!!RESISTIVE
+sabc cxx1 1 50.0
+sabc cxx1 2 50.0
+sabc cxx2 1 50.0
+sabc cxx2 2 50.0
+sabc cxx3 1 50.0
+sabc cxx3 2 50.0
+*-------- Section 8A: System Level 0 – Conductor BOUNDARY CONDITION---------
+!CAPACITANCE CAPMAT
+!!DIELECTRIC
+sabc, 1.0, 2.26
+!!RADII
+sabc, cxx1, 2.146e-3, 3.047e-3
+sabc, cxx2, 2.146e-3, 3.047e-3
+sabc, cxx3, 2.146e-3, 3.047e-3
+!!FOURIER
+sabc, cxx1, 7, 7
+sabc, cxx2, 7, 7
+sabc, cxx3, 7, 7
+*------------------------ Section 10: Output / PROBE -----------------------
+!OUT PUT SOURCE
+ex6src_alphaout
+1400
+*--------------------
+!PROBE
+!!CABLE VOLTAGE
+C:\Users\c82202\Desktop\Job\PC\Tecnologias\Hecate\MHarness_UGR\Ejemplos\ex6voltout
+1, 1400, 1
+sabc,cxx1,300
+sabc,cxx2,300
+sabc,cxx3,300
+**********

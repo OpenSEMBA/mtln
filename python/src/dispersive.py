@@ -97,15 +97,18 @@ class DispersiveConnector(Dispersive):
         self,
         position : np.ndarray,
         conductor,
-        d: float,
-        e: float,
-        poles: np.ndarray,
-        residues: np.ndarray,
+        model :dict 
     ):
         if (np.any(position > self.u[-1])) or np.any((position < self.u[0])):
             raise ValueError("Connector position is out of MTL length.")
 
-        index = np.argmin(np.abs(self.u - position))
+        index = np.argmin(np.apply_along_axis(np.linalg.norm, 1, np.abs(self.u - position)))
+        du = np.linalg.norm(self.u[index+1]-self.u[index])
+        
+        d = model["cte"]/du
+        e = model["prop"]/du
+        poles = np.array(model["poles"])
+        residues = np.array(model["residues"])/du
 
         assert self.d[index, conductor, conductor]  == 0.0, f"Dispersive connector already in conductor {conductor} at position {index}"
         assert self.e[index, conductor, conductor]  == 0.0, f"Dispersive connector already in conductor {conductor} at position {index}"

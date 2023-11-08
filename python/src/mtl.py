@@ -550,13 +550,10 @@ class MTL():
     def add_dispersive_connector(
         self,        
         position : np.ndarray,
-        conductor,
-        d: float,
-        e: float,
-        poles: np.ndarray,
-        residues: np.ndarray,
-    ):
-        self.connectors.add_dispersive_connector(position, conductor, d, e, poles, residues)
+        conductor, 
+        model : dict):
+        
+        self.connectors.add_dispersive_connector(position, conductor, model)
 
 
     def advance_left_terminal(self):
@@ -791,6 +788,11 @@ class MTLD:
             if point_in_line(position, start, end):
                 probe_in_segment = True
             start += du
+
+        end = start + du
+        if point_in_line(position, start, end):
+            probe_in_segment = True
+        start += du
         
         # if (np.any(position > self.u[-1])) or np.any((position < self.u[0])):
         if not probe_in_segment:

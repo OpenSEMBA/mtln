@@ -23,7 +23,7 @@ class Network:
         self.nw_i = np.zeros([0])
         self.dx : npt.NDArray[np.float64] = np.ndarray(shape=(0,0))
         self.e_T = np.empty(shape=(0), dtype=object)
-        self.e_T.fill(lambda n: 0)
+        self.e_T.fill(lambda t: 0)
 
         for b in description.items():
             self.number_of_nodes += len(b[1]["connections"])
@@ -46,7 +46,7 @@ class Network:
         self.Qs = np.zeros([self.number_of_nodes, self.number_of_nodes])
 
         self.v_sources = np.empty(shape=(self.number_of_nodes), dtype=object)
-        self.v_sources.fill(lambda n: 0)
+        self.v_sources.fill(lambda t: 0)
 
         
     def _get_number_of_state_vars_in_connector(self, connection):

@@ -1,0 +1,55 @@
+* file name: ex1_alpha.inp
+* input file for MHARNESS
+* example 1, emp on single bare cable
+* the numeral, 1, is used to name both segment and wire
+*-------------------------- Section 1: TIME STEP ---------------------------
+!TIME STEP
+!!NOTCOMPUTE
+1.9e-10 420
+*-------------------------- Section 2: SPACE STEP --------------------------
+!SPACE STEP
+0.06
+*---------------------- Section 4: EXCITATION/SOURCE ----------------------
+!SOURCE WAVEFORM
+!!DOUBLE EXPONENTIAL
+5.25e4 4.0e6 4.76e8
+*--------------------
+!EXCITATION TYPE
+!!CABLE
+!!!EMP DRIVE
+5.08e-2 180.0 90.0 90.0 0.0
+*------------- Section 5A: System Level 0 – Conductor Topology ------------
+!SEGMENT
+!!SIMPLE
+1 0 0 0.0 0.0 3.0 0.0
+1
+*------- Section 6A: System Level 0 – Conductor Impedance Parameters -------
+!CAPACITANCE
+1
+6.667e-12
+*--------------------
+!INDUCTANCE SPEED
+1 , 3.0e8
+*--------------------
+!RESISTANCE
+1 1 5.0e-3
+*-------- Section 8A: System Level 0 – Conductor BOUNDARY CONDITION---------
+!BOUNDARY CONDITION
+!!RESISTIVE
+1 1 1 , 1.e6
+1 1 2 , 1.e-6
+*------------------------ Section 10: Output / PROBE -----------------------
+!OUTPUT SOURCE
+ex1srcout
+420
+*--------------------
+!PROBE
+!!CABLE VOLTAGE
+C:\Users\c82202\Desktop\Job\PC\Tecnologias\Hecate\MHarness_UGR\Ejemplos\ex1voltout
+0.0, 80e-9, 1
+1,1,0.0
+!PROBE
+!!CABLE CURRENT
+C:\Users\c82202\Desktop\Job\PC\Tecnologias\Hecate\MHarness_UGR\Ejemplos\ex1curout
+0.0, 80e-9, 1
+1,1,3.0

@@ -61,7 +61,12 @@ class MTLN:
         self.bundles[bundle_name].add_external_field(field, distances, field_localization)
 
 
-    def run_until(self, finalTime):
+    def run_until(self, finalTime, dt = 0):
+        
+        if (dt !=0):
+            self.dt = dt
+            for bundle in self.bundles.values():
+                bundle.dt = dt
         
         self.compute_nw_v_terms()
         

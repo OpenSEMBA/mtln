@@ -68,7 +68,7 @@ class Port:
     
     def getTerminal(self):
         if self.v0.position == 0.0:
-            return "S"
+            return "S"  
         else:
             return "L"
 

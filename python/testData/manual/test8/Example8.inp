@@ -1,0 +1,54 @@
+* input file for mharness
+* example 8, two-wire segment, voltage drive with two different sources
+*-------------------------- Section 1: TIME STEP ---------------------------
+!TIME STEP
+!!COMPUTE
+5.0e-9 5.0e9
+*---------------------- Section 4: EXCITATION/SOURCE -----------------------
+!EXCITATION TYPE
+!!cable
+!!!PIN VOLTAGE DRIVE
+*--------------------
+!SOURCE WAVEFORM
+!!LINEAR RAMP
+4.0 1.5e-9
+1 1 1
+!!LINEAR RAMP
+-4.0 1.5e-9
+1 2 1
+*------------- Section 5A: System Level 0 – Conductor Topology -------------
+!SEGMENT
+!!SIMPLE
+1 0 0 0.3048
+1
+2
+*------- Section 6A: System Level 0 – Conductor Impedance Parameters -------
+!CAPACITANCE
+1
+62.8e-12 -4.94e-12
+-4.94e-12 62.8e-12
+*--------------------
+!INDUCTANCE
+1
+494.6e-9 63.3e-9
+63.3e-9 494.6e-9
+*--------------------
+!!RESISTIVE
+1 1 2 102.0
+1 2 2 102.0
+*-------- Section 8A: System Level 0 – Conductor BOUNDARY CONDITION---------
+!BOUNDARY CONDITION
+!!RESISTIVE
+1 1 1 50.0
+1 2 1 100.0
+*------------------------ Section 10: Output / PROBE -----------------------
+!OUTPUT SOURCE
+ex8srcout
+*--------------------
+!PROBE
+!!CABLE VOLTAGE
+C:\Users\c82202\Desktop\Job\PC\Tecnologias\Hecate\MHarness_UGR\Ejemplos\ex8voltout
+0.0, 5.0e-9, 1
+1,1,0.3048
+1,2,0.0
+1,2,0.3048

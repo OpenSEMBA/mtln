@@ -26,6 +26,7 @@ class Parser:
         self._probes = self._getProbes()
         self._sources = self._getSources()
         self._ends = self._getCableEnds()
+        self._lumped = self._getLumpedElements()
         
         
         self._buildBundles()
@@ -118,6 +119,13 @@ class Parser:
         assert 'model' in list(self.parsed.keys())
         if 'cableEnds' in list(self.parsed["model"].keys()):
             return self.parsed["model"]["cableEnds"]
+        else:
+            return {}
+
+    def _getLumpedElements(self):
+        assert 'model' in list(self.parsed.keys())
+        if 'lumpedElements' in list(self.parsed["model"].keys()):
+            return self.parsed["model"]["lumpedElements"]
         else:
             return {}
 
@@ -259,6 +267,24 @@ class Parser:
         return number_of_conductors + position_in_line
     
     
+    def _addLumpedElement(self, line):
+        if len(self._lumped) == 0:
+            return
+        
+        lumped  = [l for l in self._lumped if l["cable"] == line.name][0]
+        conn = [c for c in self._connectors if c["materialId"] == lumped["materialId"]][0]
+        
+        try:
+            assert 'model' in list(conn.keys())
+        except:
+            raise Exception('No model has been defined for lumped impedance')    
+        
+        position = [self._coordinates[coord] for coord in lumped["coordIds"]][0]
+        conductor = lumped["conductor"]
+       
+        line.add_dispersive_connector(np.array([position]), conductor, conn["model"])
+                
+    
     def _addConnectorsResistance(self, line):
         for c in [c for c in self._cables if c["name"] == line.name]:
             for end in self._ends:
@@ -314,6 +340,7 @@ class Parser:
                     line = self._buildMTLfromLine(name)
                     
                     self._addConnectorsResistance(line)
+                    self._addLumpedElement(line)
                     
                     bundle_levels[i].append(line)     
                     self._name_to_mtl[name] = line
@@ -524,8 +551,20 @@ class Parser:
                 x0 = source["magnitude"]["x0"],
                 s0 = source["magnitude"]["s0"]
             )
+        elif source["magnitude"]["type"] == "gaussian":
+            def magnitude(t): return wf.gaussian(
+                t,
+                x0 = source["magnitude"]["x0"],
+                s0 = source["magnitude"]["s0"]
+            )
         elif source["magnitude"]["type"] == "sin_sq":
             def magnitude(t): return wf.sin_sq_pulse(
+                t, 
+                A = source["magnitude"]["amplitude"]*k,
+                w = source["magnitude"]["frequency"]
+            )
+        elif source["magnitude"]["type"] == "sin":
+            def magnitude(t): return wf.sin_pulse(
                 t, 
                 A = source["magnitude"]["amplitude"]*k,
                 w = source["magnitude"]["frequency"]
@@ -595,12 +634,14 @@ class Parser:
                     if (conn0["connectorType"] == "Conn_sRLC" or conn0["connectorType"] == "Conn_R"):
                         R0 += conn0["resistance"]
                     elif conn0["connectorType"] == "MultiwireConnector":
-                        R0 += conn0["resistanceVector"][cond0]
+                        if (conn0["connections"][cond0] == "Conn_R" or conn0["connections"][cond0] == "Conn_sRLC"):
+                            R0 += conn0["resistanceVector"][cond0]
 
-                    if (conn1["connectorType"] == "Conn_sRLC" or conn0["connectorType"] == "Conn_R"):
+                    if (conn1["connectorType"] == "Conn_sRLC" or conn1["connectorType"] == "Conn_R"):
                         R1 += conn1["resistance"]
                     elif conn1["connectorType"] == "MultiwireConnector":
-                        R1 += conn1["resistanceVector"][cond1]
+                        if (conn1["connections"][cond1] == "Conn_R" or conn1["connections"][cond1] == "Conn_sRLC"):
+                            R1 += conn1["resistanceVector"][cond1]
                     
                     if (R1+R0 == 0.0):
                         network.short_nodes(n0, n1)
@@ -643,7 +684,7 @@ class Parser:
         raise Exception(str(el_id) + " does not belong to any cable")    
         
     
-    def getNodesInJunction(self, junctionName):
+    def _getNodesInJunction(self, junctionName):
         for junction in self._junctions:
             if junction["name"] == junctionName:
                 return junction["unitedCoordIds"]
