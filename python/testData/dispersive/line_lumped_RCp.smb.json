@@ -28,15 +28,15 @@
 				"capacitance": 1e22
 			},
 			{
-				"materialId": 4,
-				"name": "Lumped_R",
+				"materialId": 5,
+				"name": "Lumped_RCp",
 				"materialType": "Connector",
 				"connectorType": "Dispersive",
 				"model" : {
-					"cte" : 20.0,
+					"cte" : 0.0,
 					"prop" : 0.0,
-					"poles" :    {"real" : [], "imag": []},
-					"residues" : {"real" : [], "imag": []}
+					"poles" : {"real" : [-10000000.0], "imag" : [0.0]},
+					"residues" : {"real" : [200000000.0], "imag" : [0.0]}
 				}
 			}
 		],
@@ -113,7 +113,7 @@
 		],
         "lumpedElements" : [
             {
-                "materialId" : 4,
+                "materialId" : 5,
                 "cable" : "line1",
                 "coordIds" : [3],
                 "conductor" : 0

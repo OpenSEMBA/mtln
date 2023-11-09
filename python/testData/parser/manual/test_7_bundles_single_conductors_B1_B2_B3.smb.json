@@ -16,8 +16,9 @@
 				"transferImpedance" : {
 					"cte" : 0.0,
 					"prop" : 8.9e-9,
-					"poles" : [],
-					"residues" : [],
+					"poles" :    {"real" : [], "imag": []},
+					"residues" : {"real" : [], "imag": []},
+					"direction" : "in",
 					"factor" : 1
 				}
 			},
@@ -33,8 +34,9 @@
 				"transferImpedance" : {
 					"cte" : 0.0,
 					"prop" : 7.4e-9,
-					"poles" : [],
-					"residues" : [],
+					"poles" :    {"real" : [], "imag": []},
+					"residues" : {"real" : [], "imag": []},
+					"direction" : "in",
 					"factor" : 1
 				}
 			},
@@ -50,8 +52,9 @@
 				"transferImpedance" : {
 					"cte" : 0.0,
 					"prop" : 3.0e-9,
-					"poles" : [],
-					"residues" : [],
+					"poles" :    {"real" : [], "imag": []},
+					"residues" : {"real" : [], "imag": []},
+					"direction" : "in",
 					"factor" : 1
 				}
 			},
@@ -65,8 +68,9 @@
 				"transferImpedance" : {
 					"cte" : 0.0,
 					"prop" : 4.2e-9,
-					"poles" : [],
-					"residues" : [],
+					"poles" :    {"real" : [], "imag": []},
+					"residues" : {"real" : [], "imag": []},
+					"direction" : "in",
 					"factor" : 4
 				}
 			},
@@ -80,8 +84,9 @@
 				"transferImpedance" : {
 					"cte" : 0.0,
 					"prop" : 4.2e-9,
-					"poles" : [],
-					"residues" : [],
+					"poles" :    {"real" : [], "imag": []},
+					"residues" : {"real" : [], "imag": []},
+					"direction" : "in",
 					"factor" : 1
 				}
 			},
@@ -95,8 +100,9 @@
 				"transferImpedance" : {
 					"cte" : 0.0,
 					"prop" : 4.2e-9,
-					"poles" : [],
-					"residues" : [],
+					"poles" :    {"real" : [], "imag": []},
+					"residues" : {"real" : [], "imag": []},
+					"direction" : "in",
 					"factor" : 3
 				}
 			},
@@ -263,8 +269,9 @@
 				"transferImpedance" : {
 					"cte" : 3.33,
 					"prop" : 2.6e-9,
-					"poles" : [],
-					"residues" : []
+					"poles" :    {"real" : [], "imag": []},
+					"residues" : {"real" : [], "imag": []},
+					"direction" : "in"
 				}
 			},
 			{
@@ -278,8 +285,9 @@
 				"transferImpedance" : {
 					"cte" : 609.3,
 					"prop" : 2.6e-9,
-					"poles" : [],
-					"residues" : []
+					"poles" :    {"real" : [], "imag": []},
+					"residues" : {"real" : [], "imag": []},
+					"direction" : "in"
 				}
 			},
 			{
@@ -293,8 +301,9 @@
 				"transferImpedance" : {
 					"cte" : 0.0,
 					"prop" : 0.0,
-					"poles" : [],
-					"residues" : []
+					"poles" :    {"real" : [], "imag": []},
+					"residues" : {"real" : [], "imag": []},
+					"direction" : "in"
 				}
 			},
 			{
@@ -308,8 +317,9 @@
 				"transferImpedance" : {
 					"cte" : 0.0,
 					"prop" : 0.0,
-					"poles" : [],
-					"residues" : []
+					"poles" :    {"real" : [], "imag": []},
+					"residues" : {"real" : [], "imag": []},
+					"direction" : "in"
 				}
 			}
 		],

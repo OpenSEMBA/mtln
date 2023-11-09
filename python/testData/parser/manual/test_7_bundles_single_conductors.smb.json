@@ -14,11 +14,11 @@
 				"inductance": 5.4815536E-07,
 				"capacitance": 2.0270004E-11,
 				"transferImpedance" : {
-					"direction" :"in",
 					"cte" : 0.0,
 					"prop" : 8.9e-9,
-					"poles" : [],
-					"residues" : []
+					"poles" :    {"real" : [], "imag": []},
+					"residues" : {"real" : [], "imag": []},
+					"direction" : "in"
 				}
 			},
 			{
@@ -31,11 +31,11 @@
 				"inductance": 6.4825610E-07,
 				"capacitance": 1.7140003E-11,
 				"transferImpedance" : {
-					"direction" :"in",
 					"cte" : 0.0,
 					"prop" : 7.4e-9,
-					"poles" : [],
-					"residues" : []
+					"poles" :    {"real" : [], "imag": []},
+					"residues" : {"real" : [], "imag": []},
+					"direction" : "in"
 				}
 			},
 			{
@@ -48,11 +48,11 @@
 				"inductance": 5.8021459E-07,
 				"capacitance": 1.9150003E-11,
 				"transferImpedance" : {
-					"direction" :"in",
 					"cte" : 17.3e-3,
 					"prop" : 3.0e-9,
-					"poles" : [],
-					"residues" : []
+					"poles" :    {"real" : [], "imag": []},
+					"residues" : {"real" : [], "imag": []},
+					"direction" : "in"
 				}
 			},
 			{
@@ -65,11 +65,11 @@
 				"inductance": 6.0551002E-07,
 				"capacitance": 1.8350004E-11,
 				"transferImpedance" : {
-					"direction" :"in",
 					"cte" : 14.8e-3,
 					"prop" : 4.5e-9,
-					"poles" : [],
-					"residues" : []
+					"poles" :    {"real" : [], "imag": []},
+					"residues" : {"real" : [], "imag": []},
+					"direction" : "in"
 				}
 			},
 			{
@@ -82,11 +82,11 @@
 				"inductance": 6.4825610E-07,
 				"capacitance": 1.7140003E-11,
 				"transferImpedance" : {
-					"direction" :"in",
 					"cte" : 11.8e-3,
 					"prop" : 0.9e-9,
-					"poles" : [],
-					"residues" : []
+					"poles" :    {"real" : [], "imag": []},
+					"residues" : {"real" : [], "imag": []},
+					"direction" : "in"
 				}
 			},
 			{
@@ -97,11 +97,11 @@
 				"inductance": 8.4020752e-08,
 				"capacitance": 5.5840010E-10,
 				"transferImpedance" : {
-					"direction" :"in",
 					"cte" : 0.0,
 					"prop" : 4.2e-9,
-					"poles" : [],
-					"residues" : [],
+					"poles" :    {"real" : [], "imag": []},
+					"residues" : {"real" : [], "imag": []},
+					"direction" : "in",
 					"factor" : 4
 				}
 			},
@@ -113,11 +113,11 @@
 				"inductance": 1.3722800e-07,
 				"capacitance":3.2310005E-10,
 				"transferImpedance" : {
-					"direction" :"in",
 					"cte" : 0.0,
 					"prop" : 4.2e-9,
-					"poles" : [],
-					"residues" : [],
+					"poles" :    {"real" : [], "imag": []},
+					"residues" : {"real" : [], "imag": []},
+					"direction" : "in",
 					"factor" : 1
 				}
 			},
@@ -129,11 +129,11 @@
 				"inductance":  9.1890502e-08,
 				"capacitance": 4.7190007E-10,
 				"transferImpedance" : {
-					"direction" :"in",
 					"cte" : 0.0,
 					"prop" : 4.2e-9,
-					"poles" : [],
-					"residues" : [],
+					"poles" :    {"real" : [], "imag": []},
+					"residues" : {"real" : [], "imag": []},
+					"direction" : "in",
 					"factor" : 3
 				}
 			},
@@ -145,11 +145,11 @@
 				"inductance": 1.1983524e-07,
 				"capacitance": 3.6370007E-10,
 				"transferImpedance" : {
-					"direction" :"in",
 					"cte" : 0.0,
 					"prop" : 4.2e-9,
-					"poles" : [],
-					"residues" : [],
+					"poles" :    {"real" : [], "imag": []},
+					"residues" : {"real" : [], "imag": []},
+					"direction" : "in",
 					"factor" : 2
 				}
 			},
@@ -161,11 +161,11 @@
 				"inductance": 1.3072800e-07,
 				"capacitance":3.2310005E-10,
 				"transferImpedance" : {
-					"direction" :"in",
 					"cte" : 0.0,
 					"prop" : 4.2e-9,
-					"poles" : [],
-					"residues" : [],
+					"poles" :    {"real" : [], "imag": []},
+					"residues" : {"real" : [], "imag": []},
+					"direction" : "in",
 					"factor" : 1
 				}
 			},
@@ -423,11 +423,11 @@
 				"inductance": 0.0,
 				"capacitance": 1e22,
 				"transferImpedance" : {
-					"direction" : "in",
 					"cte" : 3.33,
 					"prop" : 2.6e-9,
-					"poles" : [],
-					"residues" : []
+					"poles" :    {"real" : [], "imag": []},
+					"residues" : {"real" : [], "imag": []},
+					"direction" : "in"
 				}
 			},
 			{
@@ -439,11 +439,11 @@
 				"inductance": 0.0,
 				"capacitance": 1e22,
 				"transferImpedance" : {
-					"direction" : "in",
 					"cte" : 609.3,
 					"prop" : 2.6e-9,
-					"poles" : [],
-					"residues" : []
+					"poles" :    {"real" : [], "imag": []},
+					"residues" : {"real" : [], "imag": []},
+					"direction" : "in"
 				}
 			},
 			{
@@ -455,11 +455,11 @@
 				"inductance": 0.0,
 				"capacitance": 1e22,
 				"transferImpedance" : {
-					"direction" : "in",
 					"cte" : 0.0,
 					"prop" : 0.0,
-					"poles" : [],
-					"residues" : []
+					"poles" :    {"real" : [], "imag": []},
+					"residues" : {"real" : [], "imag": []},
+					"direction" : "in"
 				}
 			},
 			{
@@ -471,11 +471,11 @@
 				"inductance": 0.0,
 				"capacitance": 1e22,
 				"transferImpedance" : {
-					"direction" : "in",
 					"cte" : 0.0,
 					"prop" : 0.0,
-					"poles" : [],
-					"residues" : []
+					"poles" :    {"real" : [], "imag": []},
+					"residues" : {"real" : [], "imag": []},
+					"direction" : "in"
 				}
 			},
 			{
@@ -487,11 +487,11 @@
 				"inductance": 0.0,
 				"capacitance": 1e22,
 				"transferImpedance" : {
-					"direction" : "in",
 					"cte" : 15.57,
 					"prop" : 2.6e-9,
-					"poles" : [],
-					"residues" : []
+					"poles" :    {"real" : [], "imag": []},
+					"residues" : {"real" : [], "imag": []},
+					"direction" : "in"
 				}
 			},
 			{
@@ -503,11 +503,11 @@
 				"inductance": 0.0,
 				"capacitance": 1e22,
 				"transferImpedance" : {
-					"direction" : "in",
 					"cte" : 0.74,
 					"prop" : 2.6e-9,
-					"poles" : [],
-					"residues" : []
+					"poles" :    {"real" : [], "imag": []},
+					"residues" : {"real" : [], "imag": []},
+					"direction" : "in"
 				}
 			},
 			{
@@ -519,11 +519,11 @@
 				"inductance": 0.0,
 				"capacitance": 1e22,
 				"transferImpedance" : {
-					"direction" : "in",
 					"cte" : 0.0,
 					"prop" : 0.0,
-					"poles" : [],
-					"residues" : []
+					"poles" :    {"real" : [], "imag": []},
+					"residues" : {"real" : [], "imag": []},
+					"direction" : "in"
 				}
 			},
 			{
@@ -535,11 +535,11 @@
 				"inductance": 0.0,
 				"capacitance": 1e22,
 				"transferImpedance" : {
-					"direction" : "in",
 					"cte" : 0.0,
 					"prop" : 0.0,
-					"poles" : [],
-					"residues" : []
+					"poles" :    {"real" : [], "imag": []},
+					"residues" : {"real" : [], "imag": []},
+					"direction" : "in"
 				}
 			}
 

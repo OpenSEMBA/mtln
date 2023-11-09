@@ -72,12 +72,22 @@ class Dispersive():
         )
     
     def v_sum(self,arr:np.ndarray): 
-        return np.vectorize(np.sum)(arr)
+        # return np.vectorize(np.sum)(arr)
+        out = np.ndarray(shape=arr.shape)
+        shape = arr.shape
+        for nx in range(shape[0]):
+            for i in range(shape[1]):
+                out[nx][i][i] = np.sum(arr[nx][i][i])
+        return out
 
     #nz =  self.i.shape[1]
     def update_q3_phi_term(self):
         for kz in range(0, self.nx):
-            self.q3_phi_term[kz] = self.v_sum(self.q3[kz].dot(self.phi[kz]))
+            q3phi = self.q3[kz].dot(self.phi[kz])
+            for nx in range(q3phi.shape[0]):
+                self.q3_phi_term[kz][nx] = np.sum(q3phi[nx])
+                
+            # self.q3_phi_term[kz] = self.v_sum(self.q3[kz].dot(self.phi[kz]))
         
     def update_phi(self, i_prev, i_now):
         for kz in range(0, self.nx):
@@ -107,8 +117,19 @@ class DispersiveConnector(Dispersive):
         
         d = model["cte"]/du
         e = model["prop"]/du
-        poles = np.array(model["poles"])
-        residues = np.array(model["residues"])/du
+        
+        assert (len(model["poles"]["real"]) == len(model["poles"]["imag"]))
+        assert (len(model["residues"]["real"]) == len(model["residues"]["imag"]))
+        assert (len(model["poles"]["real"]) == len(model["residues"]["real"]))
+        assert (len(model["poles"]["imag"]) == len(model["residues"]["imag"]))
+        
+        n_poles = len(model["poles"]["real"])
+        poles = np.ndarray(shape=n_poles,dtype=complex)
+        residues = np.ndarray(shape=n_poles,dtype=complex)
+        for i in range(n_poles):
+            poles[i] = model["poles"]["real"][i] + 1j*model["poles"]["imag"][i]
+            residues[i] = (model["residues"]["real"][i] + 1j*model["residues"]["imag"][i])/du
+
 
         assert self.d[index, conductor, conductor]  == 0.0, f"Dispersive connector already in conductor {conductor} at position {index}"
         assert self.e[index, conductor, conductor]  == 0.0, f"Dispersive connector already in conductor {conductor} at position {index}"
@@ -153,8 +174,19 @@ class TransferImpedance(Dispersive):
 
         d = transfer_impedance["cte"]/factor
         e = transfer_impedance["prop"]/factor
-        poles = np.array(transfer_impedance["poles"])
-        residues = np.array(transfer_impedance["residues"])/factor
+
+        assert (len(transfer_impedance["poles"]["real"]) == len(transfer_impedance["poles"]["imag"]))
+        assert (len(transfer_impedance["residues"]["real"]) == len(transfer_impedance["residues"]["imag"]))
+        assert (len(transfer_impedance["poles"]["real"]) == len(transfer_impedance["residues"]["real"]))
+        assert (len(transfer_impedance["poles"]["imag"]) == len(transfer_impedance["residues"]["imag"]))
+        
+        n_poles = len(transfer_impedance["poles"]["real"])
+        poles = np.ndarray(shape=n_poles,dtype=complex)
+        residues = np.ndarray(shape=n_poles,dtype=complex)
+        for i in range(n_poles):
+            poles[i] = transfer_impedance["poles"]["real"][i] + 1j*transfer_impedance["poles"]["imag"][i]
+            residues[i] = (transfer_impedance["residues"]["real"][i] + 1j*transfer_impedance["residues"]["imag"][i])/factor
+
         
         if d == 0 and e == 0 and len(poles) == 0 and len(residues) == 0:
             return
@@ -215,9 +247,19 @@ class TransferImpedance(Dispersive):
 
         d = transfer_impedance["cte"]/factor
         e = transfer_impedance["prop"]/factor
-        poles    = np.array(transfer_impedance["poles"])
-        residues = np.array(transfer_impedance["residues"])/factor
+
+        assert (len(transfer_impedance["poles"]["real"]) == len(transfer_impedance["poles"]["imag"]))
+        assert (len(transfer_impedance["residues"]["real"]) == len(transfer_impedance["residues"]["imag"]))
+        assert (len(transfer_impedance["poles"]["real"]) == len(transfer_impedance["residues"]["real"]))
+        assert (len(transfer_impedance["poles"]["imag"]) == len(transfer_impedance["residues"]["imag"]))
         
+        n_poles = len(transfer_impedance["poles"]["real"])
+        poles = np.ndarray(shape=n_poles,dtype=complex)
+        residues = np.ndarray(shape=n_poles,dtype=complex)
+        for i in range(n_poles):
+            poles[i] = transfer_impedance["poles"]["real"][i] + 1j*transfer_impedance["poles"]["imag"][i]
+            residues[i] = (transfer_impedance["residues"]["real"][i] + 1j*transfer_impedance["residues"]["imag"][i])/factor
+       
         if d == 0 and e == 0 and len(poles) == 0 and len(residues) == 0:
             return
 

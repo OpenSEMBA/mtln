@@ -29,12 +29,12 @@
 			},
 			{
 				"materialId": 4,
-				"name": "Lumped_R",
+				"name": "Lumped_RLs",
 				"materialType": "Connector",
 				"connectorType": "Dispersive",
 				"model" : {
 					"cte" : 20.0,
-					"prop" : 0.0,
+					"prop" : 1e-5,
 					"poles" :    {"real" : [], "imag": []},
 					"residues" : {"real" : [], "imag": []}
 				}

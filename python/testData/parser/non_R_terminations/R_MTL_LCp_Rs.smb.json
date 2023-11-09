@@ -20,8 +20,9 @@
 				"transferImpedance" : {
 					"cte" : 0.0,
 					"prop" : 0.0,
-					"poles" : [],
-					"residues" : []
+					"poles" :    {"real" : [], "imag": []},
+					"residues" : {"real" : [], "imag": []},
+					"direction" : "in"
 				}
 			},
 			{
