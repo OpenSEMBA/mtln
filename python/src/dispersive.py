@@ -71,23 +71,12 @@ class Dispersive():
             )
         )
     
-    def v_sum(self,arr:np.ndarray): 
-        # return np.vectorize(np.sum)(arr)
-        out = np.ndarray(shape=arr.shape)
-        shape = arr.shape
-        for nx in range(shape[0]):
-            for i in range(shape[1]):
-                out[nx][i][i] = np.sum(arr[nx][i][i])
-        return out
+    def v_sum(self,arr:np.ndarray):
+        return np.vectorize(np.sum, otypes=[float])(arr)
 
-    #nz =  self.i.shape[1]
     def update_q3_phi_term(self):
         for kz in range(0, self.nx):
-            q3phi = self.q3[kz].dot(self.phi[kz])
-            for nx in range(q3phi.shape[0]):
-                self.q3_phi_term[kz][nx] = np.sum(q3phi[nx])
-                
-            # self.q3_phi_term[kz] = self.v_sum(self.q3[kz].dot(self.phi[kz]))
+            self.q3_phi_term[kz] = self.v_sum(self.q3[kz].dot(self.phi[kz]))
         
     def update_phi(self, i_prev, i_now):
         for kz in range(0, self.nx):
@@ -197,12 +186,12 @@ class TransferImpedance(Dispersive):
         range_out = n_before_out + np.array(out_level_conductors)
         range_in  = n_before_in  + np.array(in_level_conductors)
 
-        dir = transfer_impedance["direction"]
+        direction = transfer_impedance["direction"]
 
         for i in range_out:
             for j in range_in:
 
-                if (dir == ("in" or "both")):
+                if (direction == ("in" or "both")):
                     self.d[:, j, i] -= d
                     self.e[:, j, i] -= e
                     if (residues.size != 0 and poles.size != 0):
@@ -215,7 +204,7 @@ class TransferImpedance(Dispersive):
                         )
                         self.q3[:, j, i] -= np.exp(poles * self.dt)
                         
-                if (dir == ("out" or "both")):
+                if (direction == ("out" or "both")):
                     self.d[:, i, j] -= d
                     self.e[:, i, j] -= e
                     if (residues.size != 0 and poles.size != 0):
@@ -269,12 +258,12 @@ class TransferImpedance(Dispersive):
         range_out = n_before_out + np.array(out_level_conductors)
         range_in  = n_before_in  + np.array(in_level_conductors)
 
-        dir = transfer_impedance["direction"]
+        direction = transfer_impedance["direction"]
 
         for i in range_out:
             for j in range_in:
 
-                if (dir == ("in" or "both")):
+                if (direction == ("in" or "both")):
                     self.d[index, j, i] = -d
                     self.e[index, j, i] = -e
                     if (residues.size != 0 and poles.size != 0):
@@ -287,7 +276,7 @@ class TransferImpedance(Dispersive):
                         )
                         self.q3[index, j, i] = -np.exp(poles * self.dt)
                         
-                if (dir == ("out" or "both")):
+                if (direction == ("out" or "both")):
                     self.d[index, i, j] = -d
                     self.e[index, i, j] = -e
                     if (residues.size != 0 and poles.size != 0):

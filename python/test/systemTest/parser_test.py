@@ -399,13 +399,13 @@ def test_6_agrawal():
     fig.tight_layout()
     plt.show()
 
-    
+   
 def test_7_bundles():
     file = 'python/testData/parser/manual/test_7_bundles_single_conductors.smb.json'
 
     dt = 0.5e-10
     p = Parser(file)
-    p.run(finalTime=50e-9,dt=dt)   
+    p.run(finalTime=50e-9,dt=dt)
 
     t, Ish2_0, Ish2_1 = np.genfromtxt('python/testData/bundles_test/ex7s2cout_probes', delimiter=',', usecols=(0,1,2), unpack = True)
     _ ,Ish1_0, Ish1_1 = np.genfromtxt('python/testData/bundles_test/ex7s1cout_probes', delimiter=',', usecols=(0,1,2), unpack = True)
@@ -413,7 +413,7 @@ def test_7_bundles():
     
     fig, ax = plt.subplots(3,1)
     ax[0].plot(1e9*(p.probes["i_sh21c1"].t-2.0*dt), 1e3*p.probes["i_sh21c1"].val[:,0], label = 'Current on bundle1, outer shield. x = 0.1')
-    # ax[0].plot(1e9*t, 1e3*Ish2_1, 'r--', label = 'result from manual ')
+    ax[0].plot(1e9*t, 1e3*Ish2_1, 'r--', label = 'result from manual ')
     ax[0].set_ylabel(r'$I (t)\,[mA]$')
     ax[0].set_xlabel(r'$t\,[ns]$')
     ax[0].set_xticks(range(0, 60, 10))
@@ -421,7 +421,7 @@ def test_7_bundles():
     ax[0].legend()
     
     ax[1].plot(1e9*(p.probes["i_sh21c1"].t-2.0*dt), 1e6*p.probes["i_sh21c1"].val[:,1], label = 'Current on bundle1, inner shield, x = 0.1')
-    # ax[1].plot(1e9*t, 1e6*Ish1_1, 'r--', label = 'result from manual ')
+    ax[1].plot(1e9*t, 1e6*Ish1_1, 'r--', label = 'result from manual ')
     ax[1].set_ylabel(r'$I (t)\,[mA]$')
     ax[1].set_xlabel(r'$t\,[ns]$')
     ax[1].set_xticks(range(0, 60, 10))
@@ -438,7 +438,7 @@ def test_7_bundles():
 
     # ax[2].plot(1e9*p.probes["cable_1_terminal_voltage"].t, -1e6*p.probes["cable_1_terminal_voltage"].val[:,6], label = 'cable 1 - s1s4c2 -V')
     ax[2].plot(1e9*p.probes["cable_1_terminal_voltage"].t, 1e6*50*p.probes["cable_1_terminal_current"].val[:,6], label = 'cable 1 - s1s4c2-I')
-    # ax[2].plot(1e9*t, 1e6*50*I2, 'r--', label = 'result from manual ')
+    ax[2].plot(1e9*t, 1e6*50*I2, 'r--', label = 'result from manual ')
     ax[2].set_ylabel(r'$V (t)\,[\mu V]$')
     ax[2].set_xlabel(r'$t\,[ns]$')
     ax[2].set_xticks(range(0, 60, 10))
@@ -448,9 +448,68 @@ def test_7_bundles():
     
 
     plt.show()
+
+def test_bug():
+    file = 'python/testData/parser/manual/test_7_bundles_single_conductors_B1_B2_B3_l0.smb.json'
+
+    dt = 0.5e-10
+    p = Parser(file)
+    p.run(finalTime=50e-9,dt=dt)   
+
+    t, I_b1_sh2_terminal,I_b1_sh2_mid,I_b1_sh2_junction, I_b2_sh2_junction,I_b2_sh2_connector, I_b2_sh2_terminal, I_b3_sh2_junction,I_b3_sh2_terminal =\
+        np.genfromtxt('python/testData/bundles_test/B1_B2_B3/shield_2_current_B1_B2_B3', delimiter=',', usecols=(0,1,2,3,4,5,6,7,8), unpack = True)
+    
+    _, I_b1_sh1_terminal,I_b1_sh1_mid,I_b1_sh1_junction, I_b2_sh1_junction,I_b2_sh1_connector, I_b2_sh1_terminal, I_b3_sh1_junction,I_b3_sh1_terminal =\
+        np.genfromtxt('python/testData/bundles_test/B1_B2_B3/shield_1_current_B1_B2_B3', delimiter=',', usecols=(0,1,2,3,4,5,6,7,8), unpack = True)
+    
+    _, I_b1_s1s2c2_terminal,I_b1_s1s2c2_junction, I_b1_s1s4c2_terminal, I_b1_s1s4c2_junction, I_b2_s1s2c2_junction, I_b2_s1s2c2_connector,I_b2_s1s2c2_terminal =\
+        np.genfromtxt('python/testData/bundles_test/B1_B2_B3/cable_current_B1_B2_B3', delimiter=',', usecols=(0,1,2,3,4,5,6,7), unpack = True)
+
+
+    fig, ax = plt.subplots(2,1)
+    fig.suptitle("Bundle S1 - shield 2")
+    ax[0].plot(1e9*(p.probes["b1_terminal_current"].t-1.5*dt), 1e3*p.probes["b1_terminal_current"].val[:,0], label = 'Current on bundle1, outer shield. x = 0')
+    ax[1].plot(1e9*(p.probes["b1_junction_current"].t-1.5*dt), 1e3*p.probes["b1_junction_current"].val[:,0], label = 'Current on bundle1, outer shield. x = 0.54')
+
+    ax[0].plot(1e9*t, 1e3*I_b1_sh2_terminal, 'r--', label = 'result from manual ')
+    ax[1].plot(1e9*t, 1e3*I_b1_sh2_junction, 'r--', label = 'result from manual ')
+
+    for i in range(2):
+        ax[i].set_ylabel(r'$I (t)\,[mA]$')
+        ax[i].set_xlabel(r'$t\,[ns]$')
+        ax[i].set_xticks(range(0, 60, 10))
+        ax[i].grid('both')
+        ax[i].legend()
+
+    fig, ax = plt.subplots(2,1)
+    fig.suptitle("Bundle S2 - shield 2")
+    ax[0].plot(1e9*(p.probes["b2_junction_current"].t-1.5*dt), 1e3*p.probes["b2_junction_current"].val[:,0], label = 'Current on bundle2, outer shield. x = 0.0')
+    ax[1].plot(1e9*(p.probes["b2_terminal_current"].t-1.5*dt), 1e3*p.probes["b2_terminal_current"].val[:,0], label = 'Current on bundle2, outer shield. x = 0.343')
+
+
+    for i in range(2):
+        ax[i].set_ylabel(r'$I (t)\,[mA]$')
+        ax[i].set_xlabel(r'$t\,[ns]$')
+        ax[i].set_xticks(range(0, 60, 10))
+        ax[i].grid('both')
+        ax[i].legend()
+
+    fig, ax = plt.subplots(2,1)
+    fig.suptitle("Bundle S3 - shield 2")
+    ax[0].plot(1e9*(p.probes["b3_junction_current"].t-1.5*dt), 1e3*p.probes["b3_junction_current"].val[:,0], label = 'Current on bundle3, outer shield. x = 0')
+    ax[1].plot(1e9*(p.probes["b3_terminal_current"].t-1.5*dt), 1e3*p.probes["b3_terminal_current"].val[:,0], label = 'Current on bundle3, outer shield. x = 0.165')
+
+    for i in range(2):
+        ax[i].set_ylabel(r'$I (t)\,[mA]$')
+        ax[i].set_xlabel(r'$t\,[ns]$')
+        ax[i].set_xticks(range(0, 60, 10))
+        ax[i].grid('both')
+        ax[i].legend()
+        
+    plt.show()
     
 def test_7_bundles_B1_B2_B3():
-    file = 'python/testData/parser/test_7_bundles_single_conductors_B1_B2_B3.smb.json'
+    file = 'python/testData/parser/manual/test_7_bundles_single_conductors_B1_B2_B3.smb.json'
 
     dt = 0.5e-10
     p = Parser(file)

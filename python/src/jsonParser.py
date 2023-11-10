@@ -112,36 +112,31 @@ class Parser:
         assert 'model' in list(self.parsed.keys())
         if 'sources' in list(self.parsed["model"].keys()):
             return self.parsed["model"]["sources"]
-        else:
-            return {}
+        return {}
 
     def _getCableEnds(self):
         assert 'model' in list(self.parsed.keys())
         if 'cableEnds' in list(self.parsed["model"].keys()):
             return self.parsed["model"]["cableEnds"]
-        else:
-            return {}
+        return {}
 
     def _getLumpedElements(self):
         assert 'model' in list(self.parsed.keys())
         if 'lumpedElements' in list(self.parsed["model"].keys()):
             return self.parsed["model"]["lumpedElements"]
-        else:
-            return {}
+        return {}
 
     def _getFields(self):
         assert 'model' in list(self.parsed.keys())
         if 'fields' in list(self.parsed["model"].keys()):
             return self.parsed["model"]["fields"]
-        else:
-            return {}
-    
+        return {}
+   
     def _getProbes(self):
         assert 'model' in list(self.parsed.keys())
         if 'probes' in list(self.parsed["model"].keys()):
             return self.parsed["model"]["probes"]
-        else:
-            return {}
+        return {}
 
     def _getCables(self):
         assert 'model' in list(self.parsed.keys())
@@ -167,15 +162,13 @@ class Parser:
         assert 'model' in list(self.parsed.keys())
         if 'junctions' in list(self.parsed["model"].keys()):
             return self.parsed["model"]["junctions"]
-        else:
-            return {}
+        return {}
 
     def _getTerminations(self):
         assert 'model' in list(self.parsed.keys())
         if 'terminations' in list(self.parsed["model"].keys()):
             return self.parsed["model"]["terminations"]
-        else:
-            return {}
+        return {}
     
     def _getTransferImpedance(self, line):
         for c in self._cables:
@@ -195,9 +188,9 @@ class Parser:
                 out[elemId] = cable["name"]
         return out        
         
-    def _f(self, input):
+    def _f(self, inp):
         out = []
-        for el in input:
+        for el in inp:
             if type(el) == dict:
                 keys = [id for id in list(el.keys())]
                 out.append(keys)
@@ -386,11 +379,11 @@ class Parser:
             
         raise Exception("No cable with name "+name)
 
-    def _getWireWithMaterialId(self, id):
+    def _getWireWithMaterialId(self, mat_id):
         for w in self._wires:
-            if w["materialId"] == id:
+            if w["materialId"] == mat_id:
                 return w
-        raise Exception("No wire with materialId ", id)
+        raise Exception("No wire with materialId ", mat_id)
 
     def _buildMTLfromLine(self, line):
         cable = self._getCableFromLineName(line)

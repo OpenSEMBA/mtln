@@ -197,7 +197,6 @@ class MTL():
         elif type(g) == np.ndarray:
             assert g.shape[0] == self.l.shape[1]
             assert g.shape[0] == g.shape[1]
-            n = g.shape[0]
             self.g = np.empty(shape=(self.u.shape[0], self.number_of_conductors, self.number_of_conductors))
             self.g[:] = g
         else:
@@ -295,8 +294,8 @@ class MTL():
     def get_time_range(self, final_time):
         return np.arange(0, np.floor(final_time / self.dt))
 
-    def set_voltage(self, conductor, voltage):
-        self.v[conductor] = voltage(self.z)
+    # def set_voltage(self, conductor, voltage):
+    #     self.v[conductor] = voltage(self.z)
 
     def update_probes(self):
         for p in self.probes:
@@ -619,8 +618,7 @@ class MTLD:
         self.dt = 1e10
         self.time = 0.0
         self.levels = levels
-        #with levels as input, the v and I arrays can be built
-        #check that nz is the same for all
+
         self.number_of_conductors = 0
         self.probes : list[Probe] = []
         
@@ -640,16 +638,14 @@ class MTLD:
         R = (self.ndiv-1)*[np.ndarray(shape=(0, 0))]
         G = (self.ndiv)*[np.ndarray(shape=(0, 0))]
 
-        for level, mtls in levels.items():
+        for _, mtls in levels.items():
             conductors = 0
             for line in mtls:
                 assert(type(line) == MTL)
                 assert(np.array_equal(self.u,line.u))
-                # assert(self.nz == line.x.shape[0])
             
                 conductors += line.l.shape[1]
                 self.number_of_conductors += line.l.shape[1]
-                # self.number_of_conductors += conductors
 
                 if (line.dt < self.dt):
                     self.dt = line.dt
@@ -670,7 +666,6 @@ class MTLD:
                 G[self.ndiv-1] = linalg.block_diag(G[self.ndiv-1], line.g[self.ndiv-1])
             
             self.conductors_in_level = np.append(self.conductors_in_level, conductors)
-            # self.levels[level] = {"mtl" :mtls, "conductors":conductors}
             
         
         self.du_norm = levels[0][0].du_norm[:,0,0].reshape(self.ndiv-1,1,1) * np.eye(self.number_of_conductors)
@@ -687,12 +682,14 @@ class MTLD:
         self.g[0:self.ndiv] = G[0:self.ndiv]
 
         self.transfer_impedance = TransferImpedance(self.number_of_conductors, self.ndiv - 1, self.u, self.dt)
-        self.transfer_impedance.q1[0:self.ndiv-1] = q1[0:self.ndiv-1] 
-        self.transfer_impedance.q2[0:self.ndiv-1] = q2[0:self.ndiv-1] 
-        self.transfer_impedance.q3[0:self.ndiv-1] = q3[0:self.ndiv-1] 
-        self.transfer_impedance.d[0:self.ndiv-1]  = d[0:self.ndiv-1] 
-        self.transfer_impedance.e[0:self.ndiv-1]  = e[0:self.ndiv-1] 
-        # self.dx = self.x[1] - self.x[0]
+        self.transfer_impedance.q1[0:self.ndiv-1] = q1[0:self.ndiv-1]
+        self.transfer_impedance.q2[0:self.ndiv-1] = q2[0:self.ndiv-1]
+        self.transfer_impedance.q3[0:self.ndiv-1] = q3[0:self.ndiv-1]
+        self.transfer_impedance.d[0:self.ndiv-1]  = d[0:self.ndiv-1]
+        self.transfer_impedance.e[0:self.ndiv-1]  = e[0:self.ndiv-1]
+
+        self.transfer_impedance.q1sum = self.transfer_impedance.v_sum(self.transfer_impedance.q1)
+        self.transfer_impedance.q2sum = self.transfer_impedance.v_sum(self.transfer_impedance.q2)
 
         self.v = np.zeros([self.number_of_conductors, self.ndiv])
         self.i = np.zeros([self.number_of_conductors, self.ndiv-1])
@@ -792,7 +789,6 @@ class MTLD:
         end = start + du
         if point_in_line(position, start, end):
             probe_in_segment = True
-        start += du
         
         # if (np.any(position > self.u[-1])) or np.any((position < self.u[0])):
         if not probe_in_segment:
@@ -813,6 +809,7 @@ class MTLD:
                        (self.l/self.dt - 0.5*self.transfer_impedance.d + self.transfer_impedance.e/self.dt - 0.5*self.r - self.transfer_impedance.q2sum))
         
         IF1 = np.linalg.inv(F1)
+
         self.i_term = np.einsum('...ij,...jk->...ik' , IF1, F2)
         self.v_diff = IF1
 
@@ -826,10 +823,9 @@ class MTLD:
         
         F1 = np.einsum('...ij,...jk->...ik' , du_norm, self.c/self.dt + self.g/2)
         F2 = np.einsum('...ij,...jk->...ik' , du_norm, self.c/self.dt - self.g/2)
-        try:
-            IF1 = np.linalg.inv(F1)
-        except:
-            raise Exception('')
+
+        IF1 = np.linalg.inv(F1)
+
         self.v_term = np.einsum('...ij,...jk->...ik' , IF1, F2)
         self.i_diff = IF1
 
