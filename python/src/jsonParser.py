@@ -364,13 +364,18 @@ class Parser:
             
             cable = [cable for cable in self._cables if cable["name"] == source["cable"]][0]
             bundle = self._getBundleWithCable(cable)
-            if (source["type"] == "localized efield drive"):
+            conductor = 0
+            if "conductor" in source.keys():
+                conductor = source["conductor"]
+                
+            if (source["type"] == "localized efield drive" or source["type"] == "Planewave"):
                 # cStart = self._coordinates[self._getNodeCoordId(source["elemIds"][0])]
                 # cEnd = self._coordinates[self._getNodeCoordId(source["elemIds"][1])] 
                 bundle.add_localized_longitudinal_field(self._coordinates[self._getNodeCoordId(source["elemIds"][0])],
                                                         self._coordinates[self._getNodeCoordId(source["elemIds"][1])],
-                                                        conductor = 0, 
-                                                        magnitude = magnitude)
+                                                        conductor = conductor,
+                                                        magnitude = magnitude,
+                                                        source_type = source["type"])
     
     def _getCableFromLineName(self, name):
         for cable in self._cables:
@@ -521,11 +526,11 @@ class Parser:
             terminations.append(nw.NetworkD(networkd))
         return terminations
 
-    def _buildSource(self, source, k=1):
+    def _buildSource(self, source):
         if source["magnitude"]["type"] == "trapezoidal":
             def magnitude(t): return wf.trapezoidal_wave(
                 t, 
-                A=source["magnitude"]["amplitude"]*k, 
+                A=source["magnitude"]["amplitude"], 
                 rise_time=source["magnitude"]["rise_time"], 
                 fall_time=source["magnitude"]["fall_time"], 
                 f0=source["magnitude"]["f0"], 
@@ -534,13 +539,13 @@ class Parser:
         elif source["magnitude"]["type"] == "ramp":
             def magnitude(t): return wf.ramp_pulse(
                 t,
-                A =source["magnitude"]["amplitude"]*k,
+                A =source["magnitude"]["amplitude"],
                 x0=source["magnitude"]["t0"]
             )
         elif source["magnitude"]["type"] == "gaussian_2":
             def magnitude(t): return wf.gaussian_2(
                 t,
-                A = source["magnitude"]["amplitude"]*k,
+                A = source["magnitude"]["amplitude"],
                 x0 = source["magnitude"]["x0"],
                 s0 = source["magnitude"]["s0"]
             )
@@ -553,14 +558,20 @@ class Parser:
         elif source["magnitude"]["type"] == "sin_sq":
             def magnitude(t): return wf.sin_sq_pulse(
                 t, 
-                A = source["magnitude"]["amplitude"]*k,
+                A = source["magnitude"]["amplitude"],
                 w = source["magnitude"]["frequency"]
             )
         elif source["magnitude"]["type"] == "sin":
             def magnitude(t): return wf.sin_pulse(
                 t, 
-                A = source["magnitude"]["amplitude"]*k,
+                A = source["magnitude"]["amplitude"],
                 w = source["magnitude"]["frequency"]
+            )
+        elif source["magnitude"]["type"] == "exp":
+            def magnitude(t): return wf.exp(
+                t, 
+                A = source["magnitude"]["amplitude"],
+                x0 = source["magnitude"]["t0"]
             )
         else:
             def magnitude(t): lambda t : 0

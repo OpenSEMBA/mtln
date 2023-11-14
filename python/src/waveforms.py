@@ -1,6 +1,9 @@
 import numpy as np
 import sympy as sp
 
+def exp(x, A, x0):
+    return A*(1-np.exp(-x/x0))
+
 def gaussian(x, x0, s0):
     return np.exp( - (x-x0)**2 / (2*s0**2) )
 

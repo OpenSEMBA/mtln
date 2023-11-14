@@ -709,7 +709,7 @@ class MTLD:
         self.v_sources.fill(lambda t : 0)
 
 
-    def add_localized_longitudinal_field(self, start: np.ndarray, end: np.ndarray, conductor: int, magnitude):
+    def add_localized_longitudinal_field(self, start: np.ndarray, end: np.ndarray, conductor: int, magnitude, source_type :str):
         if (type(start) == float):
             start = np.array([0.0,0.0,start])
         if (type(end) == float):
@@ -771,7 +771,10 @@ class MTLD:
                 source_factor[end_index] = frac
                
         for index, factor in source_factor.items():
-            self.e_L[conductor, index] = add(self.e_L[conductor, index],multiply(magnitude, factor))
+            if (source_type == "Planewave"):
+                self.e_L[conductor, index] = add(self.e_L[conductor, index],multiply(magnitude, factor/(end_index - start_index)))
+            else :
+                self.e_L[conductor, index] = add(self.e_L[conductor, index],multiply(magnitude, factor))
 
     def add_probe(self, position, probe_type = str):
         if (type(position) == float):
