@@ -1,0 +1,93 @@
+ 
+ Release: MHarness v3.2 (Sept 2003)      
+ Revision: MHarness 3.2.3 (Oct 2008)     
+ 
+ Date of execution: 2023-11-07   13:47:28
+ Inputfile is: 
+     
+ C:\Users\c82202\Desktop\Job\PC\Tecnologias\Hecate\MHarness_UGR\Ejemplos\Example
+ 2.inp
+ diagnostic file will be: 
+     
+ C:\Users\c82202\Desktop\Job\PC\Tecnologias\Hecate\MHarness_UGR\Ejemplos\Example
+ 2.diag
+ 
+  the incident propagation unit vector is :
+  8.660E-01  0.000E+00 -5.000E-01
+ 
+  the incident E field unit vector is :
+  0.000E+00  1.000E+00  0.000E+00
+ 
+  the reflected propagation unit vector is :
+  8.660E-01  0.000E+00  5.000E-01
+ 
+  the reflected E field unit vector is :
+  0.000E+00 -1.000E+00  0.000E+00
+
+
+           -------------- segments --------------- 
+     seg            #cond  #cell  end1                 end2                length
+s1    1     50   1  0    4.243E+00
+s3    1     50   0  1    4.243E+00
+s4    1     50   0  1    4.243E+00
+s2    1     50   1  0    4.243E+00
+
+
+                    junctions and nodes
+ conductor id format: (seg cond end); end=1 for end1, end=2 for end2
+ 1                                                               
+     node  1                                                               
+          s1  1     1
+          s2  1     1
+          s3  1     2
+          s4  1     2
+
+
+  !capacitance  
+ 
+ s1                                                              
+   6.6670012E-12
+ 
+ s3                                                              
+   6.6670012E-12
+ 
+ s4                                                              
+   6.6670012E-12
+ 
+ s2                                                              
+   6.6670012E-12
+
+
+  !inductance  
+ 
+ s1                                                              
+   1.6665830E-06
+ 
+ s3                                                              
+   1.6665830E-06
+ 
+ s4                                                              
+   1.6665830E-06
+ 
+ s2                                                              
+   1.6665830E-06
+
+
+  resistance
+seg                  cond                  cell# 1     body       last cell
+ 
+s1 1    5.000E-03  5.000E-03  5.000E-03
+ 
+s3 1    5.000E-03  5.000E-03  5.000E-03
+ 
+s4 1    5.000E-03  5.000E-03  5.000E-03
+ 
+s2 1    5.000E-03  5.000E-03  5.000E-03
+
+
+boundary condition
+  seg                  cond                 end#     type         r          l          c          r
+  s1  1  2    resistive   1.000E+06
+  s3  1  1    resistive   1.000E+06
+  s4  1  1    resistive   1.000E+06
+  s2  1  2    resistive   1.000E+06

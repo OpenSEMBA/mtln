@@ -1,0 +1,47 @@
+ 
+ Release: MHarness v3.2 (Sept 2003)      
+ Revision: MHarness 3.2.3 (Oct 2008)     
+ 
+ Date of execution: 2023-11-07   13:48:26
+ Inputfile is: 
+     
+ C:\Users\c82202\Desktop\Job\PC\Tecnologias\Hecate\MHarness_UGR\Ejemplos\Example
+ 8.inp
+ diagnostic file will be: 
+     
+ C:\Users\c82202\Desktop\Job\PC\Tecnologias\Hecate\MHarness_UGR\Ejemplos\Example
+ 8.diag
+
+
+           -------------- segments --------------- 
+     seg            #cond  #cell  end1                 end2                length
+1    2     50   0  0    3.048E-01
+
+
+  !capacitance  
+ 
+ 1                                                               
+   6.2800008E-11 -4.9400011E-12
+  -4.9400011E-12  6.2800008E-11
+
+
+  !inductance  
+ 
+ 1                                                               
+   4.9460004E-07  6.3300007E-08
+   6.3300007E-08  4.9460004E-07
+
+
+  resistance
+seg                  cond                  cell# 1     body       last cell
+ 
+1 1    0.000E+00  0.000E+00  0.000E+00
+1 2    0.000E+00  0.000E+00  0.000E+00
+
+
+boundary condition
+  seg                  cond                 end#     type         r          l          c          r
+  1  1  1    resistive   5.000E+01
+  1  1  2    resistive   1.000E+06
+  1  2  1    resistive   1.000E+02
+  1  2  2    resistive   1.000E+06

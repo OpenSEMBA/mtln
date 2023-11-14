@@ -1,0 +1,124 @@
+{
+	"model": {
+		"materials": [
+			{
+				"materialId": 1,
+				"name": "Wire",
+				"materialType": "Wire",
+                "resistance" : 0.0,
+				"inductance":  0.7485e-6,
+				"capacitance": 37.432e-12
+			},
+			{
+				"materialId": 2,
+				"name": "Terminal",
+				"materialType": "Connector",
+				"connectorType": "Conn_R",
+				"resistance":  50,
+				"inductance":  0,
+				"capacitance": 1e22
+			},
+			{
+				"materialId": 3,
+				"name": "Terminal",
+				"materialType": "Connector",
+				"connectorType": "Conn_R",
+				"resistance":  1e-6,
+				"inductance":  0,
+				"capacitance": 1e22
+			},
+			{
+				"materialId": 5,
+				"name": "Lumped_RCp",
+				"materialType": "Connector",
+				"connectorType": "Dispersive",
+				"model" : {
+					"cte" : 0.0,
+					"prop" : 0.0,
+                    "poles" : {"real" : [-1e7,-1e7], "imag": [-3e7,3e7]},
+                    "residues" : {"real" : [1e8,1e8], "imag": [1e1,-1e1]}
+				}
+			}
+		],
+		"layers": [
+			{ "id": 1, "name": "WiresLayer" }
+		],
+		"coordinates": [
+			"1 0.0 0.0 0.0",
+			"2 0.0 0.0 1.0",
+			"3 0.0 0.0 0.5"
+            
+		],
+		"elements": {
+			"_line_description": "elemId materialId layerId coordId1 coordId2",
+			"line": [
+				"1 0 1 1 2"
+			],
+			"_node_description": "elemId materialId layerId coordId",
+			"node": [
+				"3 0 1 1",
+				"4 0 1 2"
+			]
+		},
+		"sources": [
+			{
+				"sourceType": "TerminalSource",
+				"type": "voltage",
+				"elemIds": [3],
+				"magnitude": {
+					"type": "ramp",
+					"amplitude": 1.00,
+                    "t0" : 50e-9
+				}
+			}
+		],
+		"probes": [
+			{
+				"name": "v0",
+				"type": "voltage",
+				"elemIds": [3]
+			},
+			{
+				"name": "v1",
+				"type": "voltage",
+				"elemIds": [4]
+			},
+			{
+				"name": "i0",
+				"type": "current",
+				"elemIds": [3]
+			},
+			{
+				"name": "i1",
+				"type": "current",
+				"elemIds": [4]
+			}
+		],
+		"terminations" : [
+			{"name" : "t1", "coordIds": [[1]]},
+			{"name" : "t2", "coordIds": [[2]]}
+		],
+		"bundles": [
+			{"name": "bundle0", "nestedElemIds" : "1"}
+		],
+		"cables": [
+			{
+				"name": "line1",
+				"materialId": 1,
+				"initialConnectorId": 3,
+				"endConnectorId": 2,
+				"elemIds": [ 1 ],
+				"ndiv": 50
+			}
+		],
+        "lumpedElements" : [
+            {
+                "materialId" : 5,
+                "cable" : "line1",
+                "coordIds" : [3],
+                "conductor" : 0
+            }
+        ]
+
+	}
+}

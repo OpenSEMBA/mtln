@@ -1,0 +1,23 @@
+ 
+ Release: MHarness v3.2 (Sept 2003)      
+ Revision: MHarness 3.2.3 (Oct 2008)     
+ 
+ Date of execution: 2023-11-07   13:47:37
+ Inputfile is: 
+     
+ C:\Users\c82202\Desktop\Job\PC\Tecnologias\Hecate\MHarness_UGR\Ejemplos\Example
+ 3.inp
+ diagnostic file will be: 
+     
+ C:\Users\c82202\Desktop\Job\PC\Tecnologias\Hecate\MHarness_UGR\Ejemplos\Example
+ 3.diag
+line   20: 3,4 or 7 items expected for segment else 1 item for conductor id record                           
+1 0 0 2 0.3048
+line   22: there must be at least one conductor in a segment                                                 
+!capacitance                                                                    
+ error on cable segment records
+ problem on cable definition
+ Missing segments in either capacitance,
+ or inductance or segment keywords. 
+ The number of segments found are respectively:
+    2    1    0

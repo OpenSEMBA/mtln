@@ -1,25 +1,27 @@
 import numpy as np
+import numpy.typing as npt
 from numpy.fft import fft, fftfreq, fftshift
 
 class Probe:
-    def __init__(self, position, type, dt, x):
+    def __init__(self, position: np.ndarray, type, dt, u):
         self.type = type
 
-        self.t = np.array([])
-        self.val = np.array([])
+        self.t   : npt.NDArray[np.float64] = np.array([])
+        self.val : npt.NDArray[np.generic] = np.array([])
+
+        self.position = position
+        distances = np.apply_along_axis(np.linalg.norm, 1, np.abs(u - position))
+        self.index = np.argmin(distances)
 
         self.dt = dt
         self.current_frame = 0
-
-        self.position = position
-        self.index = np.argmin(np.abs(x - position))
 
     def resize_frames(self, num_frames, num_conductors):
         self.current_frame = 0
         self.t = np.zeros(num_frames)
         self.val = np.zeros((num_frames, num_conductors))
 
-    def update(self, t, x, v, i):
+    def update(self, t, v, i):
         if self.type == "voltage":
             self.__save_frame(t, v[:, self.index])
         elif self.type == "current":
@@ -66,7 +68,7 @@ class Port:
     
     def getTerminal(self):
         if self.v0.position == 0.0:
-            return "S"
+            return "S"  
         else:
             return "L"
 

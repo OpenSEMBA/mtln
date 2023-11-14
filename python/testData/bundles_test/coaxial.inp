@@ -1,0 +1,77 @@
+input file for mharness
+* example 5, two-wire segment with shield, emp drive
+*************************** Section 2: TIME STEP ***************************
+!TIME STEP
+!!NOTCOMPUTE
+0.5e-10 600
+*************************** Section 3: SPACE STEP **************************
+!SPACE STEP
+sh1 18
+*********************** Section 4: EXCITATION/SOURCE ***********************
+!EXCITATION TYPE
+!!SHIELD ONE
+!!!PLANE WAVE DRIVE
+5.08e-2, 180.0, 90.0, 90.0, 0.0
+*--------------------
+!SOURCE WAVEFORM
+!!DOUBLE EXPONENTIAL
+5.25e4 4.0e6 4.76e8
+******************** Section 5: Cable Conductor Topology *******************
+*------------ Section 5B: System Level 1 – SHIELD ONE Topology -------------
+!SHIELD ONE SEGMENT
+!!SIMPLE
+sh1, 0, 0, 0.0, 0.0, 540.0e-3, 0.0
+1
+*--------------- Section 5C: System Level 0 – Wire Topology ----------------
+!SEGMENT
+!!SIMPLE
+1 0 0
+1
+2
+************** Section 6: Cable Conductor Impedance Parameters *************
+*------ Section 6B: System Level 1 – SHIELD ONE Impedance Parameters -------
+!SHIELD ONE CAPACITANCE
+sh1
+20.27e-12
+*--------------------
+!SHIELD ONE INDUCTANCE COMPUTE
+sh1 3.0e8
+*--------------------
+!SHIELD ONE RESISTANCE
+sh1, 1, 22.9e-3
+*--------------------
+!SHIELD ONE TO CABLE
+1,sh1,1,1,1,4.0e-9
+*---------- Section 6C: System Level 0 – Wire Impedance Parameters ---------
+!CAPACITANCE
+1
+85.0e-12 -20.5e-12
+-20.5e-12 85.0e-12
+*--------------------
+!INDUCTANCE COMPUTE
+1 2.01e8
+******************* Section 9: Cable BOUNDARY CONDITIONS *******************
+*------- Section 9B: System Level 1 – SHIELD ONE BOUNDARY CONDITIONS -------
+!SHIELD ONE BOUNDARY CONDITION
+!!RESISTIVE
+sh1 1 1 50.0
+sh1 1 2 50.0
+*---------- Section 9C: System Level 0 – Wire BOUNDARY CONDITIONS ----------
+!BOUNDARY CONDITION
+!!RESISTIVE
+1 1 1 50.0
+1 1 2 50.0
+1 2 1 50.0
+1 2 2 50.0
+************************* Section 10: Output / PROBE ***********************
+!PROBE
+!!SHIELD ONE CURRENT
+ex5s1cout
+0 600 1
+sh1 1 1
+sh1 1 18
+!!CABLE VOLTAGE
+ex5vout
+0, 600, 1
+1,1,1
+1 1 19

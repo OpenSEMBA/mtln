@@ -1,0 +1,39 @@
+ 
+ Release: MHarness v3.2 (Sept 2003)      
+ Revision: MHarness 3.2.3 (Oct 2008)     
+ 
+ Date of execution: 2023-10-24   11:59:58
+ Inputfile is: 
+     
+ C:\Users\c82202\Desktop\Job\PC\Tecnologias\Hecate\MHarness_UGR\Example5\coaxial
+ _v2.1.inp
+ diagnostic file will be: 
+     
+ C:\Users\c82202\Desktop\Job\PC\Tecnologias\Hecate\MHarness_UGR\Example5\coaxial
+ _v2.1.diag
+line   21: error: unknown segment id for source waveform                                                     
+shield2, shield2_1, 0.3, 0.4                                                                                                    
+line   21: error: unknown conductor id for sourceapplication                                                 
+shield2, shield2_1, 0.3, 0.4                                                                                                    
+ error on source waveform records
+line:    70: unknown segment id on shieldtwotoshieldone input                                                  
+shield1_1, shield2, shield2_1, 1, 1, 8.0e-9
+line:    85 : unknown segment id in boundary input                                                             
+shield1 shield1_1 1 50.0
+ for !shieldtwoboundarycondition
+line:    86 : unknown segment id in boundary input                                                             
+shield1 shield1_1 2 50.0
+ for !shieldtwoboundarycondition
+
+
+******  please check !!  ********
+ time step of   5.000E-11   is too big for speed of light in vacuum
+  might lead to numerical instability if
+  it is the highest speed in the system !
+  length not defined for segment: 
+ shield1                                                         
+ error in injection point segment id:    0
+ injection location outside the segment: 
+ shield1                                                         
+ injection location outside the segment: 
+ shield1                                                         
